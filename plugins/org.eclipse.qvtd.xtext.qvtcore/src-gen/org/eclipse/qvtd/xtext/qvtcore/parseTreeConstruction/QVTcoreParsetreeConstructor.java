@@ -926,11 +926,12 @@ protected class ComposedMappingCS_MappingCSParserRuleCall extends RuleCallToken 
 /************ begin Rule AssignmentCS ****************
  *
  * //Constraint ::= Predicate | Assignment
- *  //Predicate ::= BooleanOCLExpr
  * 
+ * //Predicate ::= BooleanOCLExpr
  * 
  * //Assignement ::= [“default”] SlotOwnerOCLExpr“.”PropertyName “:=” ValueOCLExpr
- *  AssignmentCS:
+ * 
+ * AssignmentCS:
  * 
  * 	default?="default"? target=ExpCS (":=" initialiser=ExpCS)? ";";
  *
@@ -1582,7 +1583,8 @@ protected class DirectionCS_UsesAssignment_2_2_1 extends AssignmentToken  {
 /************ begin Rule GuardPatternCS ****************
  *
  * //EnforcementOperationCS: ('creation'|'deletion') ExpCS ';';
- *  GuardPatternCS:
+ * 
+ * GuardPatternCS:
  * 
  * 	{GuardPatternCS} (unrealizedVariables+=UnrealizedVariableCS ("," unrealizedVariables+=UnrealizedVariableCS)* "|")?
  * 
@@ -2169,8 +2171,10 @@ protected class ImportCS_SemicolonKeyword_4 extends KeywordToken  {
 /************ begin Rule LibraryCS ****************
  *
  * //IncludeCS returns IncludeCS:
- *  //	'include' namespace=[pivot::Namespace|URI] ';';
- *  LibraryCS returns base::LibraryCS:
+ * 
+ * //	'include' namespace=[pivot::Namespace|URI] ';';
+ * 
+ * LibraryCS returns base::LibraryCS:
  * 
  * 	"library" package=[pivot::Package|URI] ";";
  *
@@ -3890,12 +3894,14 @@ protected class QueryCS_RightCurlyBracketKeyword_7_1_2 extends KeywordToken  {
 /************ begin Rule TransformationCS ****************
  *
  * //<query> ::= 'query' <PathNameCS> 
- *  //            '(' [<paramDeclaration> (',' <paramDeclaration>)*] ')'
  * 
+ * //            '(' [<paramDeclaration> (',' <paramDeclaration>)*] ')'
  * 
  * //      	  ':' <TypeCS>
- *  //            (';' | '{' <OclExpressionCS> '}')
- *  TransformationCS:
+ * 
+ * //            (';' | '{' <OclExpressionCS> '}')
+ * 
+ * TransformationCS:
  * 
  * 	"transformation" (namespace+=[pivot::Namespace|UnrestrictedName] "::" (namespace+=[pivot::Namespace|UnreservedName]
  * 
@@ -4300,7 +4306,8 @@ protected class TransformationCS_RightCurlyBracketKeyword_5 extends KeywordToken
 /************ begin Rule UnrealizedVariableCS ****************
  *
  * //Variable := VariableName “:” TypeDeclaration
- *  UnrealizedVariableCS:
+ * 
+ * UnrealizedVariableCS:
  * 
  * 	name=UnrestrictedName ":" ownedType=TypeExpCS;
  *
@@ -4443,7 +4450,8 @@ protected class UnrealizedVariableCS_OwnedTypeAssignment_2 extends AssignmentTok
 /************ begin Rule RealizedVariableCS ****************
  *
  * //RealizedVariable := “realized” VariableName “:” TypeDeclaration
- *  RealizedVariableCS:
+ * 
+ * RealizedVariableCS:
  * 
  * 	"realize" name=UnrestrictedName ":" ownedType=TypeExpCS;
  *

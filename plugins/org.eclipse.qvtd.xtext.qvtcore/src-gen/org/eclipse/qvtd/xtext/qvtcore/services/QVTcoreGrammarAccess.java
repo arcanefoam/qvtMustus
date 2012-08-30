@@ -200,11 +200,12 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 		private final Keyword cSemicolonKeyword_3 = (Keyword)cGroup.eContents().get(3);
 		
 		////Constraint ::= Predicate | Assignment
-		// //Predicate ::= BooleanOCLExpr
 		//
+		////Predicate ::= BooleanOCLExpr
 		//
 		////Assignement ::= [“default”] SlotOwnerOCLExpr“.”PropertyName “:=” ValueOCLExpr
-		// AssignmentCS:
+		//
+		//AssignmentCS:
 		//
 		//	default?="default"? target=ExpCS (":=" initialiser=ExpCS)? ";";
 		public ParserRule getRule() { return rule; }
@@ -365,7 +366,8 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cConstraintsAssignmentCSParserRuleCall_2_0 = (RuleCall)cConstraintsAssignment_2.eContents().get(0);
 		
 		////EnforcementOperationCS: ('creation'|'deletion') ExpCS ';';
-		// GuardPatternCS:
+		//
+		//GuardPatternCS:
 		//
 		//	{GuardPatternCS} (unrealizedVariables+=UnrealizedVariableCS ("," unrealizedVariables+=UnrealizedVariableCS)* "|")?
 		//
@@ -486,8 +488,10 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 		private final Keyword cSemicolonKeyword_2 = (Keyword)cGroup.eContents().get(2);
 		
 		////IncludeCS returns IncludeCS:
-		// //	'include' namespace=[pivot::Namespace|URI] ';';
-		// LibraryCS returns base::LibraryCS:
+		//
+		////	'include' namespace=[pivot::Namespace|URI] ';';
+		//
+		//LibraryCS returns base::LibraryCS:
 		//
 		//	"library" package=[pivot::Package|URI] ";";
 		public ParserRule getRule() { return rule; }
@@ -883,12 +887,14 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 		private final Keyword cRightCurlyBracketKeyword_5 = (Keyword)cGroup.eContents().get(5);
 		
 		////<query> ::= 'query' <PathNameCS> 
-		// //            '(' [<paramDeclaration> (',' <paramDeclaration>)*] ')'
 		//
+		////            '(' [<paramDeclaration> (',' <paramDeclaration>)*] ')'
 		//
 		////      	  ':' <TypeCS>
-		// //            (';' | '{' <OclExpressionCS> '}')
-		// TransformationCS:
+		//
+		////            (';' | '{' <OclExpressionCS> '}')
+		//
+		//TransformationCS:
 		//
 		//	"transformation" (namespace+=[pivot::Namespace|UnrestrictedName] "::" (namespace+=[pivot::Namespace|UnreservedName]
 		//
@@ -968,7 +974,8 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cOwnedTypeTypeExpCSParserRuleCall_2_0 = (RuleCall)cOwnedTypeAssignment_2.eContents().get(0);
 		
 		////Variable := VariableName “:” TypeDeclaration
-		// UnrealizedVariableCS:
+		//
+		//UnrealizedVariableCS:
 		//
 		//	name=UnrestrictedName ":" ownedType=TypeExpCS;
 		public ParserRule getRule() { return rule; }
@@ -1003,7 +1010,8 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 		private final RuleCall cOwnedTypeTypeExpCSParserRuleCall_3_0 = (RuleCall)cOwnedTypeAssignment_3.eContents().get(0);
 		
 		////RealizedVariable := “realized” VariableName “:” TypeDeclaration
-		// RealizedVariableCS:
+		//
+		//RealizedVariableCS:
 		//
 		//	"realize" name=UnrestrictedName ":" ownedType=TypeExpCS;
 		public ParserRule getRule() { return rule; }
@@ -1096,24 +1104,33 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 		private final Keyword cUsesKeyword_11 = (Keyword)cAlternatives.eContents().get(11);
 		
 		////|	'where'
-		// UnrestrictedName returns ecore::EString:
+		//
+		//UnrestrictedName returns ecore::EString:
 		//
 		//	EssentialOCLUnrestrictedName //|	'creation'
-		// //|	'default'
-		// //|	'deletion'
-		// //|	'include'
-		// | "check" | "enforce" |
 		//
-		//	"import" | "imports" | "library" | "map" | "query" | "realize" | "refines" | "transformation" | "uses";
+		//	//|	'default'
+		//
+		//	//|	'deletion'
+		//
+		//	//|	'include'
+		//
+		//	| "check" | "enforce" | "import" | "imports" | "library" | "map" | "query" | "realize" | "refines" | "transformation" |
+		//
+		//	"uses";
 		public ParserRule getRule() { return rule; }
 
 		//EssentialOCLUnrestrictedName //|	'creation'
-		// //|	'default'
-		// //|	'deletion'
-		// //|	'include'
-		// | "check" | "enforce" |
 		//
-		//"import" | "imports" | "library" | "map" | "query" | "realize" | "refines" | "transformation" | "uses"
+		////|	'default'
+		//
+		////|	'deletion'
+		//
+		////|	'include'
+		//
+		//| "check" | "enforce" | "import" | "imports" | "library" | "map" | "query" | "realize" | "refines" | "transformation" |
+		//
+		//"uses"
 		public Alternatives getAlternatives() { return cAlternatives; }
 
 		//EssentialOCLUnrestrictedName
@@ -1250,11 +1267,12 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	////Constraint ::= Predicate | Assignment
-	// //Predicate ::= BooleanOCLExpr
 	//
+	////Predicate ::= BooleanOCLExpr
 	//
 	////Assignement ::= [“default”] SlotOwnerOCLExpr“.”PropertyName “:=” ValueOCLExpr
-	// AssignmentCS:
+	//
+	//AssignmentCS:
 	//
 	//	default?="default"? target=ExpCS (":=" initialiser=ExpCS)? ";";
 	public AssignmentCSElements getAssignmentCSAccess() {
@@ -1281,7 +1299,8 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	////EnforcementOperationCS: ('creation'|'deletion') ExpCS ';';
-	// GuardPatternCS:
+	//
+	//GuardPatternCS:
 	//
 	//	{GuardPatternCS} (unrealizedVariables+=UnrealizedVariableCS ("," unrealizedVariables+=UnrealizedVariableCS)* "|")?
 	//
@@ -1306,8 +1325,10 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	////IncludeCS returns IncludeCS:
-	// //	'include' namespace=[pivot::Namespace|URI] ';';
-	// LibraryCS returns base::LibraryCS:
+	//
+	////	'include' namespace=[pivot::Namespace|URI] ';';
+	//
+	//LibraryCS returns base::LibraryCS:
 	//
 	//	"library" package=[pivot::Package|URI] ";";
 	public LibraryCSElements getLibraryCSAccess() {
@@ -1371,12 +1392,14 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	////<query> ::= 'query' <PathNameCS> 
-	// //            '(' [<paramDeclaration> (',' <paramDeclaration>)*] ')'
 	//
+	////            '(' [<paramDeclaration> (',' <paramDeclaration>)*] ')'
 	//
 	////      	  ':' <TypeCS>
-	// //            (';' | '{' <OclExpressionCS> '}')
-	// TransformationCS:
+	//
+	////            (';' | '{' <OclExpressionCS> '}')
+	//
+	//TransformationCS:
 	//
 	//	"transformation" (namespace+=[pivot::Namespace|UnrestrictedName] "::" (namespace+=[pivot::Namespace|UnreservedName]
 	//
@@ -1390,7 +1413,8 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	////Variable := VariableName “:” TypeDeclaration
-	// UnrealizedVariableCS:
+	//
+	//UnrealizedVariableCS:
 	//
 	//	name=UnrestrictedName ":" ownedType=TypeExpCS;
 	public UnrealizedVariableCSElements getUnrealizedVariableCSAccess() {
@@ -1402,7 +1426,8 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	////RealizedVariable := “realized” VariableName “:” TypeDeclaration
-	// RealizedVariableCS:
+	//
+	//RealizedVariableCS:
 	//
 	//	"realize" name=UnrestrictedName ":" ownedType=TypeExpCS;
 	public RealizedVariableCSElements getRealizedVariableCSAccess() {
@@ -1425,15 +1450,20 @@ public class QVTcoreGrammarAccess extends AbstractGrammarElementFinder {
 	}
 
 	////|	'where'
-	// UnrestrictedName returns ecore::EString:
+	//
+	//UnrestrictedName returns ecore::EString:
 	//
 	//	EssentialOCLUnrestrictedName //|	'creation'
-	// //|	'default'
-	// //|	'deletion'
-	// //|	'include'
-	// | "check" | "enforce" |
 	//
-	//	"import" | "imports" | "library" | "map" | "query" | "realize" | "refines" | "transformation" | "uses";
+	//	//|	'default'
+	//
+	//	//|	'deletion'
+	//
+	//	//|	'include'
+	//
+	//	| "check" | "enforce" | "import" | "imports" | "library" | "map" | "query" | "realize" | "refines" | "transformation" |
+	//
+	//	"uses";
 	public UnrestrictedNameElements getUnrestrictedNameAccess() {
 		return (pUnrestrictedName != null) ? pUnrestrictedName : (pUnrestrictedName = new UnrestrictedNameElements());
 	}

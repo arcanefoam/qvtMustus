@@ -2,6 +2,7 @@
  */
 package org.eclipse.qvtd.xtext.qvtcorecst;
 
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.ocl.examples.xtext.essentialocl.essentialOCLCST.ExpCS;
 
 /**
