@@ -40,7 +40,7 @@ import org.eclipse.ocl.examples.xtext.essentialocl.essentialOCLCST.ExpCS;
  * @model
  * @generated
  */
-public interface QueryCS extends TypedElementCS {
+public interface QueryCS extends EObject, TypedElementCS {
 	/**
 	 * Returns the value of the '<em><b>Input Param Declaration</b></em>' containment reference list.
 	 * The list contents are of type {@link org.eclipse.qvtd.xtext.qvtcorecst.ParamDeclarationCS}.

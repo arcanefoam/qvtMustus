@@ -29,5 +29,5 @@ import org.eclipse.emf.ecore.EObject;
  * @model
  * @generated
  */
-public interface UnrealizedVariableCS extends RealizeableVariableCS {
+public interface UnrealizedVariableCS extends EObject, RealizeableVariableCS {
 } // UnrealizedVariableCS

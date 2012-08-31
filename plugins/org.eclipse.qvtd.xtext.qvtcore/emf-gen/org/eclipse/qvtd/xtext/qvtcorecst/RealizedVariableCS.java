@@ -29,5 +29,5 @@ import org.eclipse.emf.ecore.EObject;
  * @model
  * @generated
  */
-public interface RealizedVariableCS extends RealizeableVariableCS {
+public interface RealizedVariableCS extends EObject, RealizeableVariableCS {
 } // RealizedVariableCS

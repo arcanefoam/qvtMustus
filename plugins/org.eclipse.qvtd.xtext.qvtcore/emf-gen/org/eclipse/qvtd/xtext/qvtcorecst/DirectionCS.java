@@ -39,7 +39,7 @@ import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
  * @model
  * @generated
  */
-public interface DirectionCS extends NamedElementCS {
+public interface DirectionCS extends EObject, NamedElementCS {
 	/**
 	 * Returns the value of the '<em><b>Imports</b></em>' reference list.
 	 * The list contents are of type {@link org.eclipse.ocl.examples.pivot.Package}.

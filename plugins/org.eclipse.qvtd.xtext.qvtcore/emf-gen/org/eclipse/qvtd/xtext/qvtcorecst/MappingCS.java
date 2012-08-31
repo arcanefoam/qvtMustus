@@ -44,7 +44,7 @@ import org.eclipse.qvtd.pivot.qvtcore.Mapping;
  * @model
  * @generated
  */
-public interface MappingCS extends NamedElementCS {
+public interface MappingCS extends EObject, NamedElementCS {
 	/**
 	 * Returns the value of the '<em><b>Composed Mappings</b></em>' containment reference list.
 	 * The list contents are of type {@link org.eclipse.qvtd.xtext.qvtcorecst.MappingCS}.

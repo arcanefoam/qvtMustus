@@ -38,7 +38,7 @@ import org.eclipse.ocl.examples.xtext.base.baseCST.PackageCS;
  * @model
  * @generated
  */
-public interface TransformationCS extends PackageCS {
+public interface TransformationCS extends EObject, PackageCS {
 	/**
 	 * Returns the value of the '<em><b>Namespace</b></em>' reference list.
 	 * The list contents are of type {@link org.eclipse.ocl.examples.pivot.Namespace}.

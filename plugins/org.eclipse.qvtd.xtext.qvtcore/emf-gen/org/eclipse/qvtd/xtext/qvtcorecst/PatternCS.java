@@ -37,7 +37,7 @@ import org.eclipse.ocl.examples.xtext.base.baseCST.ModelElementCS;
  * @model abstract="true"
  * @generated
  */
-public interface PatternCS extends ModelElementCS {
+public interface PatternCS extends EObject, ModelElementCS {
 	/**
 	 * Returns the value of the '<em><b>Constraints</b></em>' containment reference list.
 	 * The list contents are of type {@link org.eclipse.qvtd.xtext.qvtcorecst.AssignmentCS}.
