@@ -37,7 +37,7 @@ import org.eclipse.ocl.examples.xtext.essentialocl.essentialOCLCST.InvocationExp
  * @model
  * @generated
  */
-public interface EnforcementOperationCS extends EObject, ModelElementCS {
+public interface EnforcementOperationCS extends ModelElementCS {
 	/**
 	 * Returns the value of the '<em><b>Deletion</b></em>' attribute.
 	 * <!-- begin-user-doc -->

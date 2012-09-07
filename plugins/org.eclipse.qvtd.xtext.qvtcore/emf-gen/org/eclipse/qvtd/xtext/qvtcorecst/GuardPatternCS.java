@@ -29,5 +29,5 @@ import org.eclipse.emf.ecore.EObject;
  * @model
  * @generated
  */
-public interface GuardPatternCS extends EObject, PatternCS {
+public interface GuardPatternCS extends PatternCS {
 } // GuardPatternCS

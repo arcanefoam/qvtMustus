@@ -36,7 +36,7 @@ import org.eclipse.ocl.examples.xtext.base.baseCST.NamedElementCS;
  * @model abstract="true"
  * @generated
  */
-public interface AreaCS extends EObject, NamedElementCS {
+public interface AreaCS extends NamedElementCS {
 	/**
 	 * Returns the value of the '<em><b>Guard Pattern</b></em>' containment reference.
 	 * <!-- begin-user-doc -->

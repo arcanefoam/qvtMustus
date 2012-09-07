@@ -29,5 +29,5 @@ import org.eclipse.ocl.examples.xtext.base.baseCST.TypedElementCS;
  * @model abstract="true"
  * @generated
  */
-public interface RealizeableVariableCS extends EObject, TypedElementCS {
+public interface RealizeableVariableCS extends TypedElementCS {
 } // RealizeableVariableCS

@@ -16,6 +16,7 @@ package org.eclipse.qvtd.xtext.qvtcore.tests;
 
 import java.io.IOException;
 
+import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
 import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
 
@@ -26,6 +27,7 @@ public class LoadTests extends LoadTestCase
 {	
 	@Override
 	protected void setUp() throws Exception {
+		EssentialOCLLinkingService.DEBUG_RETRY = true;
 		super.setUp();
 		QVTcoreStandaloneSetup.doSetup();
 	}
@@ -36,5 +38,17 @@ public class LoadTests extends LoadTestCase
 
 	public void testLoad_mini_qvtc() throws IOException, InterruptedException {
 		doLoad_Concrete("mini", "qvtc");
+	}	
+
+	public void testLoad_uml2rdbms_qvtc() throws IOException, InterruptedException {
+		doLoad_Concrete("uml2rdbms", "qvtc");
+	}	
+
+	public void testLoad_uml2rdbms_qvti_qvtc() throws IOException, InterruptedException {
+		doLoad_Concrete("uml2rdbms.qvti", "qvtc");
+	}	
+
+	public void testLoad_uml2rdbms_qvtu_qvtc() throws IOException, InterruptedException {
+		doLoad_Concrete("uml2rdbms.qvtu", "qvtc");
 	}	
 }

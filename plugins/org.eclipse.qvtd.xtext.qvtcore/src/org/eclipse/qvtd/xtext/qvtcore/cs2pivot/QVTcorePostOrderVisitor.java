@@ -30,12 +30,14 @@ import org.eclipse.ocl.examples.xtext.base.cs2pivot.CS2PivotConversion;
 import org.eclipse.ocl.examples.xtext.base.cs2pivot.Continuation;
 import org.eclipse.ocl.examples.xtext.base.cs2pivot.SingleContinuation;
 import org.eclipse.ocl.examples.xtext.essentialocl.essentialOCLCST.ExpCS;
+import org.eclipse.qvtd.pivot.qvtbase.Function;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.QVTbasePackage;
 import org.eclipse.qvtd.pivot.qvtcore.Assignment;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation;
 import org.eclipse.qvtd.pivot.qvtcore.GuardPattern;
+import org.eclipse.qvtd.pivot.qvtcore.Mapping;
 import org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.QVTcorePackage;
 import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
@@ -190,6 +192,8 @@ public class QVTcorePostOrderVisitor extends AbstractQVTcorePostOrderVisitor
 
 	@Override
 	public Continuation<?> visitMappingCS(MappingCS csElement) {
+		Mapping pMapping = PivotUtil.getPivot(Mapping.class, csElement);
+		PivotUtil.refreshList(pMapping.getRefinement(), csElement.getRefines());
 		return null;
 	}
 
@@ -205,6 +209,9 @@ public class QVTcorePostOrderVisitor extends AbstractQVTcorePostOrderVisitor
 
 	@Override
 	public Continuation<?> visitQueryCS(QueryCS csElement) {
+		Function pFunction = PivotUtil.getPivot(Function.class, csElement);
+		OCLExpression target = context.visitLeft2Right(OCLExpression.class, csElement.getExpression());
+		pFunction.setQueryExpression(target);
 		return null;
 	}
 

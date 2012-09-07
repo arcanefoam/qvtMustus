@@ -1029,6 +1029,15 @@ public interface QVTcoreCSTPackage extends EPackage {
 	int PARAM_DECLARATION_CS__QUALIFIER = BaseCSTPackage.TYPED_ELEMENT_CS__QUALIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Optional</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int PARAM_DECLARATION_CS__OPTIONAL = BaseCSTPackage.TYPED_ELEMENT_CS__OPTIONAL;
+
+	/**
 	 * The number of structural features of the '<em>Param Declaration CS</em>' class.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -1129,22 +1138,49 @@ public interface QVTcoreCSTPackage extends EPackage {
 	int QUERY_CS__QUALIFIER = BaseCSTPackage.TYPED_ELEMENT_CS__QUALIFIER;
 
 	/**
+	 * The feature id for the '<em><b>Optional</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUERY_CS__OPTIONAL = BaseCSTPackage.TYPED_ELEMENT_CS__OPTIONAL;
+
+	/**
+	 * The feature id for the '<em><b>Path Name</b></em>' containment reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUERY_CS__PATH_NAME = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Transformation</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int QUERY_CS__TRANSFORMATION = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 1;
+
+	/**
 	 * The feature id for the '<em><b>Input Param Declaration</b></em>' containment reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int QUERY_CS__INPUT_PARAM_DECLARATION = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 0;
+	int QUERY_CS__INPUT_PARAM_DECLARATION = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 2;
 
 	/**
-	 * The feature id for the '<em><b>Ocl Expression</b></em>' containment reference.
+	 * The feature id for the '<em><b>Expression</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int QUERY_CS__OCL_EXPRESSION = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 1;
+	int QUERY_CS__EXPRESSION = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 3;
 
 	/**
 	 * The number of structural features of the '<em>Query CS</em>' class.
@@ -1153,7 +1189,7 @@ public interface QVTcoreCSTPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int QUERY_CS_FEATURE_COUNT = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 2;
+	int QUERY_CS_FEATURE_COUNT = BaseCSTPackage.TYPED_ELEMENT_CS_FEATURE_COUNT + 4;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.qvtd.xtext.qvtcorecst.impl.RealizeableVariableCSImpl <em>Realizeable Variable CS</em>}' class.
@@ -1245,6 +1281,15 @@ public interface QVTcoreCSTPackage extends EPackage {
 	 * @ordered
 	 */
 	int REALIZEABLE_VARIABLE_CS__QUALIFIER = BaseCSTPackage.TYPED_ELEMENT_CS__QUALIFIER;
+
+	/**
+	 * The feature id for the '<em><b>Optional</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REALIZEABLE_VARIABLE_CS__OPTIONAL = BaseCSTPackage.TYPED_ELEMENT_CS__OPTIONAL;
 
 	/**
 	 * The number of structural features of the '<em>Realizeable Variable CS</em>' class.
@@ -1345,6 +1390,15 @@ public interface QVTcoreCSTPackage extends EPackage {
 	 * @ordered
 	 */
 	int REALIZED_VARIABLE_CS__QUALIFIER = REALIZEABLE_VARIABLE_CS__QUALIFIER;
+
+	/**
+	 * The feature id for the '<em><b>Optional</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int REALIZED_VARIABLE_CS__OPTIONAL = REALIZEABLE_VARIABLE_CS__OPTIONAL;
 
 	/**
 	 * The number of structural features of the '<em>Realized Variable CS</em>' class.
@@ -1610,13 +1664,22 @@ public interface QVTcoreCSTPackage extends EPackage {
 	int TRANSFORMATION_CS__NS_URI = BaseCSTPackage.PACKAGE_CS__NS_URI;
 
 	/**
-	 * The feature id for the '<em><b>Namespace</b></em>' reference list.
+	 * The feature id for the '<em><b>Path Name</b></em>' containment reference.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
 	 * @generated
 	 * @ordered
 	 */
-	int TRANSFORMATION_CS__NAMESPACE = BaseCSTPackage.PACKAGE_CS_FEATURE_COUNT + 0;
+	int TRANSFORMATION_CS__PATH_NAME = BaseCSTPackage.PACKAGE_CS_FEATURE_COUNT + 0;
+
+	/**
+	 * The feature id for the '<em><b>Package</b></em>' reference.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int TRANSFORMATION_CS__PACKAGE = BaseCSTPackage.PACKAGE_CS_FEATURE_COUNT + 1;
 
 	/**
 	 * The feature id for the '<em><b>Directions</b></em>' containment reference list.
@@ -1625,7 +1688,7 @@ public interface QVTcoreCSTPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int TRANSFORMATION_CS__DIRECTIONS = BaseCSTPackage.PACKAGE_CS_FEATURE_COUNT + 1;
+	int TRANSFORMATION_CS__DIRECTIONS = BaseCSTPackage.PACKAGE_CS_FEATURE_COUNT + 2;
 
 	/**
 	 * The number of structural features of the '<em>Transformation CS</em>' class.
@@ -1634,7 +1697,7 @@ public interface QVTcoreCSTPackage extends EPackage {
 	 * @generated
 	 * @ordered
 	 */
-	int TRANSFORMATION_CS_FEATURE_COUNT = BaseCSTPackage.PACKAGE_CS_FEATURE_COUNT + 2;
+	int TRANSFORMATION_CS_FEATURE_COUNT = BaseCSTPackage.PACKAGE_CS_FEATURE_COUNT + 3;
 
 	/**
 	 * The meta object id for the '{@link org.eclipse.qvtd.xtext.qvtcorecst.impl.UnrealizedVariableCSImpl <em>Unrealized Variable CS</em>}' class.
@@ -1726,6 +1789,15 @@ public interface QVTcoreCSTPackage extends EPackage {
 	 * @ordered
 	 */
 	int UNREALIZED_VARIABLE_CS__QUALIFIER = REALIZEABLE_VARIABLE_CS__QUALIFIER;
+
+	/**
+	 * The feature id for the '<em><b>Optional</b></em>' attribute.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 * @ordered
+	 */
+	int UNREALIZED_VARIABLE_CS__OPTIONAL = REALIZEABLE_VARIABLE_CS__OPTIONAL;
 
 	/**
 	 * The number of structural features of the '<em>Unrealized Variable CS</em>' class.
@@ -2079,6 +2151,28 @@ public interface QVTcoreCSTPackage extends EPackage {
 	EClass getQueryCS();
 
 	/**
+	 * Returns the meta object for the containment reference '{@link org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getPathName <em>Path Name</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the containment reference '<em>Path Name</em>'.
+	 * @see org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getPathName()
+	 * @see #getQueryCS()
+	 * @generated
+	 */
+	EReference getQueryCS_PathName();
+
+	/**
+	 * Returns the meta object for the reference '{@link org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getTransformation <em>Transformation</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Transformation</em>'.
+	 * @see org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getTransformation()
+	 * @see #getQueryCS()
+	 * @generated
+	 */
+	EReference getQueryCS_Transformation();
+
+	/**
 	 * Returns the meta object for the containment reference list '{@link org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getInputParamDeclaration <em>Input Param Declaration</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
@@ -2090,15 +2184,15 @@ public interface QVTcoreCSTPackage extends EPackage {
 	EReference getQueryCS_InputParamDeclaration();
 
 	/**
-	 * Returns the meta object for the containment reference '{@link org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getOclExpression <em>Ocl Expression</em>}'.
+	 * Returns the meta object for the containment reference '{@link org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getExpression <em>Expression</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the containment reference '<em>Ocl Expression</em>'.
-	 * @see org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getOclExpression()
+	 * @return the meta object for the containment reference '<em>Expression</em>'.
+	 * @see org.eclipse.qvtd.xtext.qvtcorecst.QueryCS#getExpression()
 	 * @see #getQueryCS()
 	 * @generated
 	 */
-	EReference getQueryCS_OclExpression();
+	EReference getQueryCS_Expression();
 
 	/**
 	 * Returns the meta object for class '{@link org.eclipse.qvtd.xtext.qvtcorecst.RealizeableVariableCS <em>Realizeable Variable CS</em>}'.
@@ -2174,15 +2268,26 @@ public interface QVTcoreCSTPackage extends EPackage {
 	EClass getTransformationCS();
 
 	/**
-	 * Returns the meta object for the reference list '{@link org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS#getNamespace <em>Namespace</em>}'.
+	 * Returns the meta object for the containment reference '{@link org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS#getPathName <em>Path Name</em>}'.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @return the meta object for the reference list '<em>Namespace</em>'.
-	 * @see org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS#getNamespace()
+	 * @return the meta object for the containment reference '<em>Path Name</em>'.
+	 * @see org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS#getPathName()
 	 * @see #getTransformationCS()
 	 * @generated
 	 */
-	EReference getTransformationCS_Namespace();
+	EReference getTransformationCS_PathName();
+
+	/**
+	 * Returns the meta object for the reference '{@link org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS#getPackage <em>Package</em>}'.
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @return the meta object for the reference '<em>Package</em>'.
+	 * @see org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS#getPackage()
+	 * @see #getTransformationCS()
+	 * @generated
+	 */
+	EReference getTransformationCS_Package();
 
 	/**
 	 * Returns the meta object for the containment reference list '{@link org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS#getDirections <em>Directions</em>}'.
@@ -2506,6 +2611,22 @@ public interface QVTcoreCSTPackage extends EPackage {
 		EClass QUERY_CS = eINSTANCE.getQueryCS();
 
 		/**
+		 * The meta object literal for the '<em><b>Path Name</b></em>' containment reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference QUERY_CS__PATH_NAME = eINSTANCE.getQueryCS_PathName();
+
+		/**
+		 * The meta object literal for the '<em><b>Transformation</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference QUERY_CS__TRANSFORMATION = eINSTANCE.getQueryCS_Transformation();
+
+		/**
 		 * The meta object literal for the '<em><b>Input Param Declaration</b></em>' containment reference list feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
@@ -2514,12 +2635,12 @@ public interface QVTcoreCSTPackage extends EPackage {
 		EReference QUERY_CS__INPUT_PARAM_DECLARATION = eINSTANCE.getQueryCS_InputParamDeclaration();
 
 		/**
-		 * The meta object literal for the '<em><b>Ocl Expression</b></em>' containment reference feature.
+		 * The meta object literal for the '<em><b>Expression</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference QUERY_CS__OCL_EXPRESSION = eINSTANCE.getQueryCS_OclExpression();
+		EReference QUERY_CS__EXPRESSION = eINSTANCE.getQueryCS_Expression();
 
 		/**
 		 * The meta object literal for the '{@link org.eclipse.qvtd.xtext.qvtcorecst.impl.RealizeableVariableCSImpl <em>Realizeable Variable CS</em>}' class.
@@ -2586,12 +2707,20 @@ public interface QVTcoreCSTPackage extends EPackage {
 		EClass TRANSFORMATION_CS = eINSTANCE.getTransformationCS();
 
 		/**
-		 * The meta object literal for the '<em><b>Namespace</b></em>' reference list feature.
+		 * The meta object literal for the '<em><b>Path Name</b></em>' containment reference feature.
 		 * <!-- begin-user-doc -->
 		 * <!-- end-user-doc -->
 		 * @generated
 		 */
-		EReference TRANSFORMATION_CS__NAMESPACE = eINSTANCE.getTransformationCS_Namespace();
+		EReference TRANSFORMATION_CS__PATH_NAME = eINSTANCE.getTransformationCS_PathName();
+
+		/**
+		 * The meta object literal for the '<em><b>Package</b></em>' reference feature.
+		 * <!-- begin-user-doc -->
+		 * <!-- end-user-doc -->
+		 * @generated
+		 */
+		EReference TRANSFORMATION_CS__PACKAGE = eINSTANCE.getTransformationCS_Package();
 
 		/**
 		 * The meta object literal for the '<em><b>Directions</b></em>' containment reference list feature.

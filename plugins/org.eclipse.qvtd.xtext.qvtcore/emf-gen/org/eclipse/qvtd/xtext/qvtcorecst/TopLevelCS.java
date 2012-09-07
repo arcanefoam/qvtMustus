@@ -38,7 +38,7 @@ import org.eclipse.ocl.examples.xtext.base.baseCST.RootPackageCS;
  * @model
  * @generated
  */
-public interface TopLevelCS extends EObject, RootPackageCS {
+public interface TopLevelCS extends RootPackageCS {
 	/**
 	 * Returns the value of the '<em><b>Transformations</b></em>' containment reference list.
 	 * The list contents are of type {@link org.eclipse.qvtd.xtext.qvtcorecst.TransformationCS}.

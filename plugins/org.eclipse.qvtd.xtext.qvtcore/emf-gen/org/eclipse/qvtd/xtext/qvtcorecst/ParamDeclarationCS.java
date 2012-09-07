@@ -29,5 +29,5 @@ import org.eclipse.ocl.examples.xtext.base.baseCST.TypedElementCS;
  * @model
  * @generated
  */
-public interface ParamDeclarationCS extends EObject, TypedElementCS {
+public interface ParamDeclarationCS extends TypedElementCS {
 } // ParamDeclarationCS

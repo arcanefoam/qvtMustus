@@ -23,7 +23,7 @@ import org.eclipse.ocl.examples.xtext.essentialocl.essentialOCLCST.ExpCS;
  * @model
  * @generated
  */
-public interface AssignmentCS extends EObject, ExpCS {
+public interface AssignmentCS extends ExpCS {
 	/**
 	 * Returns the value of the '<em><b>Default</b></em>' attribute.
 	 * <!-- begin-user-doc -->

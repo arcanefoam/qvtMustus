@@ -32,9 +32,8 @@ import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.InternalEList;
 
 import org.eclipse.ocl.examples.pivot.OCLExpression;
+
 import org.eclipse.ocl.examples.pivot.internal.impl.OCLExpressionImpl;
-
-
 import org.eclipse.ocl.examples.pivot.util.Visitor;
 
 import org.eclipse.qvtd.pivot.qvtrelation.QVTrelationPackage;

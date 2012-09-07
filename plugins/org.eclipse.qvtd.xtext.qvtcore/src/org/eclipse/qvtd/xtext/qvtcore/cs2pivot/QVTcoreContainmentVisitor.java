@@ -21,10 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.ocl.examples.pivot.PivotPackage;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.utilities.PivotUtil;
+import org.eclipse.ocl.examples.xtext.base.baseCST.PathNameCS;
 import org.eclipse.ocl.examples.xtext.base.cs2pivot.BasicContinuation;
+import org.eclipse.ocl.examples.xtext.base.cs2pivot.CS2Pivot;
 import org.eclipse.ocl.examples.xtext.base.cs2pivot.CS2PivotConversion;
 import org.eclipse.ocl.examples.xtext.base.cs2pivot.Continuation;
 import org.eclipse.ocl.examples.xtext.base.cs2pivot.SingleContinuation;
@@ -33,6 +36,7 @@ import org.eclipse.qvtd.pivot.qvtbase.FunctionParameter;
 import org.eclipse.qvtd.pivot.qvtbase.QVTbasePackage;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
+import org.eclipse.qvtd.pivot.qvtbase.utilities.QVTbaseUtil;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
@@ -80,7 +84,14 @@ public class QVTcoreContainmentVisitor extends AbstractQVTcoreContainmentVisitor
 		@Override
 		public BasicContinuation<?> execute() {
 			CoreDomain pDomain = PivotUtil.getPivot(CoreDomain.class, csElement);
-			pDomain.setTypedModel(csElement.getDirection());
+			TypedModel direction = csElement.getDirection();
+			if (direction == null) {
+				Transformation transformation = QVTbaseUtil.getContainingTransformation(pDomain);
+				if (transformation != null) {
+					direction = transformation.getModelParameter(null);
+				}
+			}
+			pDomain.setTypedModel(direction);
 			return null;
 		}
 	}
@@ -124,6 +135,16 @@ public class QVTcoreContainmentVisitor extends AbstractQVTcoreContainmentVisitor
 	}
 
 	public Continuation<?> visitMappingCS(MappingCS csElement) {
+		if (csElement.eContainer() instanceof TopLevelCS) {
+			if (csElement.getName() == null) {
+				context.addDiagnostic(csElement, "top level mapping must be named");
+			}			
+		}
+		else {
+			if (csElement.getName() != null) {
+				context.addDiagnostic(csElement, "composed mapping must be unnamed");
+			}			
+		}
 		Mapping pivotElement = refreshNamedElement(Mapping.class, QVTcorePackage.Literals.MAPPING, csElement);
 		DomainCS csMiddle = csElement.getMiddle();
 		if (csMiddle != null) {
@@ -145,7 +166,12 @@ public class QVTcoreContainmentVisitor extends AbstractQVTcoreContainmentVisitor
 	}
 
 	public Continuation<?> visitQueryCS(QueryCS csElement) {
+		PathNameCS pathName = csElement.getPathName();
+		if (pathName != null) {
+			CS2Pivot.setElementType(pathName, PivotPackage.Literals.NAMESPACE, csElement, null);
+		}
 		Function pivotElement = refreshNamedElement(Function.class, QVTbasePackage.Literals.FUNCTION, csElement);
+		pivotElement.setIsStatic(true);
 		context.refreshPivotList(FunctionParameter.class, pivotElement.getOwnedParameter(), csElement.getInputParamDeclaration());
 		return null;
 	}
@@ -157,7 +183,7 @@ public class QVTcoreContainmentVisitor extends AbstractQVTcoreContainmentVisitor
 
 	public Continuation<?> visitTopLevelCS(TopLevelCS csElement) {
 		importPackages(csElement);
-		refreshPackage(CoreModel.class, QVTcorePackage.Literals.CORE_MODEL, csElement);
+		CoreModel pivotElement = refreshRoot(CoreModel.class, QVTcorePackage.Literals.CORE_MODEL, csElement);
 		List<TransformationCS> csTransformations = csElement.getTransformations();
 		List<Transformation> txList = new ArrayList<Transformation>(csTransformations.size());
 		Map<Transformation, List<Mapping>> tx2mappings = new HashMap<Transformation, List<Mapping>>();
@@ -166,8 +192,14 @@ public class QVTcoreContainmentVisitor extends AbstractQVTcoreContainmentVisitor
 			tx2mappings.put(pTransformation, new ArrayList<Mapping>());
 			txList.add(pTransformation);
 		}
-		org.eclipse.ocl.examples.pivot.Package pPackage = PivotUtil.getPivot(org.eclipse.ocl.examples.pivot.Package.class, csElement);
+		CoreModel pPackage = PivotUtil.getPivot(CoreModel.class, csElement);
 		PivotUtil.refreshList(pPackage.getNestedPackage(), txList);
+		//
+		Resource eResource = csElement.eResource();
+		if ((eResource != null) && (pivotElement != null)) {
+			context.installRootElement(eResource, pivotElement);		// Ensure containment viable for imported library type references
+//			importPackages(csElement);			// FIXME This has to be after refreshPackage which is irregular and prevents local realization of ImportCS etc
+		}
 		//
 		for (MappingCS csMapping : csElement.getMappings()) {
 			Transformation inTransformation = csMapping.getIn();
@@ -179,8 +211,26 @@ public class QVTcoreContainmentVisitor extends AbstractQVTcoreContainmentVisitor
 				}
 			}
 		}
+		Map<Transformation, List<Function>> tx2qMap = new HashMap<Transformation, List<Function>>();
+		for (QueryCS csQuery : csElement.getQueries()) {
+			Transformation transformation = csQuery.getTransformation();
+			Function query = PivotUtil.getPivot(Function.class,  csQuery);
+			List<Function> queries = tx2qMap.get(transformation);
+			if (queries == null) {
+				queries = new ArrayList<Function>();
+				tx2qMap.put(transformation, queries);
+			}
+			queries.add(query);
+		}
 		for (Transformation pTransformation : tx2mappings.keySet()) {
 			PivotUtil.refreshList(pTransformation.getRule(), tx2mappings.get(pTransformation));
+			List<Function> newElements = tx2qMap.get(pTransformation);
+			if (newElements != null) {
+				PivotUtil.refreshList(pTransformation.getOwnedOperation(), newElements);
+			}
+			else {
+				pTransformation.getOwnedOperation().clear();
+			}
 		}
 //		context.refreshPivotList(Type.class, pivotElement.getOwnedType(), csElement.getOwnedType());
 //		context.refreshPivotList(org.eclipse.ocl.examples.pivot.Package.class, pivotElement.getNestedPackage(), csElement.getOwnedNestedPackage());
@@ -188,6 +238,10 @@ public class QVTcoreContainmentVisitor extends AbstractQVTcoreContainmentVisitor
 	}
 
 	public Continuation<?> visitTransformationCS(TransformationCS csElement) {
+		PathNameCS pathName = csElement.getPathName();
+		if (pathName != null) {
+			CS2Pivot.setElementType(pathName, PivotPackage.Literals.NAMESPACE, csElement, null);
+		}
 		Transformation pivotElement = refreshPackage(Transformation.class, QVTbasePackage.Literals.TRANSFORMATION, csElement);
 //		context.refreshPivotList(Mapping.class, pivotElement.getRule(), csElement.getMapping());
 		context.refreshPivotList(TypedModel.class, pivotElement.getModelParameter(), csElement.getDirections());

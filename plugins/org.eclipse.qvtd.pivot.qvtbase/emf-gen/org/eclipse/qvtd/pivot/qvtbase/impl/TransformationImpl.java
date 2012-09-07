@@ -27,6 +27,7 @@ import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.EObjectContainmentWithInverseEList;
+import org.eclipse.emf.ecore.util.EObjectResolvingEList;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.ocl.examples.pivot.Annotation;
@@ -36,6 +37,7 @@ import org.eclipse.ocl.examples.pivot.Precedence;
 import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.internal.impl.ClassImpl;
 import org.eclipse.ocl.examples.pivot.util.Visitor;
+import org.eclipse.ocl.examples.pivot.utilities.PivotUtil;
 import org.eclipse.qvtd.pivot.qvtbase.Function;
 import org.eclipse.qvtd.pivot.qvtbase.QVTbasePackage;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
@@ -54,7 +56,7 @@ import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
  *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getNestingPackage <em>Nesting Package</em>}</li>
  *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getNsPrefix <em>Ns Prefix</em>}</li>
  *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getNsURI <em>Ns URI</em>}</li>
- *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getOwnedPrecedence <em>Owned Precedence</em>}</li>
+ *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getImportedPackage <em>Imported Package</em>}</li>
  *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getOwnedType <em>Owned Type</em>}</li>
  *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getOwnedTag <em>Owned Tag</em>}</li>
  *   <li>{@link org.eclipse.qvtd.pivot.qvtbase.impl.TransformationImpl#getModelParameter <em>Model Parameter</em>}</li>
@@ -117,14 +119,14 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 	protected String nsURI = NS_URI_EDEFAULT;
 
 	/**
-	 * The cached value of the '{@link #getOwnedPrecedence() <em>Owned Precedence</em>}' containment reference list.
+	 * The cached value of the '{@link #getImportedPackage() <em>Imported Package</em>}' reference list.
 	 * <!-- begin-user-doc -->
 	 * <!-- end-user-doc -->
-	 * @see #getOwnedPrecedence()
+	 * @see #getImportedPackage()
 	 * @generated
 	 * @ordered
 	 */
-	protected EList<Precedence> ownedPrecedence;
+	protected EList<org.eclipse.ocl.examples.pivot.Package> importedPackage;
 
 	/**
 	 * The cached value of the '{@link #getOwnedType() <em>Owned Type</em>}' containment reference list.
@@ -295,11 +297,11 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public EList<Precedence> getOwnedPrecedence() {
-		if (ownedPrecedence == null) {
-			ownedPrecedence = new EObjectContainmentEList<Precedence>(Precedence.class, this, QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE);
+	public EList<org.eclipse.ocl.examples.pivot.Package> getImportedPackage() {
+		if (importedPackage == null) {
+			importedPackage = new EObjectResolvingEList<org.eclipse.ocl.examples.pivot.Package>(org.eclipse.ocl.examples.pivot.Package.class, this, QVTbasePackage.TRANSFORMATION__IMPORTED_PACKAGE);
 		}
-		return ownedPrecedence;
+		return importedPackage;
 	}
 
 	/**
@@ -404,17 +406,6 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
-	public TypedModel getModelParameter(String name) {
-		// TODO: implement this method
-		// Ensure that you remove @generated or mark it @generated NOT
-		throw new UnsupportedOperationException();
-	}
-
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public NotificationChain eInverseAdd(InternalEObject otherEnd, int featureID, NotificationChain msgs) {
@@ -447,8 +438,6 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 				return ((InternalEList<?>)getNestedPackage()).basicRemove(otherEnd, msgs);
 			case QVTbasePackage.TRANSFORMATION__NESTING_PACKAGE:
 				return basicSetNestingPackage(null, msgs);
-			case QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE:
-				return ((InternalEList<?>)getOwnedPrecedence()).basicRemove(otherEnd, msgs);
 			case QVTbasePackage.TRANSFORMATION__OWNED_TYPE:
 				return ((InternalEList<?>)getOwnedType()).basicRemove(otherEnd, msgs);
 			case QVTbasePackage.TRANSFORMATION__OWNED_TAG:
@@ -491,8 +480,8 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 				return getNsPrefix();
 			case QVTbasePackage.TRANSFORMATION__NS_URI:
 				return getNsURI();
-			case QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE:
-				return getOwnedPrecedence();
+			case QVTbasePackage.TRANSFORMATION__IMPORTED_PACKAGE:
+				return getImportedPackage();
 			case QVTbasePackage.TRANSFORMATION__OWNED_TYPE:
 				return getOwnedType();
 			case QVTbasePackage.TRANSFORMATION__OWNED_TAG:
@@ -530,9 +519,9 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 			case QVTbasePackage.TRANSFORMATION__NS_URI:
 				setNsURI((String)newValue);
 				return;
-			case QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE:
-				getOwnedPrecedence().clear();
-				getOwnedPrecedence().addAll((Collection<? extends Precedence>)newValue);
+			case QVTbasePackage.TRANSFORMATION__IMPORTED_PACKAGE:
+				getImportedPackage().clear();
+				getImportedPackage().addAll((Collection<? extends org.eclipse.ocl.examples.pivot.Package>)newValue);
 				return;
 			case QVTbasePackage.TRANSFORMATION__OWNED_TYPE:
 				getOwnedType().clear();
@@ -577,8 +566,8 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 			case QVTbasePackage.TRANSFORMATION__NS_URI:
 				setNsURI(NS_URI_EDEFAULT);
 				return;
-			case QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE:
-				getOwnedPrecedence().clear();
+			case QVTbasePackage.TRANSFORMATION__IMPORTED_PACKAGE:
+				getImportedPackage().clear();
 				return;
 			case QVTbasePackage.TRANSFORMATION__OWNED_TYPE:
 				getOwnedType().clear();
@@ -615,8 +604,8 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 				return NS_PREFIX_EDEFAULT == null ? nsPrefix != null : !NS_PREFIX_EDEFAULT.equals(nsPrefix);
 			case QVTbasePackage.TRANSFORMATION__NS_URI:
 				return NS_URI_EDEFAULT == null ? nsURI != null : !NS_URI_EDEFAULT.equals(nsURI);
-			case QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE:
-				return ownedPrecedence != null && !ownedPrecedence.isEmpty();
+			case QVTbasePackage.TRANSFORMATION__IMPORTED_PACKAGE:
+				return importedPackage != null && !importedPackage.isEmpty();
 			case QVTbasePackage.TRANSFORMATION__OWNED_TYPE:
 				return ownedType != null && !ownedType.isEmpty();
 			case QVTbasePackage.TRANSFORMATION__OWNED_TAG:
@@ -644,7 +633,7 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 				case QVTbasePackage.TRANSFORMATION__NESTING_PACKAGE: return PivotPackage.PACKAGE__NESTING_PACKAGE;
 				case QVTbasePackage.TRANSFORMATION__NS_PREFIX: return PivotPackage.PACKAGE__NS_PREFIX;
 				case QVTbasePackage.TRANSFORMATION__NS_URI: return PivotPackage.PACKAGE__NS_URI;
-				case QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE: return PivotPackage.PACKAGE__OWNED_PRECEDENCE;
+				case QVTbasePackage.TRANSFORMATION__IMPORTED_PACKAGE: return PivotPackage.PACKAGE__IMPORTED_PACKAGE;
 				case QVTbasePackage.TRANSFORMATION__OWNED_TYPE: return PivotPackage.PACKAGE__OWNED_TYPE;
 				default: return -1;
 			}
@@ -665,7 +654,7 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 				case PivotPackage.PACKAGE__NESTING_PACKAGE: return QVTbasePackage.TRANSFORMATION__NESTING_PACKAGE;
 				case PivotPackage.PACKAGE__NS_PREFIX: return QVTbasePackage.TRANSFORMATION__NS_PREFIX;
 				case PivotPackage.PACKAGE__NS_URI: return QVTbasePackage.TRANSFORMATION__NS_URI;
-				case PivotPackage.PACKAGE__OWNED_PRECEDENCE: return QVTbasePackage.TRANSFORMATION__OWNED_PRECEDENCE;
+				case PivotPackage.PACKAGE__IMPORTED_PACKAGE: return QVTbasePackage.TRANSFORMATION__IMPORTED_PACKAGE;
 				case PivotPackage.PACKAGE__OWNED_TYPE: return QVTbasePackage.TRANSFORMATION__OWNED_TYPE;
 				default: return -1;
 			}
@@ -712,5 +701,14 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 	@Override
 	public <R> R accept(Visitor<R> visitor) {
 		return (R) visitor.getAdapter(QVTbaseVisitor.class).visitTransformation(this);
+	}
+
+	public TypedModel getModelParameter(String name) {
+		return PivotUtil.getNamedElement(getModelParameter(), name);
+	}
+
+	@Override
+	public Package getPackage() {
+		return this;
 	}
 } //TransformationImpl

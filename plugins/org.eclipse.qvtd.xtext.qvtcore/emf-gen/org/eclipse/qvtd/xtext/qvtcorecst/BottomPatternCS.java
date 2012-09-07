@@ -36,7 +36,7 @@ import org.eclipse.emf.ecore.EObject;
  * @model
  * @generated
  */
-public interface BottomPatternCS extends EObject, PatternCS {
+public interface BottomPatternCS extends PatternCS {
 	/**
 	 * Returns the value of the '<em><b>Enforcement Operations</b></em>' containment reference list.
 	 * The list contents are of type {@link org.eclipse.qvtd.xtext.qvtcorecst.EnforcementOperationCS}.

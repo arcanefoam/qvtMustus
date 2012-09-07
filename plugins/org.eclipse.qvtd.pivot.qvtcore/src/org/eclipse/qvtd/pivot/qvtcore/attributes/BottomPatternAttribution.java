@@ -20,8 +20,13 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.ocl.examples.pivot.scoping.AbstractAttribution;
 import org.eclipse.ocl.examples.pivot.scoping.EnvironmentView;
 import org.eclipse.ocl.examples.pivot.scoping.ScopeView;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
+import org.eclipse.qvtd.pivot.qvtbase.utilities.QVTbaseUtil;
+import org.eclipse.qvtd.pivot.qvtcore.Area;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
-import org.eclipse.qvtd.pivot.qvtcore.GuardPattern;
+import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
+import org.eclipse.qvtd.pivot.qvtcore.Mapping;
 
 public class BottomPatternAttribution extends AbstractAttribution
 {
@@ -29,11 +34,24 @@ public class BottomPatternAttribution extends AbstractAttribution
 
 	@Override
 	public ScopeView computeLookup(EObject target, EnvironmentView environmentView, ScopeView scopeView) {
-		BottomPattern bottomPattern = (BottomPattern)target;
-		environmentView.addNamedElements(bottomPattern.getRealizedVariable());
-		environmentView.addNamedElements(bottomPattern.getVariable());
-		GuardPattern guardPattern = bottomPattern.getArea().getGuardPattern();
-		environmentView.addNamedElements(guardPattern.getVariable());
+		Area area = ((BottomPattern)target).getArea();
+		if (area instanceof Mapping) {
+			Mapping mapping = (Mapping)area;;
+			Transformation transformation = QVTbaseUtil.getContainingTransformation(mapping);
+			for (TypedModel typedModel : transformation.getModelParameter()) {
+				for (org.eclipse.ocl.examples.pivot.Package pPackage : typedModel.getUsedPackage()) {
+					environmentView.addNamedElement(pPackage);
+					environmentView.addNamedElements(pPackage.getOwnedType());
+				}
+			}
+			QVTcoreEnvironmentUtil.addMiddleBottomVariables(environmentView, mapping);
+		}
+		else {
+			CoreDomain domain = (CoreDomain)area;
+			TypedModel typedModel = domain.getTypedModel();
+			Mapping mapping = (Mapping) domain.getRule();
+			QVTcoreEnvironmentUtil.addSideBottomVariables(environmentView, mapping, typedModel);
+		}
 		return scopeView.getParent();
 	}
 }

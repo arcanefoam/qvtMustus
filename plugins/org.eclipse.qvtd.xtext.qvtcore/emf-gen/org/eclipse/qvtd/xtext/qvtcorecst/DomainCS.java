@@ -38,7 +38,7 @@ import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
  * @model
  * @generated
  */
-public interface DomainCS extends EObject, AreaCS {
+public interface DomainCS extends AreaCS {
 	/**
 	 * Returns the value of the '<em><b>Check</b></em>' attribute.
 	 * <!-- begin-user-doc -->
