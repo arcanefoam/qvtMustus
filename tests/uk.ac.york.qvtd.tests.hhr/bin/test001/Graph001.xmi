@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="ASCII"?>
+<simplegraph:Graph
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:simplegraph="http://cs.york.ac.uk/SimpleGraph/1.0"
+    xsi:schemaLocation="http://cs.york.ac.uk/SimpleGraph/1.0 SimpleGraph.ecore">
+  <elements
+      xsi:type="simplegraph:Node"
+      incoming="//@elements.3"
+      outgoing="//@elements.1"
+      label="York"/>
+  <elements
+      xsi:type="simplegraph:Edge"
+      target="//@elements.2"
+      source="//@elements.0"/>
+  <elements
+      xsi:type="simplegraph:Node"
+      incoming="//@elements.1 //@elements.10"
+      outgoing="//@elements.4 //@elements.3"
+      label="Stansted"/>
+  <elements
+      xsi:type="simplegraph:Edge"
+      target="//@elements.0"
+      source="//@elements.2"/>
+  <elements
+      xsi:type="simplegraph:Edge"
+      target="//@elements.5"
+      source="//@elements.2"/>
+  <elements
+      xsi:type="simplegraph:Node"
+      incoming="//@elements.4"
+      outgoing="//@elements.6"
+      label="Munich"/>
+  <elements
+      xsi:type="simplegraph:Edge"
+      target="//@elements.7"
+      source="//@elements.5"/>
+  <elements
+      xsi:type="simplegraph:Node"
+      incoming="//@elements.6"
+      outgoing="//@elements.8"
+      label="Innsbruck"/>
+  <elements
+      xsi:type="simplegraph:Edge"
+      target="//@elements.9"
+      source="//@elements.7"/>
+  <elements
+      xsi:type="simplegraph:Node"
+      incoming="//@elements.8"
+      outgoing="//@elements.10"
+      label="Stuttgart"/>
+  <elements
+      xsi:type="simplegraph:Edge"
+      target="//@elements.2"
+      source="//@elements.9"/>
+</simplegraph:Graph>

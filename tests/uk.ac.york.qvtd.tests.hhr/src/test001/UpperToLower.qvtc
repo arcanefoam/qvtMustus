@@ -1,0 +1,48 @@
+import SimpleGraph : 'SimpleGraph.ecore'::simplegraph;
+import SimpleGraph2Graph : 'SimpleGraph2Graph.ecore'::simplegraph2graph;
+
+transformation copyGraph {
+	upperGraph imports SimpleGraph;
+	lowerGraph imports SimpleGraph;
+	imports SimpleGraph2Graph;
+}
+
+map graph2graph in copyGraph {
+	check upperGraph() {
+		g1:Graph |
+	}
+	check lowerGraph() {
+		g2:Graph |
+	}
+	where() {
+		g2g:Graph2Graph |
+		g2g.graph1 = g1;
+		g2g.graph2 = g2;
+	}
+
+}
+
+map node2node in copyGraph {
+	check upperGraph(g1:Graph |) {
+		n1:Node |
+	}
+	check lowerGraph(g2:Graph |) {
+		n2:Node |
+	}
+	where (g2g:Graph2Graph |
+		g2g.graph1 = g1;
+		g2g.graph2 = g2;) {
+		n2n:Node2Node |
+			n2n.owner := g2g;
+			n2n.node1 := n1;
+			n2n.node2 := n2;
+	}
+	map {
+		where() {
+			n2n.label := n1.label;
+			n2n.label := n2.label;
+			n1.label := n2n.label;
+			n2.label := n2n.label;
+		}
+	}
+}
