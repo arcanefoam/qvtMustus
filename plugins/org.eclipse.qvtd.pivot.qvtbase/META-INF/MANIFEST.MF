@@ -8,6 +8,7 @@ Bundle-Vendor: %providerName
 Bundle-Localization: plugin
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Export-Package: org.eclipse.qvtd.pivot.qvtbase,
+ org.eclipse.qvtd.pivot.qvtbase.evaluation,
  org.eclipse.qvtd.pivot.qvtbase.impl,
  org.eclipse.qvtd.pivot.qvtbase.util,
  org.eclipse.qvtd.pivot.qvtbase.utilities
