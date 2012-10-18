@@ -29,7 +29,7 @@ import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtbase.Unit;
 import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 
-public class QVTbaseEvaluationVisitorImpl extends EvaluationVisitorImpl implements QVTbaseVisitor<Value> {
+public class QVTbaseEvaluationVisitorImpl extends EvaluationVisitorImpl implements QVTbaseVisitor<Object> {
 
 	/**
 	 * Constructor

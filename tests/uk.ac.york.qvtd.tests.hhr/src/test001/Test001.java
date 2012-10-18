@@ -3,22 +3,18 @@ package test001;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.ocl.examples.domain.utilities.ProjectMap;
-import org.eclipse.ocl.examples.pivot.ecore.Ecore2Pivot;
-import org.eclipse.ocl.examples.pivot.Root;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManagerResourceSetAdapter;
 import org.eclipse.ocl.examples.pivot.utilities.PivotResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.BaseCSResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.qvtd.pivot.qvtbase.BaseModel;
-import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 import org.eclipse.qvtd.pivot.qvtcore.QVTcorePivotStandaloneSetup;
-import org.eclipse.emf.ecore.EObject;
+import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEvaluationVisitorImpl;
+import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -65,19 +61,27 @@ public class Test001 {
 			// Load the input model from a ResourceSet for the given URI
 			Resource inputResource = resourceSet.getResource(URI.createURI(inputModelURI), true);
 			
-			// Create a new Resource to be the middle model
-			
+			// Create a new Resource for the output model
+			// TODO  this assumes that the output model does not exist and therefore 
+			// it is the target modelo by default. There mus be a way to configure
+			// this
+			Resource outputResource = resourceSet.getResource(URI.createURI(outputModelURI), true);
 			
 			// Load the qvtc file
-			BaseCSResource xtextResource = createXtextFromURI(metaModelManager, URI.createURI(qvtcSource));
-			PivotResource pivotResource = createPivotFromXtext(metaModelManager, xtextResource);
+			BaseCSResource xtextResource = null;
+			PivotResource pivotResource = null;
+			try {
+				xtextResource = createXtextFromURI(metaModelManager, URI.createURI(qvtcSource));
+				pivotResource = createPivotFromXtext(metaModelManager, xtextResource);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 			BaseModel baseModel = (BaseModel) pivotResource.getContents().get(0);
-			QVTbaseEvaluationVisitor visitor = new QVTcoreEvaluationVisitorImpl(metaModelManager, pivotResource, inputModel, middleModel, outputModel);
-			
-			
-			
-			Value result = baseModel.accept(visitor);
-			outputModel.save();
+			QVTcoreVisitor visitor = new QVTcoreEvaluationVisitorImpl(metaModelManager, pivotResource, inputResource, outputResource);
+			Object result = baseModel.accept(visitor);
+			//outputModel.save();
 			
 			
 		} finally {

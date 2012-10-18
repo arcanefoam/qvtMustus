@@ -10,11 +10,14 @@
  ******************************************************************************/
 package org.eclipse.qvtd.pivot.qvtcore.evaluation;
 
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.domain.values.Value;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
+import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
+import org.eclipse.ocl.examples.pivot.utilities.PivotResource;
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTbaseEvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtcore.Assignment;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
@@ -29,12 +32,18 @@ import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtcore.VariableAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 
-public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl implements QVTcoreVisitor<Value> {
+public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl implements QVTcoreVisitor<Object> {
 
 	public QVTcoreEvaluationVisitorImpl(Environment env,
 			EvaluationEnvironment evalEnv, DomainModelManager modelManager) {
 		super(env, evalEnv, modelManager);
 		// TODO Auto-generated constructor stub
+	}
+	
+	public QVTcoreEvaluationVisitorImpl(MetaModelManager metaModelManager, PivotResource qvtcResource, Resource inputModel, Resource outputModel) {
+		super(null, null, null);
+		System.out.println("QVTcoreEvaluationVisitor created");
+		
 	}
 
 	@Nullable
