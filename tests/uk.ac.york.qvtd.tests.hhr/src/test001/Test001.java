@@ -63,15 +63,16 @@ public class Test001 {
 			
 			// Create a new Resource for the output model
 			// TODO  this assumes that the output model does not exist and therefore 
-			// it is the target modelo by default. There mus be a way to configure
+			// it is the target model  by default. There must be a way to configure
 			// this
-			Resource outputResource = resourceSet.getResource(URI.createURI(outputModelURI), true);
+			Resource outputResource = resourceSet.createResource(URI.createURI(outputModelURI));
 			
 			// Load the qvtc file
 			BaseCSResource xtextResource = null;
 			PivotResource pivotResource = null;
 			try {
-				xtextResource = createXtextFromURI(metaModelManager, URI.createURI(qvtcSource));
+				//xtextResource = createXtextFromURI(metaModelManager, URI.createURI(qvtcSource));
+				xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(qvtcSource), true);
 				pivotResource = createPivotFromXtext(metaModelManager, xtextResource);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -79,7 +80,7 @@ public class Test001 {
 			}
 			
 			BaseModel baseModel = (BaseModel) pivotResource.getContents().get(0);
-			QVTcoreVisitor visitor = new QVTcoreEvaluationVisitorImpl(metaModelManager, pivotResource, inputResource, outputResource);
+			QVTcoreVisitor<Object> visitor = new QVTcoreEvaluationVisitorImpl(metaModelManager, pivotResource, inputResource, outputResource);
 			Object result = baseModel.accept(visitor);
 			//outputModel.save();
 			
