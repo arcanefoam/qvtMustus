@@ -16,7 +16,7 @@ map graph2graph in copyGraph {
 	}
 	where() {
 		g2g:Graph2Graph |
-		g2g.graph1 = 1;
+		g2g.graph1 = g1;
 		g2g.graph2 = g2;
 	}
 }
