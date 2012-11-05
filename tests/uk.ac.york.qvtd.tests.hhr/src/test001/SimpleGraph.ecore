@@ -14,9 +14,12 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//Node"
         eOpposite="#//Node/outgoing"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Element" abstract="true"/>
+  <eClassifiers xsi:type="ecore:EClass" name="Element" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="graph" lowerBound="1" eType="#//Graph"
+        eOpposite="#//Graph/elements"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Graph">
     <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
-        eType="#//Element" containment="true"/>
+        eType="#//Element" containment="true" eOpposite="#//Element/graph"/>
   </eClassifiers>
 </ecore:EPackage>

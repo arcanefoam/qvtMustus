@@ -8,10 +8,10 @@ transformation copyGraph {
 }
 
 map graph2graph in copyGraph {
-	check upperGraph() {
+	upperGraph() {
 		g1:Graph |
 	}
-	check lowerGraph() {
+	check enforce lowerGraph() {
 		g2:Graph |
 	}
 	where() {
@@ -19,15 +19,16 @@ map graph2graph in copyGraph {
 		g2g.graph1 = g1;
 		g2g.graph2 = g2;
 	}
-
 }
 
 map node2node in copyGraph {
-	check upperGraph(g1:Graph |) {
+	upperGraph(g1:Graph |) {
 		n1:Node |
+		n1.graph = g1;
 	}
-	check lowerGraph(g2:Graph |) {
+	check enforce lowerGraph(g2:Graph |) {
 		n2:Node |
+		n2.graph = g2;
 	}
 	where (g2g:Graph2Graph |
 		g2g.graph1 = g1;

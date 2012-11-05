@@ -2,11 +2,16 @@ package test001;
 
 import java.io.IOException;
 
+import org.eclipse.emf.common.util.URI;
+
 import static org.junit.Assert.*;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.Resource.Factory;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
+import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
+import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.domain.utilities.ProjectMap;
 import org.eclipse.ocl.examples.library.executor.LazyModelManager;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotEvaluationEnvironment;
@@ -19,6 +24,7 @@ import org.eclipse.ocl.examples.pivot.utilities.PivotResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.BaseCSResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
+import org.eclipse.qvtd.pivot.qvtbase.evaluation.QvtModelManager;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEVNodeTypeImpl;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
@@ -38,6 +44,7 @@ public class Test001 extends LoadTestCase {
 	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/Graph001.xmi";
 	private final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/Graph001Lower.xmi";
 	private final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/UpperToLower.qvtc";
+	private final String middleMetaModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/SimpleGraph2Graph.ecore";
 	
 	private static ProjectMap projectMap = null;
 	
@@ -75,30 +82,42 @@ public class Test001 extends LoadTestCase {
 			// this
 			Resource outputResource = resourceSet.createResource(URI.createURI(outputModelURI));
 			
+			// Create a resource for the middle model: load the metamodel as a resource
+			// so we can use it to create EObjects that reflect the EClasses in the mm
+			//resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put( "ecore", new EcoreResourceFactoryImpl());
+			Resource middleResource = resourceSet.getResource(URI.createURI(middleMetaModelURI), true);
+			
+			
+			
 			// Load the qvtc file
 			BaseCSResource xtextResource = null;
-			PivotResource pivotResource = null;
+			PivotResource qvtResource = null;
 			try {
 				//xtextResource = createXtextFromURI(metaModelManager, URI.createURI(qvtcSource));
 				xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(qvtcSource), true);
-				pivotResource = createPivotFromXtext(metaModelManager, xtextResource);
+				qvtResource = createPivotFromXtext(metaModelManager, xtextResource);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			CoreModel coreModel = (CoreModel) pivotResource.getContents().get(0);
+			CoreModel coreModel = (CoreModel) qvtResource.getContents().get(0);
 			// This is to pass the correct arguments to the constructor, but I don't
 			// really understand their use. 
 			// TODO check this with Ed
 			PivotEnvironmentFactory envFactory = new PivotEnvironmentFactory(null, metaModelManager);
 			PivotEnvironment env = envFactory.createEnvironment();
 			PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
-			LazyModelManager modelManager = new PivotModelManager(metaModelManager, coreModel);
-			//
-			QVTcoreVisitor<Object> visitor = new QVTcoreEVNodeTypeImpl(env, evalEnv, modelManager, pivotResource, inputResource, outputResource);
+			QvtModelManager modelManager = new QvtModelManager(metaModelManager, coreModel, 2);
+			modelManager.addModel("upperGraph", inputResource);
+			modelManager.addModel("lowerGraph", outputResource);
+			// In the CST the middle moddle has no name
+			// TODO verify this
+			modelManager.addModel("", middleResource);
+			//QVTcoreVisitor<Object> visitor = new QVTcoreEVNodeTypeImpl(env, evalEnv, modelManager, qvtResource);
+			QVTcoreVisitor<Object> visitor = new QVTcoreEVNodeTypeImpl(env, evalEnv, modelManager, qvtResource);
 			Object result = coreModel.accept(visitor);
-			assertNull("QVTcoreEVNodeTypeImpl should always return null.", result);
+			assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", result);
+			System.out.println("Result of the transformation was " + (Boolean)result);
 			//outputModel.save();
 			
 		} finally {
