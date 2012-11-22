@@ -27,6 +27,7 @@ import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingS
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QvtModelManager;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEVNodeTypeImpl;
+import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTicoreEVImpl;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
 import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
@@ -43,7 +44,7 @@ public class Test001 extends LoadTestCase {
 	
 	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/Graph001.xmi";
 	private final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/Graph001Lower.xmi";
-	private final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/UpperToLower.qvtc";
+	private final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/UpperToLower.qvti.qvtc";
 	private final String middleMetaModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test001/SimpleGraph2Graph.ecore";
 	
 	private static ProjectMap projectMap = null;
@@ -108,13 +109,15 @@ public class Test001 extends LoadTestCase {
 			PivotEnvironment env = envFactory.createEnvironment();
 			PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
 			QvtModelManager modelManager = new QvtModelManager(metaModelManager, coreModel, 2);
+			/* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
 			modelManager.addModel("upperGraph", inputResource);
 			modelManager.addModel("lowerGraph", outputResource);
-			// In the CST the middle moddle has no name
+			// In the CST the middle modle has no name
 			// TODO verify this
 			modelManager.addModel("", middleResource);
+			
 			//QVTcoreVisitor<Object> visitor = new QVTcoreEVNodeTypeImpl(env, evalEnv, modelManager, qvtResource);
-			QVTcoreVisitor<Object> visitor = new QVTcoreEVNodeTypeImpl(env, evalEnv, modelManager, qvtResource);
+			QVTcoreVisitor<Object> visitor = new QVTicoreEVImpl(env, evalEnv, modelManager);
 			Object result = coreModel.accept(visitor);
 			assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", result);
 			System.out.println("Result of the transformation was " + (Boolean)result);

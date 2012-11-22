@@ -23,13 +23,12 @@ import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
-import org.eclipse.ocl.examples.pivot.utilities.PivotResource;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
-import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTbaseEVNodeTypeImpl;
+import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTiBaseEVImpl;
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QvtModelManager;
 import org.eclipse.qvtd.pivot.qvtcore.Assignment;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
@@ -46,18 +45,35 @@ import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 
 
 
-public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTcoreVisitor<Object> {
+/**
+ * The Class QVTicoreEVImpl. This is the Evaluation Visitor for the QVTi language
+ */
+public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Object> {
 
-	public QVTcoreEVNodeTypeImpl(@NonNull Environment env,
+	/**
+	 * Instantiates a new qV ticore ev impl.
+	 *
+	 * @param env the env
+	 * @param evalEnv the eval env
+	 * @param modelManager the model manager
+	 */
+	public QVTicoreEVImpl(@NonNull Environment env,
 			@NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
 		super(env, evalEnv, modelManager);
 		// TODO Auto-generated constructor stub
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitCoreModel(org.eclipse.qvtd.pivot.qvtcore.CoreModel)
+	 */
 	@Nullable
 	public Object visitCoreModel(@NonNull CoreModel coreModel) {
 		// CoreModel has a transformation (nestedPackage)
 		Transformation transformation =	((Transformation)coreModel.getNestedPackage().get(0));
+		// Initialise the variable map
+		if(varMap == null) {
+			varMap = new HashMap<String, HashSet<EObject>>();
+		}
 		// A transformation has a set of mappings
 		for(Rule rule : transformation.getRule()){
 			Object accept = ((Mapping)rule).accept(this);
@@ -72,15 +88,12 @@ public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTc
 		return true;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitMapping(org.eclipse.qvtd.pivot.qvtcore.Mapping)
+	 */
 	@Nullable
 	public Object visitMapping(@NonNull Mapping mapping) {
-		// Initialise the variable map
 		System.out.println("mapping " + mapping.getName());
-		if(varMap == null) {
-			// TODO When Mapping.getAllVariables() is implemented, use it so the map has the exact size
-			//varMap = new HashMap<String, TreeSet<EObject>>(mapping.getAllVariables().size());
-			varMap = new HashMap<String, HashSet<EObject>>();
-		}
 		// Domains
 		for(Domain domain : mapping.getDomain()){
 			Object accept = ((CoreDomain)domain).accept(this);
@@ -106,6 +119,9 @@ public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTc
 		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitCoreDomain(org.eclipse.qvtd.pivot.qvtcore.CoreDomain)
+	 */
 	@Nullable
 	public Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
 		System.out.println("coreDomain " + coreDomain.getName());
@@ -119,36 +135,41 @@ public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTc
 	}
 	
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitGuardPattern(org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
+	 */
 	@Nullable
 	public Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
 		
-		for(Variable var : guardPattern.getVariable()) {
-			/* There are two options for GuardPatterns. In the DomainGuardPattern
-			 * we are defining the variables that must exist (and their
-			 * constraints) previously created by other domains. In the 
-			 * MiddleGuardPattern we define the associations
-			 * that must exist in the middle model.
-			 */
-			// Variables used in the guard must always been defined previously? 
-			if(!varMap.containsKey(var.getName())) {
-				// The guard is not met
-				return false;
-			}
-			// No matter what specific type of GuardPatter, we must check
-			// that the variable has bindings to the elements of the correct type
-			for(EObject e : varMap.get(var.getName())) {
-				if(!e.eClass().getName().endsWith(var.getType().getName())) {
-					return false;
+		// Each GuardPatter introduces zero or one unbounded variable
+		if(guardPattern.getVariable().size() > 0) {
+			Variable var = guardPattern.getVariable().get(0);
+			// Get all the objects from the TypeModel of the Domain that have the same
+			// type as the variable
+			TypedModel m = ((CoreDomain)guardPattern.getArea()).getTypedModel();
+			HashSet<EObject> objectSet = new HashSet<>();
+			// TODO How to use the allInstances?
+			Resource resource = ((QvtModelManager)modelManager).getTypeModelResource(m);
+			for (TreeIterator<EObject> contents = resource.getAllContents(); contents.hasNext();) {
+				EObject object = contents.next();
+				if (object.eClass().getName().equals(var.getType().getName())) {
+					objectSet.add(object);
 				}
 			}
-		}
-		// TODO verify that the Predicate is a BooleanOCLExpr, is the spec wrong and should be OCLExpr ?
-		for(Predicate predicate : guardPattern.getPredicate()) {
-			predicate.accept(this);
+			// Bind the variable to the elements of the model
+			varMap.put(var.getName(), objectSet);
+			// TODO verify that the Predicate is a BooleanOCLExpr, is the spec wrong and should be OCLExpr ?
+			// Use the predicate to filter the variables to match the predicates
+			for(Predicate predicate : guardPattern.getPredicate()) {
+				predicate.accept(this);
+			}
 		}
 		return true;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitBottomPattern(org.eclipse.qvtd.pivot.qvtcore.BottomPattern)
+	 */
 	@Nullable
 	public Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
 		// TODO Add visit function or decide if it should never be implemented
@@ -225,6 +246,9 @@ public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTc
 		return true;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitAssignment(org.eclipse.qvtd.pivot.qvtcore.Assignment)
+	 */
 	@Nullable
 	public Object visitAssignment(Assignment assignment) {
 		// TODO Add visit function or decide if it should never be implemented
@@ -233,6 +257,9 @@ public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTc
 		return null;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitPropertyAssignment(org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment)
+	 */
 	@Nullable
 	public Object visitPropertyAssignment(PropertyAssignment propertyAssignment) {
 		// TODO Add visit function or decide if it should never be implemented
@@ -245,6 +272,9 @@ public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTc
 	}
 	
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitEnforcementOperation(org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation)
+	 */
 	@Nullable
 	public Object visitEnforcementOperation(EnforcementOperation enforcementOperation) {
 		// TODO Add visit function or decide if it should never be implemented
@@ -255,18 +285,40 @@ public class QVTcoreEVNodeTypeImpl extends QVTbaseEVNodeTypeImpl implements QVTc
 
 	
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitCorePattern(org.eclipse.qvtd.pivot.qvtcore.CorePattern)
+	 */
 	@Nullable
 	public Object visitCorePattern(@NonNull CorePattern corePattern) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitRealizedVariable(org.eclipse.qvtd.pivot.qvtcore.RealizedVariable)
+	 */
 	@Nullable
-	public Object visitRealizedVariable(RealizedVariable object) {
+	public Object visitRealizedVariable(@NonNull RealizedVariable var) {
 		// TODO Add visit function or decide if it should never be implemented
-		throw new UnsupportedOperationException("Visit method not implemented yet");
+		//throw new UnsupportedOperationException("Visit method not implemented yet");
+		// This creates elements in the output model
+		
+		//1. Create an element in the output model that has a kind equal to the variable type
+		// TODO Implement this by creating the outputFactory.
+		//EClass clazz = (EClass)middleFactory.getEPackage().getEClassifier(var.getType().getName());
+		//EObject varObject = middleFactory.create(clazz);
+		//middleModel.add(varObject);
+		// How do we tell the predicate to find this EObject? We have to
+		// create a the association in the varMap
+		//HashSet<EObject> objectSet = new HashSet<>();
+		//objectSet.add(varObject);
+		//varMap.put(var.getName(), objectSet);
+		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitVariableAssignment(org.eclipse.qvtd.pivot.qvtcore.VariableAssignment)
+	 */
 	@Nullable
 	public Object visitVariableAssignment(VariableAssignment object) {
 		// TODO Add visit function or decide if it should never be implemented

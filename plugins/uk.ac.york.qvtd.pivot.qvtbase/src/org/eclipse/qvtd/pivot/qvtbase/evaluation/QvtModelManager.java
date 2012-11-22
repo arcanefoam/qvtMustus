@@ -11,14 +11,14 @@
 package org.eclipse.qvtd.pivot.qvtbase.evaluation;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
+import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 
 
 /**
@@ -28,8 +28,9 @@ import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
  */
 public class QvtModelManager extends PivotModelManager {
 
-	
-	private HashMap<String, HashSet<Resource>> modelMap;
+	// Only one resource per TypedModel TODO how to manage aliases?
+	private HashMap<TypedModel, Resource> modelMap;
+	private CoreModel context;
 	
 	/**
 	 * Instantiates a new qvt model manager.
@@ -39,35 +40,40 @@ public class QvtModelManager extends PivotModelManager {
 	 */
 	public QvtModelManager(@NonNull MetaModelManager metaModelManager, EObject context, int modelCount) {
 		super(metaModelManager, context);
+		this.context = (CoreModel)context;
 		this.modelMap = new HashMap<>(modelCount);
 				
 	}
 	
 	/**
-	 * Adds the model to the list of models identified by the typed model name.
+	 * Adds the model to the list of models identified by the typed model, by
+	 * looking for a typedModel with the parameter name. If a model was already
+	 * binded to the TypedModel it will be replaced.
 	 *
-	 * @param typedModelName the typedModel name
+	 * @param typedModel the typedModel
 	 * @param model the model
 	 */
 	public void addModel(String typedModelName, Resource model) {
-		if(modelMap.containsKey(typedModelName)) {
-			modelMap.get(typedModelName).add(model);
-		} else {
-			HashSet<Resource> set = new HashSet<Resource>();
-			set.add(model);
-			modelMap.put(typedModelName, set);
-		}
+		// Get the typeModel from the typedModelName
+		// CoreModel has a transformation (nestedPackage)
+		// TODO what if a qvt file has multiple transformations?
+		Transformation transformation =	((Transformation)context.getNestedPackage().get(0));
+		modelMap.put(transformation.getModelParameter(typedModelName), model);
 	}
 	
 	
 	/**
-	 * Gets the models for a given typeModel (by name)
+	 * Gets the model (resource) for a given TypedModel.
 	 *
-	 * @param typeModelName the type model name
-	 * @return the models
+	 * @param typedModel the typed model
+	 * @return the resource
 	 */
-	public Set<Resource> getTypeModelModels(String typeModelName) {
-		return modelMap.get(typeModelName);
+	public Resource getTypeModelResource(TypedModel typedModel) {
+		return modelMap.get(typedModel);
+	}
+	
+	public CoreModel getContext() {
+		return this.context;
 	}
 	
 

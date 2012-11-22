@@ -47,7 +47,7 @@ import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 /**
  * The Class QVTbaseEVNodeTypeImpl.
  */
-public class QVTbaseEVNodeTypeImpl extends EvaluationVisitorImpl implements QVTbaseVisitor<Object> {
+public class QVTiBaseEVImpl extends EvaluationVisitorImpl implements QVTbaseVisitor<Object> {
 	
 
 	/** The middle factory to create EObjects from the middle metamodel. */
@@ -71,7 +71,7 @@ public class QVTbaseEVNodeTypeImpl extends EvaluationVisitorImpl implements QVTb
 	 * @param evalEnv the eval env
 	 * @param modelManager a map of classes to their instance lists
 	 */
-	public QVTbaseEVNodeTypeImpl( @NonNull Environment env,  @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
+	public QVTiBaseEVImpl( @NonNull Environment env,  @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
 		super(env, evalEnv, modelManager);
 		Transformation transformation =	(Transformation)((QvtModelManager)modelManager).getContext().getNestedPackage().get(0);
 		Resource mr = ((QvtModelManager)modelManager).getTypeModelResource(transformation.getModelParameter(""));
@@ -136,59 +136,12 @@ public class QVTbaseEVNodeTypeImpl extends EvaluationVisitorImpl implements QVTb
 		// If the patter is a BottomPattern the predicate defines bindings
 		
 		// Each predicate has a conditionExpression that is an OCLExpression
-		// Do we need a if/switch depending on the type of OCLExpression?
-		// TODO How to handle OCL invalid?
-		// TODO Do we test that it is a "=" Operation?
-		// Analysing the pattern is the same for both
-		// 1. First case, associate middle model elements to input model elements
-		// a. Find the variable/value, which is the OCLExp arg
-		OperationCallExp exp = (OperationCallExp)predicate.getConditionExpression();
-		String argName = null;
-		for(OCLExpression argExp : exp.getArgument()) {
-			// Can we have more than one expression?
-			if(argExp.getClass().equals(UnlimitedNaturalLiteralExpImpl.class)) {
-				// TODO Value assignment
-			}
-			if(argExp.getClass().equals(VariableExpImpl.class)) {
-				// Variable assignment
-				argName = ((VariableExpImpl)argExp).getReferredVariable().getName();
-				// Get the reference to the element of the model
-			}
-		}
-		// b. Get the middle model object, by finding the variable or the source
-		String sourceName = ((VariableExp)((PropertyCallExp)exp.getSource()).getSource()).getReferredVariable().getName();
-		HashSet<EObject> middleObjects = varMap.get(sourceName);
-		String attr = ((PropertyCallExp)exp.getSource()).getReferredProperty().getName();
-		for(EObject e : middleObjects){
-			for(EStructuralFeature a : e.eClass().getEStructuralFeatures()){
-				if(a.getName().equals(attr)) {
-					// FIXME Is there a way to get the class without a circular import?
-					System.out.println(predicate.getPattern());
-					System.out.println(predicate.getPattern().eClass().getName());
-					if(predicate.getPattern().eClass().getName().equals("GuardPattern")) {
-						// A pattern validates the value
-						if(varMap.get(argName).size() > 0) {
-							if(!varMap.get(argName).iterator().next().equals(e.eGet(a))) {
-								// TODO error finishes or do we continue and keep count?
-								return false;
-							}
-						}
-					} else {
-						// An pattern binds a variable attribute to a value
-						// c. Get the attribute of the object to assign the var/value to
-						// TODO What if indeed the variable is binded to multiple objects?
-						// FIXME How to deal with enforce domains where the variable
-						// has no biding? What does this mean for a guard?
-						if(varMap.get(argName).size() > 0) {
-							e.eSet(a, varMap.get(argName).iterator().next());
-						}
-						
-					}
-					break;
-				}
-			}
-		}
-		return true;	// The binding was possible
+		OCLExpression exp = predicate.getConditionExpression();
+		/* 
+		 * There has to be some type of interpretation of the OCL expression
+		 */
+		Object expResult = exp.accept(this);
+		return true;	// The OCL expression evaluated to true;
 	}
 
 	/* (non-Javadoc)
