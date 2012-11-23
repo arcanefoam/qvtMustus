@@ -26,6 +26,8 @@ import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.OperationCallExp;
 import org.eclipse.ocl.examples.pivot.PropertyCallExp;
+import org.eclipse.ocl.examples.pivot.Type;
+import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
@@ -49,9 +51,11 @@ import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
  */
 public class QVTiBaseEVImpl extends EvaluationVisitorImpl implements QVTbaseVisitor<Object> {
 	
-
 	/** The middle factory to create EObjects from the middle metamodel. */
 	protected EFactory middleFactory;
+	
+	/** The output factory to create EObjects from the output metamodel. */
+	protected EFactory outputFactory;
 	
 	protected Set<EObject> middleModel;
 	
@@ -62,7 +66,7 @@ public class QVTiBaseEVImpl extends EvaluationVisitorImpl implements QVTbaseVisi
 		we keep a separate reference of the variables in the area?
 	*/ 
 	// FIXME Probably the List of objects is more useful as an ArrayList
-	protected HashMap<String, HashSet<EObject>> varMap;
+	protected HashMap<Variable, HashSet<EObject>> varMap;
 
 	/**
 	 * Constructor.
@@ -79,6 +83,7 @@ public class QVTiBaseEVImpl extends EvaluationVisitorImpl implements QVTbaseVisi
 		middleFactory = model.getEFactoryInstance();
 		// For creating the middleModel we need a model to hold the elements, which is basically a set
 		middleModel = new HashSet<EObject>();
+		
 	}
 
 
@@ -138,8 +143,17 @@ public class QVTiBaseEVImpl extends EvaluationVisitorImpl implements QVTbaseVisi
 		// Each predicate has a conditionExpression that is an OCLExpression
 		OCLExpression exp = predicate.getConditionExpression();
 		/* 
-		 * There has to be some type of interpretation of the OCL expression
+		 * There has to be some type of interpretation of the OCL expression. For
+		 * this we need to create a new context for the evaluation of the OCL
+		 * expression that has the model that contains the elements used in the
+		 * expression. 
 		 */
+		//1. Identify the model owner of the variables used in the expression
+		// (all variables should belong to the same model?)
+		// The predicate evaluates a constraints on the variables of the pattern,
+		// then from one of this variables we can identify the model.
+		// (MiddleBottomPatterns don't have predicates
+		Type varType = predicate.getPattern().getBindsTo().get(0).getType();
 		Object expResult = exp.accept(this);
 		return true;	// The OCL expression evaluated to true;
 	}
