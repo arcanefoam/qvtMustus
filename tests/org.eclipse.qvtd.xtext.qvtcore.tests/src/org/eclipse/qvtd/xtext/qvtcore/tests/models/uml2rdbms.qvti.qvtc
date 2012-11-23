@@ -170,8 +170,8 @@ map packageToSchema in umlRdbms {
 				col.name := att2col.name;
 				col.kind := att2col.kind;
 				col.owner := tab;
-				col.key = Set{};
-				col.foreignKey = Set{};
+				col.key := Set{};
+				col.foreignKey := Set{};
 			}
 			map {
 				where (prim2name : PrimitiveToName | prim2name = att2col.type;) {

@@ -38,6 +38,7 @@ map graph2graph in copyGraph {
 			n2n.node1 := n1;
 			n2n.node2 := n2;
 			n2n.label := n1.label;
+			n2.graph := g2;
 			n2.label := n2n.label;
 			
 		}
