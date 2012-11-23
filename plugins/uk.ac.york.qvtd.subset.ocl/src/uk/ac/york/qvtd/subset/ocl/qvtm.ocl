@@ -9,6 +9,7 @@
  *     hhoyos - initial API and implementation
  ******************************************************************************/
 import qvtc : 'http://www.eclipse.org/qvt/0.9/QVTcore'
+include 'qvtu.ocl'
 
 package qvtcore
 

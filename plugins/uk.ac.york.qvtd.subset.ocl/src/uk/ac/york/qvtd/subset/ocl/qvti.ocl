@@ -10,6 +10,7 @@
  ******************************************************************************/
 
 import qvtc : 'http://www.eclipse.org/qvt/0.9/QVTcore'
+include 'qvtm.ocl'
 
 package qvtcore
 
