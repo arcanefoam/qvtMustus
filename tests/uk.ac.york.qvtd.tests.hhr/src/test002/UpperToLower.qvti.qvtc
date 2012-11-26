@@ -1,0 +1,40 @@
+import SimpleGraph : 'SimpleGraph.ecore'::simplegraph;
+import SimpleGraph2Graph : 'SimpleGraph2Graph.ecore'::simplegraph2graph;
+
+transformation copyGraph {
+	upperGraph imports SimpleGraph;
+	lowerGraph imports SimpleGraph;
+	imports SimpleGraph2Graph;
+}
+
+/* 
+ * Don't use realize keywords on the two initial domains indicates that both models must exist and at least have the root node defined?
+ */
+map graph2graph in copyGraph {
+     check upperGraph() {
+		g1:Graph |
+     }
+--    enforce lowerGraph() {}
+     where () {
+         /* Although in the example is not realized, all middle model variables should be realized
+          * or does the middle model is also expected to have at least the initial element? Yes, the ModelManager should
+		  create the initial element as part on initialising the
+		  middle model */
+        realize g2g:Graph2Graph |
+--        g2g.graph1 := g1;
+        g2g.name := g1.name;
+     }
+     map {
+--        check upperGraph() {}
+         enforce lowerGraph() {
+             /* Enforced domains should at least have one realized variable?*/
+             realize g2:Graph |
+         }
+         where () {
+--            g2g.graph2 := g2;
+             g2.name := g2g.name;
+         }
+     }
+}
+
+

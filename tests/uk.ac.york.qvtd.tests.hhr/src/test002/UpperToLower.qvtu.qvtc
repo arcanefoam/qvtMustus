@@ -11,7 +11,7 @@ transformation copyGraph {
  * Don't use realize keywords on the two initial domains indicates that both models must exist and at least have the root node defined?
  */
 map graph2graph in copyGraph {
-	upperGraph() {
+	check upperGraph() {
 		g1:Graph |
 	}
 	check enforce lowerGraph() {
@@ -28,15 +28,15 @@ map graph2graph in copyGraph {
 	map {
 		where () {
 			g2g.name := g1.name;
-			g2g.name := g2.name;
-			g1.name := g2g.name;
 			g2.name := g2g.name;
+			g1.name = g2g.name;
+			g2g.name = g2.name;
 		}
 	}
 }
 
 map node2node in copyGraph {
-	upperGraph(g1:Graph |) {
+	check upperGraph(g1:Graph |) {
 		n1:Node |
 		n1.graph = g1;
 	}
@@ -55,9 +55,9 @@ map node2node in copyGraph {
 	map {
 		where () {
 			n2n.label := n1.label;
-			n2n.label := n2.label;
-			n1.label := n2n.label;
 			n2.label := n2n.label;
+			n2n.label = n2.label;	/* Removed the assignment */
+			n1.label = n2n.label;	/* Removed the assignment */
 		}
 	}
 }

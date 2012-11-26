@@ -12,9 +12,12 @@ package org.eclipse.qvtd.pivot.qvtcore.evaluation;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
+import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcoreFactory;
@@ -23,16 +26,20 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
+import org.eclipse.ocl.examples.pivot.OCLExpression;
+import org.eclipse.ocl.examples.pivot.Property;
 import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.Variable;
+import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
-import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTiBaseEVImpl;
+import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTiBaseEVImplTrivial;
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QvtModelManager;
+import org.eclipse.qvtd.pivot.qvtcore.Area;
 import org.eclipse.qvtd.pivot.qvtcore.Assignment;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
@@ -51,10 +58,7 @@ import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 /**
  * The Class QVTicoreEVImpl. This is the Evaluation Visitor for the QVTi language
  */
-public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Object> {
-	
-	
-	private Resource outputResource;
+public class QVTicoreEVImplTrivial extends QVTiBaseEVImplTrivial implements QVTcoreVisitor<Object> {
 	
 	/**
 	 * Instantiates a new qV ticore ev impl.
@@ -63,7 +67,7 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 	 * @param evalEnv the eval env
 	 * @param modelManager the model manager
 	 */
-	public QVTicoreEVImpl(@NonNull Environment env,
+	public QVTicoreEVImplTrivial(@NonNull Environment env,
 			@NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
 		super(env, evalEnv, modelManager);
 		// TODO Auto-generated constructor stub
@@ -111,16 +115,15 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 				}
 			}
 		}
-		// MiddleGuardPattern (aka where guard)
-		boolean guardMet = (Boolean)mapping.getGuardPattern().accept(this);
-		if(guardMet == true) {
-			// Only visit the rest of the mappping if the guard is met
-			// MiddleBottomPattern (aka where clause)
-			mapping.getBottomPattern().accept(this);
-			// Nested mappings
-			for(Mapping localMapping : mapping.getLocal()) {
-				localMapping.accept(this);
-			}
+		// Trivial example does not have guards
+		//boolean guardMet = (Boolean)mapping.getGuardPattern().accept(this);
+		
+		// MiddleBottomPattern (aka where clause)
+		mapping.getBottomPattern().accept(this);
+		
+		// Nested mappings
+		for(Mapping localMapping : mapping.getLocal()) {
+			localMapping.accept(this);
 		}
 		return null;
 	}
@@ -131,26 +134,10 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 	@Nullable
 	public Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
 		System.out.println("coreDomain " + coreDomain.getName());
-		/* If the domain is enforced then we know it is the output domain and we
-		 * can create the factory and the reference to the resource to load created elements
-		 */
-		if(coreDomain.isIsEnforceable()) {
-			if (outputResource == null) {
-				outputResource = ((QvtModelManager)modelManager).getTypeModelResource(coreDomain.getTypedModel());
-				EcoreFactory theCoreFactory = EcoreFactory.eINSTANCE;
-				EPackage outputEPackage = theCoreFactory.createEPackage();
-				outputEPackage.setName(outputResource.getURI().lastSegment().split("\\.")[0]);
-				outputResource.getContents().add(outputEPackage);
-				outputFactory = outputEPackage.getEFactoryInstance();
-			}
-		}
 		// DomainGuardPattern
-		boolean guardMet = (Boolean)coreDomain.getGuardPattern().accept(this);
-		if(guardMet == true) {
-			// Only visit the DomainBottomPattern if the guard is met
-			return coreDomain.getBottomPattern().accept(this);
-		}
-		return true;
+		// Trivial example does not have guards
+		//boolean guardMet = (Boolean)coreDomain.getGuardPattern().accept(this);
+		return coreDomain.getBottomPattern().accept(this);
 	}
 	
 	
@@ -159,33 +146,10 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 	 */
 	@Nullable
 	public Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
-		
-		// Each GuardPatter introduces zero or one unbounded variable
-		if(guardPattern.getVariable().size() > 0) {
-			Variable var = guardPattern.getVariable().get(0);
-			// Get all the objects from the TypeModel of the Domain that have the same
-			// type as the variable
-			TypedModel m = ((CoreDomain)guardPattern.getArea()).getTypedModel();
-			HashSet<EObject> objectSet = new HashSet<>();
-			// TODO How to use the allInstances?
-			Resource resource = ((QvtModelManager)modelManager).getTypeModelResource(m);
-			for (TreeIterator<EObject> contents = resource.getAllContents(); contents.hasNext();) {
-				EObject object = contents.next();
-				if (object.eClass().getName().equals(var.getType().getName())) {
-					objectSet.add(object);
-				}
-			}
-			// Bind the variable to the elements of the model
-			varMap.put(var, objectSet);
-			// TODO verify that the Predicate is a BooleanOCLExpr, is the spec wrong and should be OCLExpr ?
-			// Use the predicate to filter the variables to match the predicates
-			for(Predicate predicate : guardPattern.getPredicate()) {
-				predicate.accept(this);
-			}
-		}
-		return true;
+		// Trivial examples should not have guard patterns
+		throw new UnsupportedOperationException("Trivial examples should not have guard patterns");
 	}
-	
+		
 	/* (non-Javadoc)
 	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitBottomPattern(org.eclipse.qvtd.pivot.qvtcore.BottomPattern)
 	 */
@@ -236,13 +200,15 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 				// by creating the associations defined in the constraints?
 				// The type of objects depends on the var type
 				//1. Create an element in the middle model that has a kind equal to the variable type
-				EClass clazz = (EClass)middleFactory.getEPackage().getEClassifier(var.getType().getName());
-				EObject varObject = middleFactory.create(clazz);
-				middleModel.add(varObject);
+				// TODO get the factory from the model manager
+				//EClass clazz = (EClass)middleFactory.getEPackage().getEClassifier(var.getType().getName());
+				//EObject varObject = middleFactory.create(clazz);
+				//middleModel.getContents().add(varObject);
+				
 				// How do we tell the predicate to find this EObject? We have to
 				// create a the association in the varMap
 				HashSet<EObject> objectSet = new HashSet<>();
-				objectSet.add(varObject);
+				//objectSet.add(varObject);
 				varMap.put(var, objectSet);
 			}
 		}
@@ -252,7 +218,7 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 		}
 		// TODO Only enforce domains can have realized variables
 		for(RealizedVariable var : bottomPattern.getRealizedVariable()) {
-			var.accept(this); // No idea what this will do
+			var.accept(this);
 		}
 		// TODO Only enforce domains can have assignments
 		for(Assignment assigment : bottomPattern.getAssignment()){
@@ -270,9 +236,7 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 	@Nullable
 	public Object visitAssignment(@NonNull Assignment assignment) {
 		// TODO Add visit function or decide if it should never be implemented
-		
-		assignment.getValue().accept(this);
-		return null;
+		throw new UnsupportedOperationException("Visit to assigments shuld be to the specific type.");
 	}
 	
 	/* (non-Javadoc)
@@ -280,13 +244,38 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 	 */
 	@Nullable
 	public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
-		// TODO Add visit function or decide if it should never be implemented
-		
-		// TODO check this when we know what to do with OCL things
-		//propertyAssignment.getValue().accept(this);
-		//propertyAssignment.getSlotExpression().accept(this);
-		//propertyAssignment.getTargetProperty().accept(this);
+		// We need to supply the OCLExpression accept method with a visitor
+		// that provides values (context) for the variables:
+		for(Map.Entry<Variable, HashSet<EObject>> entry : varMap.entrySet()) {
+			// Assume there is only one match per variable
+			Variable var = entry.getKey();
+			Object o = entry.getValue().iterator().next();
+			if(var != null) {
+				evaluationEnvironment.add(var, o);
+			}
+		}
+		Object value = propertyAssignment.getValue().accept(this);
+		OCLExpression exp = propertyAssignment.getSlotExpression(); 
+		if(exp instanceof VariableExp ) {
+			Variable var = (Variable) ((VariableExp)exp).getReferredVariable();
+			// Assume there is only one match per variable
+			EObject element = (EObject) varMap.get(var).iterator().next();
+			// TODO what happens if the target property is not a simple attribute
+			// (e.g. can not find it by name)
+			String feature = (String)propertyAssignment.getTargetProperty().getName();
+			element.eSet(element.eClass().getEStructuralFeature(feature), value);
+		}
+		// Get the Object represented by the property, again 1 object per variable
 		return null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitVariableAssignment(org.eclipse.qvtd.pivot.qvtcore.VariableAssignment)
+	 */
+	@Nullable
+	public Object visitVariableAssignment(@NonNull VariableAssignment object) {
+		// TODO Add visit function or decide if it should never be implemented
+		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 	
 
@@ -319,22 +308,25 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 	public Object visitRealizedVariable(@NonNull RealizedVariable var) {
 		// This creates elements in the middle or output model
 		// 1.Identify to what model does the variable belongs to:
-
-		if( ((BottomPattern)var.eContainer()).getArea().eContainer().eClass().isInstance(CoreDomain.class)) {
+		if( ((BottomPattern)var.eContainer()).getArea() instanceof CoreDomain) {
 			// The model is the output model, input model (domains) does not have realized variables
 			//2. Create an element in the output model that has a kind equal to the variable type
+			EFactory outputFactory = ((QvtModelManager)modelManager).getTypeModelFactory(
+					((CoreDomain)((BottomPattern)var.eContainer()).getArea()).getTypedModel());
 			EClass clazz = (EClass)outputFactory.getEPackage().getEClassifier(var.getType().getName());
 			EObject varObject = outputFactory.create(clazz);
-			outputResource.getContents().add(varObject);
+			((QvtModelManager)modelManager).getTypeModelResource(
+					((CoreDomain)((BottomPattern)var.eContainer()).getArea()).getTypedModel()).getContents().add(varObject);
 			//3. Create the variable binding
 			HashSet<EObject> objectSet = new HashSet<>();
 			objectSet.add(varObject);
 			varMap.put(var, objectSet);
 		} else { // The BottomPattern owner is a Mapping, mapping always references the middle model
 			//2. Create an element in the middle  model that has a kind equal to the variable type
-			EClass clazz = (EClass)middleFactory.getEPackage().getEClassifier(var.getType().getName());
-			EObject varObject = middleFactory.create(clazz);
-			middleModel.add(varObject);
+			EFactory f = ((QvtModelManager)modelManager).getMiddleFactory();
+			EClass clazz = (EClass)f.getEPackage().getEClassifier(var.getType().getName());
+			EObject varObject = ((QvtModelManager)modelManager).getMiddleFactory().create(clazz);
+			((QvtModelManager)modelManager).getMiddleModel().getContents().add(varObject);
 			//3. Create the variable binding
 			HashSet<EObject> objectSet = new HashSet<>();
 			objectSet.add(varObject);
@@ -342,14 +334,6 @@ public class QVTicoreEVImpl extends QVTiBaseEVImpl implements QVTcoreVisitor<Obj
 		}
 		return true;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitVariableAssignment(org.eclipse.qvtd.pivot.qvtcore.VariableAssignment)
-	 */
-	@Nullable
-	public Object visitVariableAssignment(@NonNull VariableAssignment object) {
-		// TODO Add visit function or decide if it should never be implemented
-		throw new UnsupportedOperationException("Visit method not implemented yet");
-	}
+	
 	
 }

@@ -1,4 +1,4 @@
-package test001;
+package test002;
 
 import java.io.IOException;
 
@@ -41,7 +41,7 @@ import org.junit.Test;
  * @author hhoyos
  *
  */
-public class Test001 extends LoadTestCase {
+public class Test002 extends LoadTestCase {
 	
 	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/Graph002.xmi";
 	private final String inputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/SimpleGraph.ecore";
@@ -127,6 +127,8 @@ public class Test001 extends LoadTestCase {
 				//modelManager.saveTrace();
 				modelManager.dispose();
 			}
+			
+			
 		} finally {
 			metaModelManager.dispose();
 		}

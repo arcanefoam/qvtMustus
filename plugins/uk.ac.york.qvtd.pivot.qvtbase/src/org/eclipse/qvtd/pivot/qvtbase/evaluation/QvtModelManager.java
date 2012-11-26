@@ -10,9 +10,17 @@
  ******************************************************************************/
 package org.eclipse.qvtd.pivot.qvtbase.evaluation;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
@@ -30,7 +38,10 @@ public class QvtModelManager extends PivotModelManager {
 
 	// Only one resource per TypedModel TODO how to manage aliases?
 	private HashMap<TypedModel, Resource> modelMap;
+	private HashMap<TypedModel, EFactory> factoryMap;
 	private CoreModel context;
+	private EFactory middleFactory;
+	private Resource middleModel;
 	
 	/**
 	 * Instantiates a new qvt model manager.
@@ -42,6 +53,7 @@ public class QvtModelManager extends PivotModelManager {
 		super(metaModelManager, context);
 		this.context = (CoreModel)context;
 		this.modelMap = new HashMap<>(modelCount);
+		this.factoryMap = new HashMap<>(modelCount);
 				
 	}
 	
@@ -53,12 +65,14 @@ public class QvtModelManager extends PivotModelManager {
 	 * @param typedModel the typedModel
 	 * @param model the model
 	 */
-	public void addModel(String typedModelName, Resource model) {
+	public void addModel(String typedModelName, @NonNull Resource model, @NonNull Resource metamodel) {
 		// Get the typeModel from the typedModelName
 		// CoreModel has a transformation (nestedPackage)
 		// TODO what if a qvt file has multiple transformations?
 		Transformation transformation =	((Transformation)context.getNestedPackage().get(0));
 		modelMap.put(transformation.getModelParameter(typedModelName), model);
+		EPackage mEPackage = (EPackage)metamodel.getContents().get(0);
+		factoryMap.put(transformation.getModelParameter(typedModelName), mEPackage.getEFactoryInstance());
 	}
 	
 	
@@ -68,12 +82,78 @@ public class QvtModelManager extends PivotModelManager {
 	 * @param typedModel the typed model
 	 * @return the resource
 	 */
-	public Resource getTypeModelResource(TypedModel typedModel) {
+	public Resource getTypeModelResource(@NonNull TypedModel typedModel) {
 		return modelMap.get(typedModel);
 	}
 	
+	public EFactory getTypeModelFactory(@NonNull TypedModel typedModel) {
+		return factoryMap.get(typedModel);
+	}
+	
+	
 	public CoreModel getContext() {
 		return this.context;
+	}
+	
+	public Collection<Resource> getAllModelResources() {
+		return modelMap.values();
+	}
+
+	public void createMiddleModel(@NonNull Resource metamodel) {
+		// TODO Auto-generated method stub
+		middleModel = new ResourceImpl();
+		EPackage mEPackage = (EPackage)metamodel.getContents().get(0);
+		middleFactory = mEPackage.getEFactoryInstance();
+	}
+	
+	public void createMiddleModelWithTrace(@NonNull Resource model, @NonNull Resource metamodel) {
+		// TODO Auto-generated method stub
+		middleModel = model;
+		EPackage mEPackage = (EPackage)metamodel.getContents().get(0);
+		middleFactory = mEPackage.getEFactoryInstance();
+	}
+	
+	public EFactory getMiddleFactory() {
+		return this.middleFactory;
+	}
+	
+	public Resource getMiddleModel() {
+		return this.middleModel;
+	}
+
+	public void saveModels() {
+		for (Map.Entry<TypedModel, Resource> entry : modelMap.entrySet()) {
+		    Resource value = entry.getValue();
+		    try{
+		        /*
+		        * Save the resource
+		        */
+		          value.save(null);
+		       }catch (IOException e) {
+		          e.printStackTrace();
+		       }
+		}
+		
+	}
+
+	public void saveTrace() {
+		try{
+	        /*
+	        * Save the resource
+	        */
+			middleModel.save(null);
+	       }catch (IOException e) {
+	          e.printStackTrace();
+	       }
+	}
+
+	public void dispose() {
+		// TODO Auto-generated method stub
+		modelMap = null;
+		factoryMap = null;
+		middleFactory = null;
+		middleModel = null;
+		
 	}
 	
 

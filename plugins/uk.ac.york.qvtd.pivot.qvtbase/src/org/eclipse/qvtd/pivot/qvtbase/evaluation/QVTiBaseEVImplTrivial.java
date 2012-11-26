@@ -17,22 +17,17 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EFactory;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
+import org.eclipse.emf.ecore.EcoreFactory;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
-import org.eclipse.ocl.examples.pivot.OperationCallExp;
-import org.eclipse.ocl.examples.pivot.PropertyCallExp;
 import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.Variable;
-import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
-import org.eclipse.ocl.examples.pivot.internal.impl.UnlimitedNaturalLiteralExpImpl;
-import org.eclipse.ocl.examples.pivot.internal.impl.VariableExpImpl;
 import org.eclipse.qvtd.pivot.qvtbase.BaseModel;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Function;
@@ -49,16 +44,7 @@ import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 /**
  * The Class QVTbaseEVNodeTypeImpl.
  */
-public class QVTiBaseEVImpl extends EvaluationVisitorImpl implements QVTbaseVisitor<Object> {
-	
-	/** The middle factory to create EObjects from the middle metamodel. */
-	protected EFactory middleFactory;
-	
-	/** The output factory to create EObjects from the output metamodel. */
-	protected EFactory outputFactory;
-	
-	// TODO make this a EPackage so it is easier to serialise
-	protected Set<EObject> middleModel;
+public class QVTiBaseEVImplTrivial extends EvaluationVisitorImpl implements QVTbaseVisitor<Object> {
 	
 	// Hashmap for variables. This keeps track of the binding of a variable
 	// to a model object
@@ -76,15 +62,8 @@ public class QVTiBaseEVImpl extends EvaluationVisitorImpl implements QVTbaseVisi
 	 * @param evalEnv the eval env
 	 * @param modelManager a map of classes to their instance lists
 	 */
-	public QVTiBaseEVImpl( @NonNull Environment env,  @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
-		super(env, evalEnv, modelManager);
-		Transformation transformation =	(Transformation)((QvtModelManager)modelManager).getContext().getNestedPackage().get(0);
-		Resource mr = ((QvtModelManager)modelManager).getTypeModelResource(transformation.getModelParameter(""));
-		EPackage model = (EPackage)mr.getContents().get(0);
-		middleFactory = model.getEFactoryInstance();
-		// For creating the middleModel we need a model to hold the elements, which is basically a set
-		middleModel = new HashSet<EObject>();
-		
+	public QVTiBaseEVImplTrivial( @NonNull Environment env,  @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
+		super(env, evalEnv, modelManager);	
 	}
 
 
