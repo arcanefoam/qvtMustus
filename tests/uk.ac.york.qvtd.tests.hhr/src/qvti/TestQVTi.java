@@ -1,21 +1,15 @@
-package test002;
+package qvti;
 
 import java.io.IOException;
-
-import org.eclipse.emf.common.util.URI;
 
 import static org.junit.Assert.*;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.Resource.Factory;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
-import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.domain.utilities.ProjectMap;
-import org.eclipse.ocl.examples.library.executor.LazyModelManager;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotEvaluationEnvironment;
-import org.eclipse.ocl.examples.pivot.evaluation.PivotModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManagerResourceSetAdapter;
 import org.eclipse.ocl.examples.pivot.utilities.PivotEnvironment;
@@ -26,8 +20,6 @@ import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QvtModelManager;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
-import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEVNodeTypeImpl;
-import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTicoreEVImpl;
 import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTicoreEVImplTrivial;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
@@ -41,7 +33,7 @@ import org.junit.Test;
  * @author hhoyos
  *
  */
-public class Test002 extends LoadTestCase {
+public class TestQVTi extends LoadTestCase {
 	
 	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/Graph002.xmi";
 	private final String inputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/SimpleGraph.ecore";
@@ -101,10 +93,15 @@ public class Test002 extends LoadTestCase {
 			try {
 				//xtextResource = createXtextFromURI(metaModelManager, URI.createURI(qvtcSource));
 				xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(qvtcSource), true);
-				qvtResource = createPivotFromXtext(metaModelManager, xtextResource);
+				if(xtextResource != null) {
+					qvtResource = createPivotFromXtext(metaModelManager, xtextResource);
+				}else {
+					fail("There was an error loading the QVTc file");
+				}
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				fail("There was an error loading the QVTc file");
 			}
 			if(qvtResource != null) {
 				CoreModel coreModel = (CoreModel) qvtResource.getContents().get(0);
@@ -116,9 +113,21 @@ public class Test002 extends LoadTestCase {
 				PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
 				QvtModelManager modelManager = new QvtModelManager(metaModelManager, coreModel, 2);
 				/* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
-				modelManager.addModel("upperGraph", inputResource, inputmm);
-				modelManager.addModel("lowerGraph", outputResource, outputmm);
-				modelManager.createMiddleModel(middlemm);
+				if(inputResource != null && inputmm != null) {
+					modelManager.addModel("upperGraph", inputResource, inputmm);
+				}else {
+					fail("There was an error loading the input model");
+				}
+				if(outputResource != null && outputmm != null) {
+					modelManager.addModel("lowerGraph", outputResource, outputmm);
+				}else {
+					fail("There was an error loading the output model");
+				}
+				if(middlemm != null) {
+					modelManager.createMiddleModel(middlemm);
+				}else {
+					fail("There was an error loading the middle metamodel");
+				}
 				QVTcoreVisitor<Object> visitor = new QVTicoreEVImplTrivial(env, evalEnv, modelManager);
 				Object sucess = coreModel.accept(visitor);
 				assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
@@ -127,8 +136,6 @@ public class Test002 extends LoadTestCase {
 				//modelManager.saveTrace();
 				modelManager.dispose();
 			}
-			
-			
 		} finally {
 			metaModelManager.dispose();
 		}
@@ -153,7 +160,7 @@ public class Test002 extends LoadTestCase {
 	}
 	
 	
-	public PivotResource createPivotFromXtext(MetaModelManager metaModelManager, BaseCSResource xtextResource) throws IOException {
+	public PivotResource createPivotFromXtext(MetaModelManager metaModelManager, @NonNull BaseCSResource xtextResource) throws IOException {
 		CS2PivotResourceAdapter adapter = null;
 		try {
 			adapter = CS2PivotResourceAdapter.getAdapter(xtextResource, null);
