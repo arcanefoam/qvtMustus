@@ -216,11 +216,9 @@ public class QVTicoreEVImplTrivial extends QVTiBaseEVImplTrivial implements QVTc
 		for(Predicate predicate : bottomPattern.getPredicate()) {
 			predicate.accept(this);
 		}
-		// TODO Only enforce domains can have realized variables
 		for(RealizedVariable var : bottomPattern.getRealizedVariable()) {
 			var.accept(this);
 		}
-		// TODO Only enforce domains can have assignments
 		for(Assignment assigment : bottomPattern.getAssignment()){
 			assigment.accept(this);
 		}
@@ -261,8 +259,8 @@ public class QVTicoreEVImplTrivial extends QVTiBaseEVImplTrivial implements QVTc
 			// Assume there is only one match per variable
 			EObject element = (EObject) varMap.get(var).iterator().next();
 			// TODO what happens if the target property is not a simple attribute
-			// (e.g. can not find it by name)
-			String feature = (String)propertyAssignment.getTargetProperty().getName();
+			// (e.g. cannot find it by name)
+			String feature = (String) propertyAssignment.getTargetProperty().getName();
 			element.eSet(element.eClass().getEStructuralFeature(feature), value);
 		}
 		// Get the Object represented by the property, again 1 object per variable

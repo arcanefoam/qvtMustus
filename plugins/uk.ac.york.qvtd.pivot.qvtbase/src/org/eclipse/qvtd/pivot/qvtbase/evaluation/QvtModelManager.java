@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
+import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
@@ -128,7 +129,9 @@ public class QvtModelManager extends PivotModelManager {
 		        /*
 		        * Save the resource
 		        */
-		          value.save(null);
+		    	Map<Object, Object> options = new HashMap<Object, Object>();
+		    	options.put(XMLResource.OPTION_SCHEMA_LOCATION, Boolean.TRUE);
+		        value.save(options);
 		       }catch (IOException e) {
 		          e.printStackTrace();
 		       }
