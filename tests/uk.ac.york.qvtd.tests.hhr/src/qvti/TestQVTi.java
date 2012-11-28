@@ -35,13 +35,13 @@ import org.junit.Test;
  */
 public class TestQVTi extends LoadTestCase {
 	
-	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/Graph002.xmi";
-	private final String inputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/SimpleGraph.ecore";
-	private final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/Graph002Lower.xmi";
-	private final String outputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/SimpleGraph.ecore";
-	private final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/UpperToLower.qvti.qvtc";
-	private final String middleMetaModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/test002/SimpleGraph2Graph.ecore";
-	
+	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphUpper.xmi";
+	private final String inputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
+	private final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphLower.xmi";
+	private final String outputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
+	private final String middleMetaModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph2Graph.ecore";
+	private final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/UpperToLowerTrivial.qvti.qvtc";
+		
 	private static ProjectMap projectMap = null;
 	
 	@Before
@@ -52,9 +52,25 @@ public class TestQVTi extends LoadTestCase {
     }
  
     @After
-    public void tearDown() {
-        
+    public void tearDown() throws Exception {
+		super.tearDown();
     }
+    
+    @Test
+    public void testTrivialQVTi() {
+    	
+    }
+    
+    @Test
+    public void testN2NNested() {
+    	
+    }
+    
+    @Test
+    public void testN2LessNGuarded() {
+    	
+    }
+    
 	
 	@Test
 	public void test() {
@@ -66,7 +82,7 @@ public class TestQVTi extends LoadTestCase {
 		 */
 		ResourceSet resourceSet = new ResourceSetImpl();
 		getProjectMap().initializeResourceSet(resourceSet);
-		MetaModelManager metaModelManager = new MetaModelManager();
+		metaModelManager = new MetaModelManager();
 		MetaModelManagerResourceSetAdapter.getAdapter(resourceSet, metaModelManager);
 		try {
 			// Load the input model from a ResourceSet for the given URI
@@ -137,7 +153,7 @@ public class TestQVTi extends LoadTestCase {
 				modelManager.dispose();
 			}
 		} finally {
-			metaModelManager.dispose();
+			
 		}
 		
 	}
@@ -178,5 +194,6 @@ public class TestQVTi extends LoadTestCase {
 			}
 		}
 	}
+
 
 }

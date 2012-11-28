@@ -121,6 +121,10 @@ public class QvtModelManager extends PivotModelManager {
 	public Resource getMiddleModel() {
 		return this.middleModel;
 	}
+	
+	public Collection<EFactory> getFactories() {
+		return factoryMap.values();
+	}
 
 	public void saveModels() {
 		for (Map.Entry<TypedModel, Resource> entry : modelMap.entrySet()) {

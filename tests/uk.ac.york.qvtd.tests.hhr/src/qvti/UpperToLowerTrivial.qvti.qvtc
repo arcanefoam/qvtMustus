@@ -1,5 +1,5 @@
-import SimpleGraph : 'SimpleGraph.ecore'::simplegraph;
-import SimpleGraph2Graph : 'SimpleGraph2Graph.ecore'::simplegraph2graph;
+import SimpleGraph : '../../model/SimpleGraph.ecore'::simplegraph;
+import SimpleGraph2Graph : '../../model/SimpleGraph2Graph.ecore'::simplegraph2graph;
 
 transformation copyGraph {
 	upperGraph imports SimpleGraph;
@@ -31,8 +31,31 @@ map graph2graph in copyGraph {
              realize g2:Graph |
          }
          where () {
---            g2g.graph2 := g2;
+             g2g.graph2 := g2;
              g2.name := g2g.name;
+         }
+         map {
+         	check upperGraph() {
+				n1:Node |
+		    }
+         	-- enforce lowerGraph() {}
+         	where () {
+				realize n2n:Node2Node |
+				n2n.owner := g2g;
+				n2n.node1 := n1;
+				n2n.label := n1.label;
+			}
+			map {
+				-- check upperGraph() {}
+				enforce lowerGraph() {
+					realize n2:Node |
+				}
+				where () {
+					-- n2n.node2 := n2;
+					n2.graph := n2n.owner.graph2;
+					n2.label := n2n.label;
+				}
+			}
          }
      }
 }
