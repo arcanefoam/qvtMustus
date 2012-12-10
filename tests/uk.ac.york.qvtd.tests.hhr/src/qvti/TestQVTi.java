@@ -18,7 +18,6 @@ import org.eclipse.ocl.examples.pivot.utilities.PivotResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.BaseCSResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
-import org.eclipse.qvtd.pivot.qvtbase.evaluation.QvtModelManager;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTicoreEVImplTrivial;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
@@ -27,6 +26,9 @@ import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
+import uk.ac.york.qvtd.library.executor.QvtModelManager;
 
 /**
  * Test001 is a set if simple tests on the QVTc API.
@@ -127,23 +129,21 @@ public class TestQVTi extends LoadTestCase {
 				PivotEnvironmentFactory envFactory = new PivotEnvironmentFactory(null, metaModelManager);
 				PivotEnvironment env = envFactory.createEnvironment();
 				PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
-				QvtModelManager modelManager = new QvtModelManager(metaModelManager, coreModel, 2);
+				
+				
+				QVTcDomainManager modelManager = new QVTcDomainManager(middlemm);
 				/* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
 				if(inputResource != null && inputmm != null) {
-					modelManager.addModel("upperGraph", inputResource, inputmm);
+					modelManager.addModel(coreModel, "upperGraph", inputResource, inputmm);
 				}else {
 					fail("There was an error loading the input model");
 				}
 				if(outputResource != null && outputmm != null) {
-					modelManager.addModel("lowerGraph", outputResource, outputmm);
+					modelManager.addModel(coreModel, "lowerGraph", outputResource, outputmm);
 				}else {
 					fail("There was an error loading the output model");
 				}
-				if(middlemm != null) {
-					modelManager.createMiddleModel(middlemm);
-				}else {
-					fail("There was an error loading the middle metamodel");
-				}
+				
 				QVTcoreVisitor<Object> visitor = new QVTicoreEVImplTrivial(env, evalEnv, modelManager);
 				Object sucess = coreModel.accept(visitor);
 				assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);

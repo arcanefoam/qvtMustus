@@ -1,12 +1,13 @@
 /*******************************************************************************
  * Copyright (c) 2012 The University of York.
+ * Copyright (c) 2012 Willink Transformations.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  * 
  * Contributors:
- *     hhoyos - initial API and implementation
+ *     Horacio Hoyos - initial API and implementation
  ******************************************************************************/
 package org.eclipse.qvtd.pivot.qvtbase.evaluation;
 
@@ -31,14 +32,6 @@ import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 
 public class QVTbaseEvaluationVisitorImpl extends EvaluationVisitorImpl implements QVTbaseVisitor<Object> {
 
-	/**
-	 * Constructor
-	 * 
-	 * @param env
-	 *            an evaluation environment (map of variable names to values)
-	 * @param modelManager
-	 *            a map of classes to their instance lists
-	 */
 	public QVTbaseEvaluationVisitorImpl( @NonNull Environment env,  @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
 		super(env, evalEnv, modelManager);
 	}
