@@ -33,6 +33,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.domain.ids.IdManager;
 import org.eclipse.ocl.examples.domain.ids.PackageId;
+import org.eclipse.ocl.examples.domain.utilities.DomainUtil;
 import org.eclipse.ocl.examples.pivot.Annotation;
 import org.eclipse.ocl.examples.pivot.Package;
 import org.eclipse.ocl.examples.pivot.PivotPackage;
@@ -40,7 +41,6 @@ import org.eclipse.ocl.examples.pivot.Precedence;
 import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.internal.impl.ClassImpl;
 import org.eclipse.ocl.examples.pivot.util.Visitor;
-import org.eclipse.ocl.examples.pivot.utilities.PivotUtil;
 import org.eclipse.qvtd.pivot.qvtbase.Function;
 import org.eclipse.qvtd.pivot.qvtbase.QVTbasePackage;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
@@ -70,6 +70,7 @@ import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
  *
  * @generated
  */
+@SuppressWarnings("cast")
 public class TransformationImpl extends ClassImpl implements Transformation {
 	/**
 	 * The cached value of the '{@link #getNestedPackage() <em>Nested Package</em>}' containment reference list.
@@ -700,14 +701,13 @@ public class TransformationImpl extends ClassImpl implements Transformation {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <R> R accept(Visitor<R> visitor) {
-		return (R) visitor.getAdapter(QVTbaseVisitor.class).visitTransformation(this);
+	public <R> R accept(@NonNull Visitor<R> visitor) {
+		return ((QVTbaseVisitor<R>)visitor).visitTransformation(this);
 	}
 
 	public TypedModel getModelParameter(String name) {
-		return PivotUtil.getNamedElement(getModelParameter(), name);
+		return DomainUtil.getNamedElement(getModelParameter(), name);
 	}
 
 	@Override

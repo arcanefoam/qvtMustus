@@ -3,17 +3,14 @@
 package org.eclipse.qvtd.pivot.qvtbase.impl;
 
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.pivot.Namespace;
 import org.eclipse.ocl.examples.pivot.internal.impl.NamedElementImpl;
 import org.eclipse.ocl.examples.pivot.util.Visitor;
-
 import org.eclipse.qvtd.pivot.qvtbase.QVTbasePackage;
 import org.eclipse.qvtd.pivot.qvtbase.Unit;
 import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
@@ -158,9 +155,8 @@ public class UnitImpl extends NamedElementImpl implements Unit {
 		return super.eIsSet(featureID);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public <R> R accept(Visitor<R> visitor) {
-		return (R) visitor.getAdapter(QVTbaseVisitor.class).visitUnit(this);
+	public <R> R accept(@NonNull Visitor<R> visitor) {
+		return ((QVTbaseVisitor<R>)visitor).visitUnit(this);
 	}
 } //UnitImpl
