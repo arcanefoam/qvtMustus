@@ -19,6 +19,7 @@ import org.eclipse.ocl.examples.xtext.base.utilities.BaseCSResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
+import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTicoreEVImplTrivial;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
@@ -144,7 +145,7 @@ public class TestQVTi extends LoadTestCase {
 					fail("There was an error loading the output model");
 				}
 				
-				QVTcoreVisitor<Object> visitor = new QVTicoreEVImplTrivial(env, evalEnv, modelManager);
+				QVTcoreVisitor<Object> visitor = new QVTcoreEvaluationVisitorImpl(env, evalEnv, modelManager);
 				Object sucess = coreModel.accept(visitor);
 				assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
 				System.out.println("Result of the transformation was " + (Boolean)sucess);

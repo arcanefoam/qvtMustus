@@ -1,6 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 The University of York.
- * Copyright (c) 2012 Willink Transformations.
+ * Copyright (c) 2012 The University of York and Willink Transformations.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +13,6 @@ package org.eclipse.qvtd.pivot.qvtbase.evaluation;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
-import org.eclipse.ocl.examples.domain.values.Value;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
@@ -37,61 +35,61 @@ public class QVTbaseEvaluationVisitorImpl extends EvaluationVisitorImpl implemen
 	}
 	
 	@Nullable
-	public Value visitBaseModel(@NonNull BaseModel object) {
+	public Object visitBaseModel(@NonNull BaseModel object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitDomain(@NonNull Domain object) {
+	public Object visitDomain(@NonNull Domain object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitFunction(@NonNull Function object) {
+	public Object visitFunction(@NonNull Function object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitFunctionParameter(@NonNull FunctionParameter object) {
+	public Object visitFunctionParameter(@NonNull FunctionParameter object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitPattern(@NonNull Pattern object) {
+	public Object visitPattern(@NonNull Pattern object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitPredicate(@NonNull Predicate object) {
+	public Object visitPredicate(@NonNull Predicate object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitRule(@NonNull Rule object) {
+	public Object visitRule(@NonNull Rule object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitTransformation(@NonNull Transformation object) {
+	public Object visitTransformation(@NonNull Transformation object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitTypedModel(@NonNull TypedModel object) {
+	public Object visitTypedModel(@NonNull TypedModel object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
 
 	@Nullable
-	public Value visitUnit(@NonNull Unit object) {
+	public Object visitUnit(@NonNull Unit object) {
 		// TODO Add visit function or decide if it should never be implemented
 		throw new UnsupportedOperationException("Visit method not implemented yet");
 	}
