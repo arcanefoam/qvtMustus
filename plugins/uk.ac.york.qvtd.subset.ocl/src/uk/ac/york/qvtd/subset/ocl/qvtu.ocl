@@ -26,14 +26,20 @@ import qvtc : 'http://www.eclipse.org/qvt/0.9/QVTcore'
 package qvtcore
 
 context Mapping
-	/* Each Mapping must have one input domain (i.e. neither check or enforce)
+	/* 
+	 * Each Mapping must have one input domain (i.e. check and not enforce)
 	 */
 	inv: domain->select(isCheckable)->union(domain->select(isEnforceable))->size() >= 1
 
 context CoreDomain
 	/*
+	 * Domains must either be check (input) or enforce(output) or check+enforce(update)
+	 */
+	inv: isCheckable or isEnforceable 
+	
+	/*
  	 * An input domain has no realized variables or assignments.
- 	*/
+ 	 */
 	inv: not isCheckable and not isEnforceable implies bottomPattern.realizedVariable->isEmpty()
 	inv: not isCheckable and not isEnforceable implies bottomPattern.assignment->isEmpty()
 	

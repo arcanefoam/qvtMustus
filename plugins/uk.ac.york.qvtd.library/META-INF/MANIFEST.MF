@@ -14,4 +14,10 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.8.0",
  org.eclipse.qvtd.pivot.qvtcore;bundle-version="0.10.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Export-Package: uk.ac.york.qvtd.library.executor
+Export-Package: uk.ac.york.qvtd.library.executor;
+  uses:="org.eclipse.emf.ecore.resource,
+   org.eclipse.emf.ecore,
+   org.eclipse.qvtd.pivot.qvtbase,
+   org.eclipse.qvtd.pivot.qvtcore,
+   org.eclipse.ocl.examples.domain.evaluation,
+   org.eclipse.ocl.examples.domain.elements"

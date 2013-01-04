@@ -2,7 +2,6 @@ package qvti;
 
 import java.io.IOException;
 
-import static org.junit.Assert.*;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -20,7 +19,6 @@ import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEvaluationVisitorImpl;
-import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTicoreEVImplTrivial;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
 import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
@@ -29,7 +27,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
-import uk.ac.york.qvtd.library.executor.QvtModelManager;
 
 /**
  * Test001 is a set if simple tests on the QVTc API.

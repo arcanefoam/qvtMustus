@@ -10,9 +10,10 @@ transformation copyGraph {
 /* 
  * Don't use realize keywords on the two initial domains indicates that both models must exist and at least have the root node defined?
  */
-map graph2graph in copyGraph {			    -- L to M for G
+map graph2graph in copyGraph {			        -- L to M for G
     check upperGraph() {
         g1:Graph |
+        g1.name = 'Horacio';
     }
     -- enforce lowerGraph() {}
     where () {
@@ -25,28 +26,29 @@ map graph2graph in copyGraph {			    -- L to M for G
         -- g2g.graph1 := g1;
         g2g.name := g1.name;
     }
-    map {							        -- L to M for N
-        check upperGraph() {
-            n1:Node |
+    map {								        -- M to R for G (g1 bindings times)
+        -- check upperGraph() {}
+        enforce lowerGraph() {
+            /* Enforced domains should at least have one realized variable?*/
+            realize g2:Graph |
         }
-        -- enforce lowerGraph() {}
         where () {
-            realize n2n:Node2Node |
-            n2n.owner := g2g;
-            n2n.node1 := n1;
-            n2n.label := n1.label;
+            g2g.graph2 := g2;
+            g2.name := g2g.name;
         }
-        map {								-- M to R for G
-            -- check upperGraph() {}
-            enforce lowerGraph() {
-                /* Enforced domains should at least have one realized variable?*/
-                realize g2:Graph |
+        map {							        -- L to M for N
+            check upperGraph() {
+                n1:Node |
+                -- n1.graph = g1;
             }
+            -- enforce lowerGraph() {}
             where () {
-                g2g.graph2 := g2;
-                g2.name := g2g.name;
-            }
-            map {						// M to R for N
+                realize n2n:Node2Node |
+                n2n.owner := g2g;
+                n2n.node1 := n1;
+                n2n.label := n1.label;
+            }            
+            map {						        -- M to R for N
                 -- check upperGraph() {}
                 enforce lowerGraph() {
                     realize n2:Node |

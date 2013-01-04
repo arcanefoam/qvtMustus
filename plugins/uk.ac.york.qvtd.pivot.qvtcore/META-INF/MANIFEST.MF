@@ -10,7 +10,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ocl.examples.pivot;bundle-version="3.3.0",
  org.eclipse.qvtd.pivot.qvtbase;bundle-version="0.10.0",
  org.eclipse.qvtd.pivot.qvtcore;bundle-version="0.10.0",
- uk.ac.york.qvtd.pivot.qvtbase;bundle-version="1.0.0"
+ uk.ac.york.qvtd.pivot.qvtbase;bundle-version="1.0.0",
+ uk.ac.york.qvtd.library;bundle-version="1.0.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.eclipse.qvtd.pivot.qvtcore.evaluation

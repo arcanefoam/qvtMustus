@@ -14,6 +14,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
+import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtbase.BaseModel;
@@ -65,9 +66,11 @@ public class QVTbaseEvaluationVisitorImpl extends EvaluationVisitorImpl implemen
 	}
 
 	@Nullable
-	public Object visitPredicate(@NonNull Predicate object) {
-		// TODO Add visit function or decide if it should never be implemented
-		throw new UnsupportedOperationException("Visit method not implemented yet");
+	public Object visitPredicate(@NonNull Predicate predicate) {
+	    // Each predicate has a conditionExpression that is an OCLExpression
+        OCLExpression exp = predicate.getConditionExpression();
+        Object expResult = exp.accept(this);
+        return expResult;    
 	}
 
 	@Nullable
