@@ -7,60 +7,70 @@ transformation copyGraph {
 	imports SimpleGraph2Graph;
 }
 
-/* 
- * Don't use realize keywords on the two initial domains indicates that both models must exist and at least have the root node defined?
- */
-map graph2graph in copyGraph {			        -- L to M for G
-    check upperGraph() {
-        g1:Graph |
-        g1.name = 'Horacio';
-    }
-    -- enforce lowerGraph() {}
-    where () {
-        /* Although in the example is not realized, all middle model variables should be realized
-         * or does the middle model is also expected to have at least the initial element? Yes, the ModelManager should
-         * create the initial element as part on initialising the
-	     * middle model
-         */
-        realize g2g:Graph2Graph |
-        -- g2g.graph1 := g1;
-        g2g.name := g1.name;
-    }
-    map {								        -- M to R for G (g1 bindings times)
-        -- check upperGraph() {}
+map upper2lower in copyGraph {
+	map {	        							-- L to M for G
+	    check upperGraph() {
+	        g1:Graph |
+	    }
+	    where () {
+	        realize g2g:Graph2Graph |
+	        g2g.graph1 := g1;
+	    }
+        map {
+            where () {
+                g2g.name := g1.name;
+            }
+        }
+	    map {							        -- L to M for N
+	        check upperGraph() {
+	            n1:Node |
+	            n1.graph = g1;
+	        }
+	        where () {
+	            realize n2n:Node2Node |
+	            n2n.owner := g2g;
+	            n2n.node1 := n1;
+	        }
+            map {
+                where () {
+                    n2n.label := n1.label.toLowerCase();
+                    -- Should you validate that all attributes off all nodes of the middle model be asigned a value?
+                }
+            }
+		}
+	}
+	map {
+		-- check upperGraph() {}
         enforce lowerGraph() {
-            /* Enforced domains should at least have one realized variable?*/
             realize g2:Graph |
         }
         where () {
-            g2g.graph2 := g2;
-            g2.name := g2g.name;
+			g2g:Graph2Graph |    -- M to R for G
         }
-        map {							        -- L to M for N
-            check upperGraph() {
-                n1:Node |
-                -- n1.graph = g1;
-            }
-            -- enforce lowerGraph() {}
+        map {
             where () {
-                realize n2n:Node2Node |
-                n2n.owner := g2g;
-                n2n.node1 := n1;
-                n2n.label := n1.label;
-            }            
-            map {						        -- M to R for N
-                -- check upperGraph() {}
-                enforce lowerGraph() {
-                    realize n2:Node |
-                }
-                where () {
-                    -- n2n.node2 := n2;
-                    n2.graph := n2n.owner.graph2;
+            	g2g.graph2 := g2;
+            	g2.name := g2g.name;
+                -- Can I acces g1 from here by navigating g2g.graph1 ??
+            }
+        }
+        map {						        -- M to R for N
+        	-- check upperGraph() {}
+            enforce lowerGraph () {
+                realize n2:Node |
+            }
+            where () {
+                n2n:Node2Node |
+                n2n.owner = g2g;
+            }
+            map {
+            	where () {
+            		n2n.node2 := n2;
+					n2.graph := n2n.owner.graph2;
                     n2.label := n2n.label;
                 }
             }
         }
-    }
+	}
 }
-
 
