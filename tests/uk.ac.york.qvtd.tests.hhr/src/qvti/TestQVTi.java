@@ -7,7 +7,9 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.ocl.examples.domain.utilities.DomainUtil;
 import org.eclipse.ocl.examples.domain.utilities.ProjectMap;
+import org.eclipse.ocl.examples.pivot.ecore.Ecore2Pivot;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotEvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManagerResourceSetAdapter;
@@ -17,6 +19,8 @@ import org.eclipse.ocl.examples.pivot.utilities.PivotResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.BaseCSResource;
 import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
@@ -88,6 +92,7 @@ public class TestQVTi extends LoadTestCase {
 			// Load the input model from a ResourceSet for the given URI
 			Resource inputResource = resourceSet.getResource(URI.createURI(inputModelURI), true);
 			Resource inputmm = resourceSet.getResource(URI.createURI(inputModelmmURI), true);
+			Ecore2Pivot inputPivot = Ecore2Pivot.getAdapter(inputmm, metaModelManager);
 			
 			// Create a new Resource for the output model
 			// TODO  this assumes that the output model does not exist and therefore 
@@ -96,11 +101,13 @@ public class TestQVTi extends LoadTestCase {
 			// NOTE Why does createResource does not owrk and returns an empty resource with no "link" to the metamodel? 
 			Resource outputResource = resourceSet.createResource(URI.createURI(outputModelURI));
 			Resource outputmm = resourceSet.getResource(URI.createURI(outputModelmmURI), true);
+			Ecore2Pivot outputPivot = Ecore2Pivot.getAdapter(outputmm, metaModelManager);
 			
 			// Create a resource for the middle model: load the metamodel as a resource
 			// so we can use it to create EObjects that reflect the EClasses in the mm
 			//resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put( "ecore", new EcoreResourceFactoryImpl());
 			Resource middlemm = resourceSet.getResource(URI.createURI(middleMetaModelmmURI), true);
+			Ecore2Pivot middlePivot = Ecore2Pivot.getAdapter(middlemm, metaModelManager);
 			
 			
 			// Load the qvtc file
@@ -109,9 +116,9 @@ public class TestQVTi extends LoadTestCase {
 			try {
 				//xtextResource = createXtextFromURI(metaModelManager, URI.createURI(qvtcSource));
 				xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(qvtcSource), true);
-				if(xtextResource != null) {
+				if (xtextResource != null) {
 					qvtResource = createPivotFromXtext(metaModelManager, xtextResource);
-				}else {
+				} else {
 					fail("There was an error loading the QVTc file");
 				}
 			} catch (IOException e) {
@@ -119,7 +126,7 @@ public class TestQVTi extends LoadTestCase {
 				e.printStackTrace();
 				fail("There was an error loading the QVTc file");
 			}
-			if(qvtResource != null) {
+			if (qvtResource != null) {
 				CoreModel coreModel = (CoreModel) qvtResource.getContents().get(0);
 				// This is to pass the correct arguments to the constructor, but I don't
 				// really understand their use. 
@@ -129,16 +136,21 @@ public class TestQVTi extends LoadTestCase {
 				PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
 				
 				
-				QVTcDomainManager modelManager = new QVTcDomainManager(middlemm);
+				QVTcDomainManager modelManager = new QVTcDomainManager(middlePivot);
+				// TODO what if a qvt file has multiple transformations?
+				Transformation transformation = ((Transformation)coreModel.getNestedPackage().get(0));
+				TypedModel typedModel;
 				/* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
-				if(inputResource != null && inputmm != null) {
-					modelManager.addModel(coreModel, "upperGraph", inputResource, inputmm);
-				}else {
+				if (inputResource != null && inputmm != null) {
+				    typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "upperGraph");
+					modelManager.addModel(coreModel, typedModel, inputResource, inputPivot);
+				} else {
 					fail("There was an error loading the input model");
 				}
-				if(outputResource != null && outputmm != null) {
-					modelManager.addModel(coreModel, "lowerGraph", outputResource, outputmm);
-				}else {
+				if (outputResource != null && outputmm != null) {
+				    typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "lowerGraph");
+					modelManager.addModel(coreModel, typedModel, outputResource, outputPivot);
+				} else {
 					fail("There was an error loading the output model");
 				}
 				

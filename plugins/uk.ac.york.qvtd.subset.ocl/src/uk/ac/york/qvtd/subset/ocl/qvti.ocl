@@ -8,14 +8,29 @@
  * Contributors:
  *     hhoyos - initial API and implementation
  ******************************************************************************/
-
+/*
+ * Imperative Semantics
+ * In addition to the Minimal Semantics:
+ * A QVTi transformation is a tree of composed unidirectional mappings without
+ * refinement. Each mapping introduces exactly one unbound variable.
+ * A QVTi transformation is executed by a single pass depth first traversal of
+ * the mapping composition tree.
+ */
 import qvtc : 'http://www.eclipse.org/qvt/0.9/QVTcore'
 include 'qvtm.ocl'
 
 package qvtcore
 
 context Mapping
-
-	inv: self.oclAsType(Area)->union(domain.oclAsType(CoreDomain)).guardPattern.variable->size() = 1
-
+	/*
+ 	 * At each node, a new unbound variable (i.e., max one) is introduced by one of the input
+ 	 * or middle guard patterns and the root mapping introduces no variables.
+ 	 */	
+ 	inv: _'context'.oclIsUndefined() and self.oclAsType(Area)->union(domain.oclAsType(CoreDomain)).guardPattern.variable->size() <= 1
+ 	 
+	inv: not _'context'.oclIsUndefined() and self.oclAsType(Area)->union(domain.oclAsType(CoreDomain)).guardPattern.variable->size() = 1
+	
+	/* Where clauses of check domains must have realized variables of the middle mm. This means l->m */
+	
+	/* Where clauses of enforced domains must NOT have realized variables of the middle mm. This means m->r */
 endpackage

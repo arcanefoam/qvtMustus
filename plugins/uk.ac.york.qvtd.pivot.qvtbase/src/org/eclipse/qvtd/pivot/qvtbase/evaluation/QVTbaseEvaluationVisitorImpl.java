@@ -38,7 +38,7 @@ public class QVTbaseEvaluationVisitorImpl extends EvaluationVisitorImpl implemen
 	@Nullable
 	public Object visitBaseModel(@NonNull BaseModel object) {
 		// TODO Add visit function or decide if it should never be implemented
-		throw new UnsupportedOperationException("Visit method not implemented yet");
+		return visiting(object);
 	}
 
 	@Nullable
@@ -67,10 +67,12 @@ public class QVTbaseEvaluationVisitorImpl extends EvaluationVisitorImpl implemen
 
 	@Nullable
 	public Object visitPredicate(@NonNull Predicate predicate) {
-	    // Each predicate has a conditionExpression that is an OCLExpression
+        
+        // Each predicate has a conditionExpression that is an OCLExpression
         OCLExpression exp = predicate.getConditionExpression();
+        // The predicated is visited with a nested environment
         Object expResult = exp.accept(this);
-        return expResult;    
+        return expResult;
 	}
 
 	@Nullable

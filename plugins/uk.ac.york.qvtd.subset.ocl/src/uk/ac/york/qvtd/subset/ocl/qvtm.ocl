@@ -8,8 +8,14 @@
  * Contributors:
  *     hhoyos - initial API and implementation
  ******************************************************************************/
+/*
+ * Minimal Semantics
+ * In addition to the Unidirectional Semantics:
+ * Refined mappings are flattened.
+ */
 import qvtc : 'http://www.eclipse.org/qvt/0.9/QVTcore'
-include 'qvtu.ocl'
+
+include 'qvtu.ocl'	/* Extend the unidirectional semantics  */
 
 package qvtcore
 
