@@ -61,16 +61,6 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
  */
 public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         implements QVTcoreVisitor<Object> {
-
-    /** The valid binding for a variable for a given loop. */
-    protected Map<Variable, EObject> variableValues = new HashMap<Variable, EObject>();
-    
-    protected Map<Variable, Set<EObject>> validBindings = new HashMap<Variable, Set<EObject>>();
-    
-    /** The temp realized elements. This map holds the EObjects that are created for 
-     * the realized variables of a bottom pattern. Property assignments query this
-     * map to know what elements are being modified. */
-    private Map<Variable, EObject> tempRealizedElements = new HashMap<Variable, EObject>();
     
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
@@ -176,14 +166,12 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
          * 
          */
         else if (area instanceof Mapping && isLtoMMapping((Mapping)area)) {
-            tempRealizedElements.clear();
             for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
                 if (bottomPattern.getArea() instanceof CoreDomain && !((CoreDomain)bottomPattern.getArea()).isIsEnforceable()) {
                     throw new UnsupportedOperationException("Unsupported " + bottomPattern.eClass().getName()
                             + " specification. Realized variables can only exist in Enforced domains");
                 }
                 EObject element = (EObject) rVar.accept(this);
-                tempRealizedElements.put(rVar, element);
             }
             for (Assignment assigment : bottomPattern.getAssignment()) {
                 assigment.accept(this);
@@ -248,14 +236,12 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
          * 
          */
         else if (area instanceof CoreDomain && isMtoRMapping((Mapping) ((CoreDomain)area).getRule())) {
-            tempRealizedElements.clear();
             for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
                 if (bottomPattern.getArea() instanceof CoreDomain && !((CoreDomain)bottomPattern.getArea()).isIsEnforceable()) {
                     throw new UnsupportedOperationException("Unsupported " + bottomPattern.eClass().getName()
                             + " specification. Realized variables can only exist in Enforced domains");
                 }
                 EObject element = (EObject) rVar.accept(this);
-                tempRealizedElements.put(rVar, element);
             }
             for (Assignment assigment : bottomPattern.getAssignment()) {
                 assigment.accept(this);
@@ -266,7 +252,6 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 enforceOp.accept(this);
             }
         }
-        // TODO bottomPattern for nested mapping without domains
         // Only visit assignments and operations?
         else if (area instanceof Mapping && ((Mapping)area).getDomain().size() == 0) {
             // What is the environment??
@@ -274,8 +259,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 assigment.accept(this);
             }
             // Probably enforcement operations must be called too
-            for (EnforcementOperation enforceOp : bottomPattern
-                    .getEnforcementOperation()) {
+            for (EnforcementOperation enforceOp : bottomPattern.getEnforcementOperation()) {
                 enforceOp.accept(this);
             }
         }
@@ -444,7 +428,6 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                         // Use each of the bindings for evaluation in the loop
                         //ne.getEvaluationEnvironment().replace(var, e);
                         getEvaluationEnvironment().replace(var, e);
-                        replaceVariableValue(var, e);
                         // TODO Implement guard visit methods
                         // boolean guardMet = (Boolean)mapping.getGuardPattern().accept(this);
                         //if(guardMet) {
@@ -486,7 +469,6 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 for (EObject e : loopVariableValues.get(var)) {
                     // Use each of the bindings for evaluation in the loop
                     getEvaluationEnvironment().replace(var, e);
-                    replaceVariableValue(var, e);
                     for (Domain domain : mapping.getDomain()) {
                         ((CoreDomain) domain).accept(this);
                     }
@@ -563,12 +545,9 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 // The nested evaluation environment is created in the mapping loop
                 Object value = propertyAssignment.getValue().accept(this);
                 // Assign the value to a binding of the slotVar
-                EObject slotBinding = tempRealizedElements.get(slotVar);
-                
-                // TODO what happens if the target property is not a simple attribute
-                // (e.g. cannot find it by name)
-                //String feature = (String) propertyAssignment.getTargetProperty().getName();
-                //slotBinding.eSet(slotBinding.eClass().getEStructuralFeature(feature), value);
+                //EObject slotBinding = tempRealizedElements.get(slotVar);
+                Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
+                // TODO what happens if the target property is not a simple attribute?
                 if (slotBinding != null) {
                     Property p = propertyAssignment.getTargetProperty();
                     ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
@@ -585,7 +564,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
          * and define values for middle model element's attributes. The property
          * assignments are being visited for each binding of variable in the mapping. 
          */
-        
+        // So far this case never happens
         /*
          * LtoM or MtoR nested mapping without domains. Property assignments are
          * in the mapping's bottom pattern and define values for middle model 
@@ -598,24 +577,17 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
             // 1. Test if the slot variable is in the variableValues
             if (exp instanceof VariableExp ) {      // What other type of expressions are there?
                 Variable slotVar = (Variable) ((VariableExp)exp).getReferredVariable();
-                EObject slotBinding = variableValues.get(slotVar);
+                //EObject slotBinding = variableValues.get(slotVar);
+                Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
                 if(slotBinding != null) {
                     Object value = propertyAssignment.getValue().accept(this);
                     Property p = propertyAssignment.getTargetProperty();
                     ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
                     p.initValue(metaModelManager, ov, value);
                 } else {
-                    slotBinding = tempRealizedElements.get(slotVar);
-                    if(slotBinding != null) {
-                        Object value = propertyAssignment.getValue().accept(this);
-                        Property p = propertyAssignment.getTargetProperty();
-                        ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
-                        p.initValue(metaModelManager, ov, value);
-                    } else {
-                        throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
-                                + " specification. The assigment refers to a variable not defined in the" +
-                                " current environment");
-                    }
+                    throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
+                            + " specification. The assigment refers to a variable not defined in the" +
+                            " current environment");
                 }
             } else {
                 throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
@@ -647,6 +619,12 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
             // Add the EObject to the middle resource
             Resource mModel = ((QVTcDomainManager)modelManager).getMiddleModel();
             mModel.getContents().add(element);
+            // Add the realize variable binding to the environment
+            if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
+                getEvaluationEnvironment().add(realizedVariable, element);
+            } else {
+                getEvaluationEnvironment().replace(realizedVariable, element);
+            }
             return element;
         }
         /*
@@ -661,6 +639,12 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
             TypedModel tm = ((CoreDomain)area).getTypedModel();
             Resource rModel = ((QVTcDomainManager)modelManager).getTypeModelResource(tm);
             rModel.getContents().add(element);
+            // Add the realize variable binding to the environment
+            if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
+                getEvaluationEnvironment().add(realizedVariable, element);
+            } else {
+                getEvaluationEnvironment().replace(realizedVariable, element);
+            }
             return element;
         }
         return null;
@@ -681,26 +665,12 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
     }
 
     /* ========== HELPER METHODS ========== */
-
-    // This method should only be called for nested environments
-    private void replaceVariableValue(Variable variable, EObject value) {
-        variableValues.put(variable, value);
-    }
-    
-    public void setVariableValues(Map<Variable, EObject> variableValues) {
-        this.variableValues = variableValues;
-    }
-    
-    
     @Override
     public @NonNull EvaluationVisitor createNestedEvaluator() {
         Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
         EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
         QVTcoreEvaluationVisitorImpl ne = new QVTcoreEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
-        // Copy the owner environment variable values
-        
-        ne.setVariableValues(variableValues);
         return ne;
     }
 }

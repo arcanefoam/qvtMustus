@@ -13,6 +13,12 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="owner" eType="#//Graph2Graph"
         eOpposite="#//Graph2Graph/element2Element"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Edge2Edge">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="edge1" eType="ecore:EClass SimpleGraph.ecore#//Edge"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="edge2" eType="ecore:EClass SimpleGraph.ecore#//Edge"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//Node2Node"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="source" eType="#//Node2Node"/>
+  </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Node2Node" eSuperTypes="#//Element2Element">
     <eStructuralFeatures xsi:type="ecore:EReference" name="node1" eType="ecore:EClass SimpleGraph.ecore#//Node"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="node2" eType="ecore:EClass SimpleGraph.ecore#//Node"/>

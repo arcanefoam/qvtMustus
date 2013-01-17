@@ -18,7 +18,7 @@ map upper2lower in copyGraph {
 	    }
         map {
             where () {
-                g2g.name := g1.name;
+                g2g.name := g1.name.toLowerCase();
             }
         }
 	    map {							        -- L to M for N

@@ -23,7 +23,6 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.domain.elements.DomainType;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
-import org.eclipse.ocl.examples.pivot.ecore.Ecore2Pivot;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 
@@ -39,10 +38,6 @@ public class QVTcDomainManager implements DomainModelManager {
 	// TODO how to manage aliases?
 	/** Map a typed model to its resource (model). */
 	private Map<TypedModel, Resource> modelMap = new HashMap<>();
-	
-	// One Ecore2Pivot for each TypedModel
-	/** Map a typed model to its Ecore2Pivot. */
-	private Map<TypedModel, Ecore2Pivot> pivotMap = new HashMap<>();
 
 	/**
 	 * Instantiates a new QVTc Domain Manager. Responsible for creating new
@@ -50,22 +45,9 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * 
 	 * @param middleMetamodel the middle metamodel
 	 */
-	public QVTcDomainManager(@NonNull Ecore2Pivot mmPivot ) {
+	public QVTcDomainManager() {
 	    // null entries in the modelMap and pivotMap will be for the middle model
 	    modelMap.put(null, new ResourceImpl());
-	    pivotMap.put(null, mmPivot);
-	    //EPackage mEPackage = null;
-		//for(EObject eo : middleMetamodel.getContents()) {
-		//	if(eo instanceof EPackage) {
-		//		mEPackage = (EPackage)eo;		// The middle metamodel should only have 1 package
-		//		break;
-		//	}
-		//}
-		//if(mEPackage != null) {
-		//	middleFactory = mEPackage.getEFactoryInstance();
-		//} else {
-		//	throw new IllegalArgumentException("The middle metamodel resource contains no root package");
-		//}
 	}
 	
 	/**
@@ -80,18 +62,9 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * @throws IllegalArgumentException if the metamodel does not have at least one root package
 	 */
 	// TODO support multiple model instances by alias
-	public void addModel(CoreModel coreModel, TypedModel typedModel, @NonNull Resource model, @NonNull Ecore2Pivot mmEcore2Pivot) {
-		modelMap.put(typedModel, model);
-//		EList<EObject> roots = metamodel.getContents();
-//		if(roots.size() == 1) {
-//			if(roots.get(0) instanceof EPackage) {
-//				factoryMap.put(typedModel, Collections.singleton(((EPackage)roots.get(0)).getEFactoryInstance()));
-//			} else {
-//				throw new IllegalArgumentException("Metamodel resources for TypedModels should have a root package");
-//			}
-//		} else {
-		pivotMap.put(typedModel, mmEcore2Pivot);
-//	    }
+	public void addModel(CoreModel coreModel, TypedModel typedModel, @NonNull Resource model) {
+		
+	    modelMap.put(typedModel, model);
 	}
 	
 	
@@ -105,15 +78,6 @@ public class QVTcDomainManager implements DomainModelManager {
 		return modelMap.get(typedModel);
 	}
 	
-	/**
-	 * Gets the type model factory(ies).
-	 *
-	 * @param typedModel the typed model
-	 * @return the type model factory
-	 */
-	public Ecore2Pivot getTypeModelPivot(@NonNull TypedModel typedModel) {
-		return pivotMap.get(typedModel);
-	}
 	
 	/**
 	 * Gets the resources for all the models
@@ -124,15 +88,6 @@ public class QVTcDomainManager implements DomainModelManager {
 		return modelMap.values();
 	}
 
-	
-	/**
-	 * Gets the middle factory.
-	 *
-	 * @return the middle factory
-	 */
-	public Ecore2Pivot getMiddlePivot() {
-		return pivotMap.get(null);
-	}
 	
 	/**
 	 * Gets the middle model.
@@ -184,11 +139,10 @@ public class QVTcDomainManager implements DomainModelManager {
 	public void dispose() {
 		// TODO Auto-generated method stub
 		modelMap = null;
-		pivotMap = null;
 		
 	}
-
 	
+	@Override
 	public @NonNull Set<EObject> get(@NonNull DomainType type) {
 		// TODO Auto-generated method stub
 		return null;
