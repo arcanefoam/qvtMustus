@@ -87,7 +87,7 @@ public class TestQVTi extends LoadTestCase {
     @Test
     public void testMinimalQVTi() {
         
-        final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphMinimal.xmi";
+        final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphMinimal.xmi";
         final String outputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
         final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti.qvtc";
         ResourceSet resourceSet = new ResourceSetImpl();
@@ -148,7 +148,7 @@ public class TestQVTi extends LoadTestCase {
      */
     @Test
     public void testHierarchicalN2N() {
-        final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphHierarchical.xmi";
+        final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphHierarchical.xmi";
         final String outputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
         final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphHierarchical.qvti.qvtc";
         ResourceSet resourceSet = new ResourceSetImpl();
