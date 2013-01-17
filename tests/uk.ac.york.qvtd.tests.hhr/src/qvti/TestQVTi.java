@@ -38,7 +38,7 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
  */
 public class TestQVTi extends LoadTestCase {
 	
-	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphUpper.xmi";
+	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi";
 	private final String inputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
 	private final String middleMetaModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph2Graph.ecore";
 	
