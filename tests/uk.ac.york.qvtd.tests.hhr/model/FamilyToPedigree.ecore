@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="familyToPedigree" nsURI="http://cs.york.ac.uk/es/FamilyToPedigree"
+    nsPrefix="familyToPedigree">
+  <eClassifiers xsi:type="ecore:EClass" name="FatherToMale" eSuperTypes="#//MemberToMale">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="father" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MotherToFemale" eSuperTypes="#//MemberToFemale">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="mother" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="SonToMale" eSuperTypes="#//MemberToMale">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="son" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="DaughterToFemale" eSuperTypes="#//MemberToFemale">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="daughter" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="Member2Person" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="lastName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MemberToMale" abstract="true" eSuperTypes="#//Member2Person">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="male" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Male"/>
+  </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="MemberToFemale" abstract="true" eSuperTypes="#//Member2Person">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="female" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Female"/>
+  </eClassifiers>
+</ecore:EPackage>
