@@ -1,0 +1,63 @@
+import Family : 			'../../model/Family.ecore'::family;
+import FamilyTree : 		'../../model/FamilyTree.ecore'::familyTree;
+import FamilyToPedigree : 	'../../model/FamilyToPedigree.ecore'::familyToPedigree;
+
+transformation pedigreeChart {
+	family imports Family;
+	familyTree imports FamilyTree;
+	imports familyToPedigree;
+}
+
+
+map MemberToPerson in pedigreeChart {
+	check family() {
+		m:Member |
+	}
+	where () {
+		realize m2p:MemberToPerson |
+	} 
+	map {
+		where () {
+			m2p.name := m.name;	
+		}
+	}
+}
+
+map FatherToMale in pedigreeChart refines MemberToPerson {
+	check family(m.familyFather.oclIsDefined()) {
+	}
+	check enforce familyTree() {
+		realize father:Male |
+	}
+	where () {
+		m2p
+	} 
+	map {
+		where () {
+			m2p.name := m.name;	
+		}
+	}
+}
+
+
+	map {
+		check family () {
+			f:Family |
+		}
+		check enforce familyTree() {
+			realize father:Male,
+			realize mother:Female,
+			realize son:Male, 
+			realize daugther:Female |
+		}
+		where () {
+			realize f2m:FatherToMale,
+			realize m2f:MotherToFemale,
+			realize s2m:SonToMale,
+			realize d2f:DaughterToFemale |
+			f2m.father := f.father;
+			m2f.mother := f.mother;
+			s2m.son := 
+		}
+	}
+}

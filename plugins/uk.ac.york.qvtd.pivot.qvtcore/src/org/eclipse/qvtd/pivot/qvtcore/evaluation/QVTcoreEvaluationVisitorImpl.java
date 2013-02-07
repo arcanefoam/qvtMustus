@@ -20,8 +20,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
-import org.eclipse.ocl.examples.domain.values.ObjectValue;
-import org.eclipse.ocl.examples.domain.values.util.ValuesUtil;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
@@ -541,9 +539,9 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
                 // TODO what happens if the target property is not a simple attribute?
                 if (slotBinding != null) {
-                    ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
+                    //ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
                     Property p = propertyAssignment.getTargetProperty();
-                    p.initValue(metaModelManager, ov, value);
+                    p.initValue(slotBinding, value);
                 }
             } else {
                 throw new UnsupportedOperationException("Unsupported " + propertyAssignment.eClass().getName()
@@ -569,7 +567,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
                 if(slotBinding != null) {
                     Object value = propertyAssignment.getValue().accept(this);
-                    ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
+//                    ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
                     Property p = propertyAssignment.getTargetProperty();
                     //if (p.getOpposite() != null && p.getOpposite().isComposite()) {
                     //    p = p.getOpposite();
@@ -580,7 +578,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                     //        childs.add(slotBinding);
                     //    }
                     //} else {
-                        p.initValue(metaModelManager, ov, value);
+                        p.initValue(slotBinding, value);
                     //}
                 } else {
                     throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
@@ -613,7 +611,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         Area area = ((BottomPattern)realizedVariable.eContainer()).getArea();
         if (area instanceof Mapping && isLtoMMapping((Mapping)area)) {
             // Create an element in the middle  model that has a kind equal to the variable type
-            EObject element = (EObject) realizedVariable.getType().createInstance(metaModelManager).asEcoreObject();
+            EObject element = (EObject) realizedVariable.getType().createInstance();
             // Add the EObject to the middle resource
             //Resource mModel = ((QVTcDomainManager)modelManager).getMiddleModel();
             //mModel.getContents().add(element);
@@ -633,7 +631,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
          */
         else if (area instanceof CoreDomain && isMtoRMapping((Mapping) ((CoreDomain)area).getRule())) {
             // Create an element in the R model that has a kind equal to the variable type
-            EObject element = (EObject) realizedVariable.getType().createInstance(metaModelManager).asEcoreObject();
+            EObject element = (EObject) realizedVariable.getType().createInstance();
             // Add the EObject to the R resource
             TypedModel tm = ((CoreDomain)area).getTypedModel();
             //Resource rModel = ((QVTcDomainManager)modelManager).getTypeModelResource(tm);

@@ -14,14 +14,14 @@
   <eClassifiers xsi:type="ecore:EClass" name="DaughterToFemale" eSuperTypes="#//MemberToFemale">
     <eStructuralFeatures xsi:type="ecore:EReference" name="daughter" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="Member2Person" abstract="true">
+  <eClassifiers xsi:type="ecore:EClass" name="MemberToPerson" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lastName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MemberToMale" abstract="true" eSuperTypes="#//Member2Person">
+  <eClassifiers xsi:type="ecore:EClass" name="MemberToMale" abstract="true" eSuperTypes="#//MemberToPerson">
     <eStructuralFeatures xsi:type="ecore:EReference" name="male" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Male"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MemberToFemale" abstract="true" eSuperTypes="#//Member2Person">
+  <eClassifiers xsi:type="ecore:EClass" name="MemberToFemale" abstract="true" eSuperTypes="#//MemberToPerson">
     <eStructuralFeatures xsi:type="ecore:EReference" name="female" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Female"/>
   </eClassifiers>
 </ecore:EPackage>
