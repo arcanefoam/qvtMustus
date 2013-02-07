@@ -27,9 +27,7 @@ query umlRdbms::getAllSupers(cls : SimpleUML::Class) : Set(SimpleUML::Class) {
 }
 
 map packageToSchema in umlRdbms {
-	check uml () {
-		pkg : Package |
-	}
+	check uml (pkg : Package |) {}
 	enforce rdbms () {
 		realize sch : Schema |
 	}
@@ -49,8 +47,7 @@ map packageToSchema in umlRdbms {
 			realize tab : Table,
 			realize pKey : Key,
 			realize pCol : Column
-		|
-		}
+		|}
 		where () {
 			realize cls2tab : ClassToTable
 		|
@@ -110,7 +107,7 @@ map packageToSchema in umlRdbms {
 
 				map { -- classAttributes
 					enforce rdbms () {}
-					where () { -- fao:FromAttributeOwner | fao = cls2Tab;)
+					where () { --fao:FromAttributeOwner | fao = cls2Tab;) {
 						realize att2col : AttributeToColumn
 					|
 						att2col.kind := att.kind;
@@ -119,7 +116,7 @@ map packageToSchema in umlRdbms {
 					}
 				}
 		
-				map { -- complexAttributeAttributes
+				map { -- complexAttributeAttributes {
 					check uml (ca : Attribute | ca.type = cls;) {}
 					enforce rdbms () {}
 					where (fao : NonLeafAttribute | fao.attribute=ca;) {
@@ -139,7 +136,7 @@ map packageToSchema in umlRdbms {
 	
 				map { -- classAttributes
 					enforce rdbms () {}
-					where () { -- fao : FromAttributeOwner | fao = cls2Tab;)
+					where () { -- fao : FromAttributeOwner | fao = cls2Tab;) {
 						realize att2col : NonLeafAttribute
 					|
 						att2col.attribute := att;
@@ -170,8 +167,8 @@ map packageToSchema in umlRdbms {
 				col.name := att2col.name;
 				col.kind := att2col.kind;
 				col.owner := tab;
-				col.key := Set{};
-				col.foreignKey := Set{};
+				col.key = Set{};
+				col.foreignKey = Set{};
 			}
 			map {
 				where (prim2name : PrimitiveToName | prim2name = att2col.type;) {

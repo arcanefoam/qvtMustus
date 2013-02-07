@@ -16,7 +16,6 @@
  */
 package org.eclipse.qvtd.xtext.qvtcorecst;
 
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 
 

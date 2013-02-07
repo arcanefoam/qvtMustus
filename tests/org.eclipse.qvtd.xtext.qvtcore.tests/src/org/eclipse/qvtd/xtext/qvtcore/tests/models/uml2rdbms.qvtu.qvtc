@@ -30,7 +30,7 @@ map packageToSchema in umlRdbms {
 	--	pkg2sch.umlPackage = pkg;
 	--	pkg2sch.schema = sch;
 		--
-		-- pkg2sch.name := pkg.name;
+		--pkg2sch.name := pkg.name;
 		sch.name := pkg.name;
 	}
 

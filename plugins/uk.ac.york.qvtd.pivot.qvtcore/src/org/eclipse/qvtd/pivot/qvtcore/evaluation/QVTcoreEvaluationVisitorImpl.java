@@ -11,12 +11,15 @@
 package org.eclipse.qvtd.pivot.qvtcore.evaluation;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
@@ -117,15 +120,14 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 // We are in a L->M
                 // Values of variables in a CoreDomain exist in the domain's TypedModel
                 TypedModel m = ((CoreDomain)area).getTypedModel();
-                Set<EObject> objectSet = ((QVTcDomainManager) modelManager).getElementsByType(m, var.getType());
-                //Set<EObject> objectSet = new HashSet<>();
-                //Resource resource = ((QVTcDomainManager) modelManager).getTypeModelResource(m);
-                //for (TreeIterator<EObject> contents = resource.getAllContents(); contents.hasNext();) {
-                //    EObject object = contents.next();
-                //    if (object.eClass().getName().equals(var.getType().getName())) {
-                //        objectSet.add(object);
-                //    }
-                //}
+                Set<EObject> objectSet = new HashSet<>();
+                Resource resource = ((QVTcDomainManager) modelManager).getTypeModelResource(m);
+                for (TreeIterator<EObject> contents = resource.getAllContents(); contents.hasNext();) {
+                    EObject object = contents.next();
+                    if (object.eClass().getName().equals(var.getType().getName())) {
+                        objectSet.add(object);
+                    }
+                }
                 patternValidBindings.put(var, objectSet);
             }
             // For each binding visit the predicates to leave only the valid bindings
@@ -167,7 +169,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                     throw new UnsupportedOperationException("Unsupported " + bottomPattern.eClass().getName()
                             + " specification. Realized variables can only exist in Enforced domains");
                 }
-                rVar.accept(this);
+                EObject element = (EObject) rVar.accept(this);
             }
             for (Assignment assigment : bottomPattern.getAssignment()) {
                 assigment.accept(this);
@@ -188,8 +190,14 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
             for (Variable var : bottomPattern.getVariable()) {
                 // We are in a M->R
                 // Values of variables in a where clause exist in the middle model
-                //Resource resource = ((QVTcDomainManager) modelManager).getTypeModelResource(null);
-                Set<EObject> objectSet = ((QVTcDomainManager) modelManager).getElementsByType(null, var.getType());
+                Set<EObject> objectSet = new HashSet<>();
+                Resource resource = ((QVTcDomainManager) modelManager).getTypeModelResource(null);
+                for (TreeIterator<EObject> contents = resource.getAllContents(); contents.hasNext();) {
+                    EObject object = contents.next();
+                    if (object.eClass().getName().equals(var.getType().getName())) {
+                        objectSet.add(object);
+                    }
+                }
                 patternValidBindings.put(var, objectSet);
             }
             // For each binding visit the predicates to leave only the valid bindings
@@ -544,7 +552,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                     p.initValue(slotBinding, value);
                 }
             } else {
-                throw new UnsupportedOperationException("Unsupported " + propertyAssignment.eClass().getName()
+                throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
                         + " specification. The slot expression type (" + exp.getType().getName() 
                         + ") is not supported yet.");
             }
@@ -562,12 +570,15 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
          * assignments are being visited for each binding of variable in the mapping. 
          */
         else if (area instanceof Mapping && ((Mapping)area).getDomain().size() == 0) {
+            // slot vars can either be in L, M or R, this is, they have either a value
+            // in validBindings (loop variable) or in tempRealizedElements (realized variables)
+            // 1. Test if the slot variable is in the variableValues
             if (exp instanceof VariableExp ) {      // What other type of expressions are there?
                 Variable slotVar = (Variable) ((VariableExp)exp).getReferredVariable();
+                //EObject slotBinding = variableValues.get(slotVar);
                 Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
                 if(slotBinding != null) {
                     Object value = propertyAssignment.getValue().accept(this);
-//                    ObjectValue ov = ValuesUtil.createObjectValue(slotBinding);
                     Property p = propertyAssignment.getTargetProperty();
                     //if (p.getOpposite() != null && p.getOpposite().isComposite()) {
                     //    p = p.getOpposite();
@@ -613,9 +624,8 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
             // Create an element in the middle  model that has a kind equal to the variable type
             EObject element = (EObject) realizedVariable.getType().createInstance();
             // Add the EObject to the middle resource
-            //Resource mModel = ((QVTcDomainManager)modelManager).getMiddleModel();
-            //mModel.getContents().add(element);
-            ((QVTcDomainManager)modelManager).addModelElement(null, element);
+            Resource mModel = ((QVTcDomainManager)modelManager).getMiddleModel();
+            mModel.getContents().add(element);
             // Add the realize variable binding to the environment
             if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
                 getEvaluationEnvironment().add(realizedVariable, element);
@@ -634,10 +644,9 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
             EObject element = (EObject) realizedVariable.getType().createInstance();
             // Add the EObject to the R resource
             TypedModel tm = ((CoreDomain)area).getTypedModel();
-            //Resource rModel = ((QVTcDomainManager)modelManager).getTypeModelResource(tm);
-            //rModel.getContents().add(element);
+            Resource rModel = ((QVTcDomainManager)modelManager).getTypeModelResource(tm);
+            rModel.getContents().add(element);
             // Add the realize variable binding to the environment
-            ((QVTcDomainManager)modelManager).addModelElement(tm, element);
             if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
                 getEvaluationEnvironment().add(realizedVariable, element);
             } else {
