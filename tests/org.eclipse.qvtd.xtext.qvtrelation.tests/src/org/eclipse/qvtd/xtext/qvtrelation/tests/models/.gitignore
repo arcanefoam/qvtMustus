@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /EMOF.ecore
 /empty.qvtr
 /empty.reference.eqvtrelation
@@ -27,3 +28,32 @@
 /umlMM.emof
 /UmlToRdbms.qvtr
 /UmlToRdbms.reference.eqvtrelation
+=======
+/EMOF.ecore
+/empty.qvtr
+/empty.reference.eqvtrelation
+/empty.reference.qvtrelation
+/expressions.qvtr
+/expressions.reference.eqvtrelation
+/hstmtostm.reference.eqvtrelation
+/Keys.reference.eqvtrelation
+/KeysValidation.reference.eqvtrelation
+/Library.qvtr
+/QVT.ecore
+/QVTRelation.ecore
+/rdbmsMM.emof
+/RelToCore.reference.eqvtrelation
+/ScopeA.ecore
+/ScopeB.ecore
+/ScopeC.ecore
+/Scoping.qvtr
+/SeqMM.xml
+/SeqToStm.qvtr
+/SeqToStm.reference.eqvtrelation
+/SeqToStm.reference.qvtrelation
+/StmcMM.xml
+/test.modelregistry
+/umlMM.emof
+/UmlToRdbms.qvtr
+/UmlToRdbms.reference.eqvtrelation
+>>>>>>> refs/remotes/upstream/master

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.0"?>
 
@@ -14,3 +15,28 @@
    </extension>
 
 </plugin>
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+
+<!--
+-->
+
+<plugin>
+
+   <extension point="org.eclipse.emf.ecore.generated_package">
+      <package
+            uri="http://www.eclipse.org/qvt/0.9/QVTrelationCST"
+            class="org.eclipse.qvtd.xtext.qvtrelationcst.QVTrelationCSTPackage"
+            genModel="model/QVTrelationCST.genmodel"/>
+   </extension>
+
+   <extension point="org.eclipse.emf.ecore.extension_parser">
+      <!-- @generated QVTrelationCST -->
+      <parser
+            type="qvtr"
+            class="org.eclipse.qvtd.xtext.qvtrelationcst.util.QVTrelationCSTResourceFactoryImpl"/>
+   </extension>
+
+</plugin>
+>>>>>>> refs/remotes/upstream/master

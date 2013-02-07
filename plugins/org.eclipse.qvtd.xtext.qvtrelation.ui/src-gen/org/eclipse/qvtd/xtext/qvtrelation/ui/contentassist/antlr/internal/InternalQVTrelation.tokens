@@ -34,6 +34,7 @@ T__88=88
 RULE_LETTER_CHARACTER=9
 RULE_ML_COMMENT=12
 T__71=71
+<<<<<<< HEAD
 T__72=72
 T__70=70
 T__76=76
@@ -87,7 +88,25 @@ T__37=37
 T__38=38
 T__39=39
 RULE_WS=14
+=======
+'<'=42
+'pre'=81
+'..'=76
+'>'=41
+'transformation'=33
+'checkonly'=19
+'let'=86
+'else'=84
+'domain'=21
+'key'=27
+'invalid'=79
+'-'=37
+'Integer'=55
+'String'=57
+'?'=67
+>>>>>>> refs/remotes/upstream/master
 '>='=43
+<<<<<<< HEAD
 'primitive'=28
 '/'=39
 'where'=35
@@ -102,7 +121,57 @@ RULE_WS=14
 'Boolean'=54
 '<>'=46
 'transformation'=33
+=======
+'Bag'=63
+'<='=44
+'='=45
+'Real'=56
+'Sequence'=64
+'::'=75
+'implementedby'=24
+'Boolean'=54
+'++'=71
+'xor'=49
+'{'=69
+'OclVoid'=61
+'then'=83
+'overrides'=28
+'OrderedSet'=66
+':'=68
+'OclAny'=59
+'Tuple'=53
+'.'=51
+'*'=36
+'<>'=46
+'Set'=62
+'}'=70
+'->'=52
+'self'=88
+'relation'=31
+'where'=35
+';'=18
+'true'=89
+']'=78
+'replace'=17
+'false'=90
+','=72
+'endif'=85
+'not'=38
+'query'=30
+'['=77
+'or'=48
+'/'=39
+'Collection'=65
+'and'=47
+'implies'=50
+'|'=92
+')'=74
+'top'=32
+'primitive'=29
+'_'=16
+>>>>>>> refs/remotes/upstream/master
 'OclInvalid'=60
+<<<<<<< HEAD
 '+'=40
 'pre'=81
 '.'=51
@@ -120,14 +189,26 @@ RULE_WS=14
 '?'=67
 'domain'=20
 'OclVoid'=61
+=======
+'@'=91
+'import'=25
+>>>>>>> refs/remotes/upstream/master
 'if'=82
 '('=73
+<<<<<<< HEAD
 ':'=68
 'not'=38
 '-'=37
 'checkonly'=18
 ','=72
+=======
+'when'=34
+'enforce'=22
+'UnlimitedNatural'=58
+'extends'=23
+>>>>>>> refs/remotes/upstream/master
 'in'=87
+<<<<<<< HEAD
 ']'=78
 'query'=29
 '..'=76
@@ -164,3 +245,9 @@ RULE_WS=14
 'self'=88
 'endif'=85
 'relation'=30
+=======
+'null'=80
+'+'=40
+'library'=26
+'default_values'=20
+>>>>>>> refs/remotes/upstream/master
