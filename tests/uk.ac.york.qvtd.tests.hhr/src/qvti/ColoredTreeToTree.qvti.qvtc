@@ -1,0 +1,104 @@
+import ColoredTree: '../../model/ColoredTree.ecore'::coloredTree;
+import ColoredTreeToTree: '../../model/ColorTreeToTree.ecore'::colorTreeToTree;
+
+transformation HueTrees {
+	coloredTree imports ColoredTree;
+	subTree imports ColoredTree;
+	imports ColoredTreeToTree;
+}
+
+map HueTreeToRootTree in HueTrees {
+	map {
+		check coloredTree() {
+			pHT:HueTree |
+		}
+		where () {
+			realize pHTT:HueTreeToTree |
+			pHTT.hueTree := pHT;
+		}
+		map {
+			where() {
+				pHTT.color := pHT.color;
+			}
+		}
+		map {
+			check enforce coloredTree(cHT:HueTree |
+				cHT.parent := pHT;
+				cHT.color := pHT.color;
+			) {
+				
+			}
+			where() {
+				realize cHTT:HueTreeToTree |
+				cHTT.hueTree := cHT;
+				cHTT.parent := pHTT;
+			}
+			map {
+				where() {
+					cHTT.color := cHT.color;
+				}
+			}
+		}
+	}
+	map {
+		enforce subTree() {
+			realize pT:HueTree |
+		}
+		where() {
+			pHTT.subTree := pT;
+		}
+		map {
+			where() {
+				pT.color := pHTT.color;
+			}
+		}
+	}
+	map {
+		where () {
+			
+			pHTT.color := pT.color;
+			pHT.color := pHTT.color;
+			pT.color := pHTT.color;
+			cHTT.color := cHT.color;
+			cHTT.color := cT.color;
+			cHT.color := cHTT.color;
+			cT.color := cHTT.color;
+		}
+	}
+}
+
+map HueTreeToRootTree in HueTrees {
+	check enforce coloredTree() {
+		realize pHT:HueTree,
+		realize cHT:HueTree |
+		cHT.parent := pHT;
+		cHT.color := pHT.color;
+	}
+	enforce subTree() {
+		realize pT:HueTree,
+		realize cT:HueTree |
+		cT.parent := pT;
+		cT.color := pT.color;
+	}
+	where () {
+		realize pHTT:HueTreeToTree,
+		realize cHTT:HueTreeToTree |
+		pHTT.hueTree := pHT;
+		pHTT.subTree := pT;
+		cHTT.hueTree := cHT;
+		cHTT.subTree := cT;
+		cHTT.parent := pHTT;
+	}
+	map {
+		where () {
+			pHTT.color := pHT.color;
+			pHTT.color := pT.color;
+			pHT.color := pHTT.color;
+			pT.color := pHTT.color;
+			cHTT.color := cHT.color;
+			cHTT.color := cT.color;
+			cHT.color := cHTT.color;
+			cT.color := cHTT.color;
+		}
+	}
+}

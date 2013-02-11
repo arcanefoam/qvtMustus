@@ -2,26 +2,25 @@
 <ecore:EPackage xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="familyToPedigree" nsURI="http://cs.york.ac.uk/es/FamilyToPedigree"
     nsPrefix="familyToPedigree">
-  <eClassifiers xsi:type="ecore:EClass" name="FatherToMale" eSuperTypes="#//MemberToMale">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="father" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="MotherToFemale" eSuperTypes="#//MemberToFemale">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="mother" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="SonToMale" eSuperTypes="#//MemberToMale">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="son" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
-  </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="DaughterToFemale" eSuperTypes="#//MemberToFemale">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="daughter" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
+  <eClassifiers xsi:type="ecore:EClass" name="FamilyToTree">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="family" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Family"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="familyTree" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//FamilyTree"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="memberToPerson" upperBound="-1"
+        eType="#//MemberToPerson" eOpposite="#//MemberToPerson/owner"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MemberToPerson" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="lastName" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" eType="#//FamilyToTree"
+        eOpposite="#//FamilyToTree/memberToPerson"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="member" eType="ecore:EClass http://cs.york.ac.uk/es/family#//Member"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MemberToMale" abstract="true" eSuperTypes="#//MemberToPerson">
     <eStructuralFeatures xsi:type="ecore:EReference" name="male" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Male"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="wife" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Female"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="MemberToFemale" abstract="true" eSuperTypes="#//MemberToPerson">
     <eStructuralFeatures xsi:type="ecore:EReference" name="female" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Female"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="husband" eType="ecore:EClass http://cs.york.ac.uk/es/FamilyTree#//Male"/>
   </eClassifiers>
 </ecore:EPackage>

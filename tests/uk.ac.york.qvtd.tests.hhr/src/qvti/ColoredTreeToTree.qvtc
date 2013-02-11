@@ -1,0 +1,44 @@
+import ColoredTree: '../../model/ColoredTree.ecore'::coloredTree;
+import ColoredTreeToTree: '../../model/ColorTreeToTree.ecore'::colorTreeToTree;
+
+transformation HueTrees {
+	coloredTree imports ColoredTree;
+	subTree imports ColoredTree;
+	imports ColoredTreeToTree;
+}
+
+map HueTreeToRootTree in HueTrees {
+	check enforce coloredTree() {
+		realize pHT:HueTree,
+		realize cHT:HueTree |
+		cHT.parent := pHT;
+		cHT.color := pHT.color;
+	} 
+	enforce subTree() {
+		realize pT:HueTree,
+		realize cT:HueTree |
+		cT.parent := pT;
+		cT.color := pT.color;
+	}
+	where () {
+		realize pHTT:HueTreeToTree,
+		realize cHTT:HueTreeToTree |
+		pHTT.hueTree := pHT;
+		pHTT.tree := pT;
+		cHTT.hueTree := cHT;
+		cHTT.tree := cT;
+		cHTT.parent := pHTT;
+	}
+	map {
+		where () {
+			pHTT.color := pHT.color;
+			pHTT.color := pT.color;
+			pHT.color := pHTT.color;
+			pT.color := pHTT.color;
+			cHTT.color := cHT.color;
+			cHTT.color := cT.color;
+			cHT.color := cHTT.color;
+			cT.color := cHTT.color;
+		}
+	}
+}
