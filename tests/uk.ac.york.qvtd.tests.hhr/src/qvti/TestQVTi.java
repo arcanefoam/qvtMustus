@@ -1,6 +1,13 @@
+/*
+ * 
+ */
 package qvti;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -38,42 +45,21 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
  */
 public class TestQVTi extends LoadTestCase {
 	
-	private final String inputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi";
-	private final String inputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
-	private final String middleMetaModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph2Graph.ecore";
-	
 	private static ProjectMap projectMap = null;
 	private static ResourceSet resourceSet = new ResourceSetImpl();
-	private Resource inputResource;
-    private Resource inputmm;
-    private Resource middlemm;
-	
+	private Map<String, Resource> typeModelResourceMap = new HashMap<String, Resource>();
+	private Map<String, Resource> typeModelValidationResourceMap = new HashMap<String, Resource>();
 	
 	@Before
     public void setUp() throws Exception {
+	    
 		EssentialOCLLinkingService.DEBUG_RETRY = true;
 		super.setUp();
 		QVTcoreStandaloneSetup.doSetup();
 		
-		// Load the models and metamodels shared by all tests
         getProjectMap().initializeResourceSet(resourceSet);
         metaModelManager = new MetaModelManager();
         MetaModelManagerResourceSetAdapter.getAdapter(resourceSet, metaModelManager);
-        // Load the input model from a ResourceSet for the given URI
-        inputResource = resourceSet.getResource(URI.createURI(inputModelURI), true);
-        if (inputResource == null) {
-            throw new IllegalArgumentException("Unable to load the input model.");
-        }
-        inputmm = resourceSet.getResource(URI.createURI(inputModelmmURI), true);
-        if (inputmm == null) {
-            throw new IllegalArgumentException("Unable to load the input metamodel.");
-        }
-        // Load the moddle metamodel as a resource
-        middlemm = resourceSet.getResource(URI.createURI(middleMetaModelmmURI), true);
-        if (middlemm == null) {
-            throw new IllegalArgumentException("Unable to load the middle metamodel.");
-        }
-        
     }
  
     @After
@@ -87,60 +73,29 @@ public class TestQVTi extends LoadTestCase {
     @Test
     public void testMinimalQVTi() {
         
-        final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphMinimal.xmi";
-        final String outputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
-        final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti.qvtc";
-        ResourceSet resourceSet = new ResourceSetImpl();
-        getProjectMap().initializeResourceSet(resourceSet);
-        metaModelManager = new MetaModelManager();
-        MetaModelManagerResourceSetAdapter.getAdapter(resourceSet, metaModelManager);
-        // Create a new Resource for the output model
-        // TODO  this assumes that the output model does not exist and therefore 
-        // it is the target model  by default. There must be a way to configure
-        // this
-        Resource outputResource = resourceSet.createResource(URI.createURI(outputModelURI));
-        if (outputResource == null) {
-           fail("Unable to load/create the output model.");
-        }
-        // Load the qvtc file
-        BaseCSResource xtextResource = null;
-        PivotResource qvtResource = null;
-        try {
-            xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(qvtcSource), true);
-            if (xtextResource != null) {
-                qvtResource = createPivotFromXtext(metaModelManager, xtextResource);
-            } else {
-                fail("There was an error loading the QVTc file");
+        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti.qvtc";
+        // Load the TypeModel resources
+        typeModelResourceMap.clear();
+        // This is map reflects how in the future the user input can be passed to the engine
+        Map<String,String> typeModelFileMap = new HashMap<String,String>();
+        typeModelFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi");
+        typeModelFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphMinimal.xmi");
+        Iterator<Entry<String, String>> it = typeModelFileMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, String> pairs = (Map.Entry<String, String>)it.next();
+            // TODO Check if the output resource needs the second parameter in false
+            Resource tmResource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
+            if (tmResource == null) {
+                fail("Unable to load the resource for " + pairs.getKey() + " TypeModel.");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("There was an error loading the QVTc file");
+            typeModelResourceMap.put(pairs.getKey(), tmResource);
         }
-        if (qvtResource != null) {
-            CoreModel coreModel = (CoreModel) qvtResource.getContents().get(0);
-            // This is to pass the correct arguments to the constructor, but I don't
-            // really understand their use. 
-            // TODO check this with Ed
-            PivotEnvironmentFactory envFactory = new PivotEnvironmentFactory(null, metaModelManager);
-            PivotEnvironment env = envFactory.createEnvironment();
-            PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
-            
-            QVTcDomainManager modelManager = new QVTcDomainManager();
-            Transformation transformation = ((Transformation)coreModel.getNestedPackage().get(0));
-            TypedModel typedModel;
-            /* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
-            typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "upperGraph");
-            modelManager.addModel(coreModel, typedModel, inputResource);
-            typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "lowerGraph");
-            modelManager.addModel(coreModel, typedModel, outputResource);
-            QVTcoreVisitor<Object> visitor = new QVTcoreEvaluationVisitorImpl(env, evalEnv, modelManager);
-            Object sucess = coreModel.accept(visitor);
-            assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
-            System.out.println("Result of the transformation was " + (Boolean)sucess);
-            modelManager.saveModels();
-            //modelManager.saveTrace();
-            modelManager.dispose();
-        }
+        // Load the validation TypeModel resources 
+        typeModelValidationResourceMap.clear();
+        Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
+        typeModelValidationFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphValidate.xmi");
+        typeModelValidationFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphMinimalValidate.xmi");
+        doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
     }
     
     /*
@@ -148,28 +103,57 @@ public class TestQVTi extends LoadTestCase {
      */
     @Test
     public void testHierarchicalN2N() {
-        final String outputModelURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphHierarchical.xmi";
-        final String outputModelmmURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.ecore";
-        final String qvtcSource = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphHierarchical.qvti.qvtc";
+        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti.qvtc";
+        // Load the TypeModel resources
+        typeModelResourceMap.clear();
+        // This is map reflects how in the future the user input can be passed to the engine
+        Map<String,String> typeModelFileMap = new HashMap<String,String>();
+        typeModelFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi");
+        typeModelFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphHierarchical.xmi");
+        Iterator<Entry<String, String>> it = typeModelFileMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, String> pairs = (Map.Entry<String, String>)it.next();
+            // TODO Check if the output resource needs the second parameter in false
+            Resource tmResource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
+            if (tmResource == null) {
+                fail("Unable to load the resource for " + pairs.getKey() + " TypeModel.");
+            }
+            typeModelResourceMap.put(pairs.getKey(), tmResource);
+        }
+        // Load the validation TypeModel resources 
+        typeModelValidationResourceMap.clear();
+        Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
+        typeModelValidationFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphValidate.xmi");
+        typeModelValidationFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphHierarchicalValidate.xmi");
+        doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
+    }
+    
+    @Test
+    public void testN2LessNGuarded() {
+        
+    }
+    
+    /**
+     * Do test.
+     *
+     * @param typeModelResourceMap the TypeModel Resource map
+     * @param transformationURI the transformation uri
+     * @param typeModelValidationResourceMap the TypeModel validation Resource map
+     */
+    private void doTest(Map<String, Resource> typeModelResourceMap,
+            String transformationURI,
+            Map<String, Resource> typeModelValidationResourceMap) {
+        
         ResourceSet resourceSet = new ResourceSetImpl();
         getProjectMap().initializeResourceSet(resourceSet);
         metaModelManager = new MetaModelManager();
         MetaModelManagerResourceSetAdapter.getAdapter(resourceSet, metaModelManager);
-        //try {
-            
-        // Create a new Resource for the output model
-        // TODO  this assumes that the output model does not exist and therefore 
-        // it is the target model  by default. There must be a way to configure
-        // this
-        Resource outputResource = resourceSet.createResource(URI.createURI(outputModelURI));
-        if (outputResource == null) {
-           fail("Unable to load/create the output model.");
-        }
-        // Load the qvtc file
+        
+        // Load the transformation resource
         BaseCSResource xtextResource = null;
         PivotResource qvtResource = null;
         try {
-            xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(qvtcSource), true);
+            xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(transformationURI), true);
             if (xtextResource != null) {
                 qvtResource = createPivotFromXtext(metaModelManager, xtextResource);
             } else {
@@ -181,9 +165,6 @@ public class TestQVTi extends LoadTestCase {
         }
         if (qvtResource != null) {
             CoreModel coreModel = (CoreModel) qvtResource.getContents().get(0);
-            // This is to pass the correct arguments to the constructor, but I don't
-            // really understand their use. 
-            // TODO check this with Ed
             PivotEnvironmentFactory envFactory = new PivotEnvironmentFactory(null, metaModelManager);
             PivotEnvironment env = envFactory.createEnvironment();
             PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
@@ -192,27 +173,44 @@ public class TestQVTi extends LoadTestCase {
             Transformation transformation = ((Transformation)coreModel.getNestedPackage().get(0));
             TypedModel typedModel;
             /* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
-            typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "upperGraph");
-            modelManager.addModel(coreModel, typedModel, inputResource);
-            typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "lowerGraph");
-            modelManager.addModel(coreModel, typedModel, outputResource);
+            Iterator<Entry<String, Resource>> it = typeModelResourceMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Resource> pairs = (Map.Entry<String, Resource>)it.next();
+                typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
+                modelManager.addModel(coreModel, typedModel, pairs.getValue());
+            }
+            //typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "lowerGraph");
+            //modelManager.addModel(coreModel, typedModel, outputResource);
             QVTcoreVisitor<Object> visitor = new QVTcoreEvaluationVisitorImpl(env, evalEnv, modelManager);
             Object sucess = coreModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
-            System.out.println("Result of the transformation was " + (Boolean)sucess);
             modelManager.saveModels();
             //modelManager.saveTrace();
+            System.out.println("Result of the transformation was " + (Boolean)sucess);
+            
+            // Validate against reference models
+            it = typeModelResourceMap.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<String, Resource> pairs = (Map.Entry<String, Resource>)it.next();
+                try {
+                    org.eclipse.ocl.examples.xtext.tests.XtextTestCase.assertSameModel(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
             modelManager.dispose();
         }
-    	
+        
     }
     
-    @Test
-    public void testN2LessNGuarded() {
-    	
-    }
+    /* ================== NON - TEST ========================= */
     
-
+    
+    
 	public static ProjectMap getProjectMap() {
 		if (projectMap == null) {
 			projectMap = new ProjectMap();
