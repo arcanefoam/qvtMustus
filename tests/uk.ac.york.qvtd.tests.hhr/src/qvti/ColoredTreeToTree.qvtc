@@ -7,6 +7,12 @@ transformation HueTrees {
 	imports ColoredTreeToTree;
 }
 
+map flattening in HueTrees {
+	getSameColorChildres(t : HueTree, c : Color) : Set(HueTree) {
+		t.children->select(ch : HueTree | ch.color == color);
+	}
+}
+
 map HueTreeToRootTree in HueTrees {
 	check enforce coloredTree() {
 		realize pHT:HueTree,

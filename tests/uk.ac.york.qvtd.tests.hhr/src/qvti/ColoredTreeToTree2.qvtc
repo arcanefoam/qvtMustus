@@ -1,0 +1,66 @@
+import ColoredTree: '../../model/ColoredTree.ecore'::coloredTree;
+import ColoredTreeToTree: '../../model/ColorTreeToTree.ecore'::colorTreeToTree;
+
+transformation ColorSubTrees {
+	coloredTree imports ColoredTree;
+	subTree imports ColoredTree;
+	imports ColoredTreeToTree;
+}
+
+map coloring in ColorSubTrees {
+	getSameColorChildren(t : HueTree, c : Color ) : Set(HueTree) {
+		t.children->select(ch : HueTree | ch.color = color);
+	}
+}
+
+map RootColorTreeToSubTree in ColorSubTrees {
+	check enforce coloredTree() {
+		realize colorRoot:HueTree |
+		colorRoot.parent.oclIsUndefined();
+	} 
+	enforce subTree() {
+		realize subtreeRoot:HueTree |
+		subtreeRoot.parent.oclIsUndefined();
+	}
+	where () {
+		realize colorRootSimple:HueTreeToTree |
+		colorRootSimple.hueTree := colorRoot;
+		colorRootSimple.subTree := subtreeRoot;
+	}
+	map {
+		where () {
+			colorRootSimple.color := colorRoot.color;
+			colorRootSimple.color := subtreeRoot.color;
+			colorRoot.color := colorRootSimple.color;
+			subtreeRoot.color := colorRootSimple.color;
+		}
+	}
+}
+
+map LeavesHueTreeToSubTree in ColorSubTrees refines coloring {
+	check enforce coloredTree(colorRoot:HueTree |) {
+		realize colorLeaf:HueTree |
+		getSameColorChildren(colorRoot, colorRoot.color)->includes(colorLeaf);
+	}
+	enforce subTree(subtreeRoot:HueTree |) {
+		realize subtreeLeaf:HueTree |
+		getSameColorChildren(subtreeRoot, subtreeRoot.color)->includes(subtreeLeaf);
+	}
+	where(colorRootSimple:HueTreeToTree |
+		colorRootSimple.hueTree := colorRoot;
+		colorRootSimple.subTree := subtreeRoot;
+		) {
+			realize colorLeafSimple:HueTreeToTree |
+			colorLeafSimple.parent = colorRootSimple;
+			colorLeafSimple.hueTree := colorLeaf;
+			colorLeafSimple.subTree := subtreeLeaf;
+		}
+	map {
+		where () {
+			colorLeafSimple.color := colorLeaf.color;
+			colorLeafSimple.color := subtreeLeaf.color;
+			colorLeaf.color := colorLeafSimple.color;
+			subtreeLeaf.color := colorLeafSimple.color;
+		}
+	}
+}
