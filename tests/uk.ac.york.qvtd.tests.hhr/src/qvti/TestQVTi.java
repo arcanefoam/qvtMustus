@@ -76,28 +76,22 @@ public class TestQVTi extends LoadTestCase {
         final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti.qvtc";
         // Load the TypeModel resources
         typeModelResourceMap.clear();
-        // This is map reflects how in the future the user input can be passed to the engine
-        Map<String,String> typeModelFileMap = new HashMap<String,String>();
+        // This is maps reflects how in the future the user input can be passed to the engine
+        Map<String, String> typeModelFileMap = new HashMap<String, String>();
         typeModelFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi");
         typeModelFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphMinimal.xmi");
-        Iterator<Entry<String, String>> it = typeModelFileMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, String> pairs = (Map.Entry<String, String>)it.next();
-            // TODO Check if the output resource needs the second parameter in false
-            Resource tmResource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
-            if (tmResource == null) {
-                fail("Unable to load the resource for " + pairs.getKey() + " TypeModel.");
-            }
-            typeModelResourceMap.put(pairs.getKey(), tmResource);
-        }
-        // Load the validation TypeModel resources 
+        Map<String, Boolean> typeModelModeMap = new HashMap<String, Boolean>();     // Load or create, true = create
+        typeModelModeMap.put("upperGraph", Boolean.FALSE);
+        typeModelModeMap.put("lowerGraph", Boolean.TRUE);
+        // Validation TypeModel resources 
         typeModelValidationResourceMap.clear();
         Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
         typeModelValidationFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphValidate.xmi");
         typeModelValidationFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphMinimalValidate.xmi");
+        loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
         doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
     }
-    
+
     /*
      * Hierarchical N object to N object QVTi transformation working.
      */
@@ -110,21 +104,15 @@ public class TestQVTi extends LoadTestCase {
         Map<String,String> typeModelFileMap = new HashMap<String,String>();
         typeModelFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi");
         typeModelFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphHierarchical.xmi");
-        Iterator<Entry<String, String>> it = typeModelFileMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, String> pairs = (Map.Entry<String, String>)it.next();
-            // TODO Check if the output resource needs the second parameter in false
-            Resource tmResource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
-            if (tmResource == null) {
-                fail("Unable to load the resource for " + pairs.getKey() + " TypeModel.");
-            }
-            typeModelResourceMap.put(pairs.getKey(), tmResource);
-        }
-        // Load the validation TypeModel resources 
+        Map<String, Boolean> typeModelModeMap = new HashMap<String, Boolean>();     // Load or create, true = create
+        typeModelModeMap.put("upperGraph", Boolean.FALSE);
+        typeModelModeMap.put("lowerGraph", Boolean.TRUE);
+        // validation TypeModel resources 
         typeModelValidationResourceMap.clear();
         Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
         typeModelValidationFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphValidate.xmi");
         typeModelValidationFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphHierarchicalValidate.xmi");
+        loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
         doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
     }
     
@@ -177,10 +165,8 @@ public class TestQVTi extends LoadTestCase {
             while (it.hasNext()) {
                 Map.Entry<String, Resource> pairs = (Map.Entry<String, Resource>)it.next();
                 typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
-                modelManager.addModel(coreModel, typedModel, pairs.getValue());
+                modelManager.addModel(typedModel, pairs.getValue());
             }
-            //typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), "lowerGraph");
-            //modelManager.addModel(coreModel, typedModel, outputResource);
             QVTcoreVisitor<Object> visitor = new QVTcoreEvaluationVisitorImpl(env, evalEnv, modelManager);
             Object sucess = coreModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
@@ -209,7 +195,32 @@ public class TestQVTi extends LoadTestCase {
     
     /* ================== NON - TEST ========================= */
     
-    
+    private void loadResources(Map<String, String> typeModelFileMap,
+            Map<String, Boolean> typeModelModeMap, Map<String, String> typeModelValidationFileMap) {
+        
+        Iterator<Entry<String, String>> it = typeModelFileMap.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry<String, String> pairs = (Map.Entry<String, String>)it.next();
+            // TODO Check if the output resource needs the second parameter in false
+            Resource resource = null;
+            if(typeModelModeMap.get(pairs.getKey())) {
+                resource = resourceSet.createResource(URI.createURI(pairs.getValue()));
+            } else {
+                resource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
+            }
+            if (resource == null) {
+                fail("Unable to load the resource for " + pairs.getKey() + " TypeModel.");
+            }
+            typeModelResourceMap.put(pairs.getKey(), resource);
+        }
+        Iterator<Entry<String, String>> itV = typeModelFileMap.entrySet().iterator();
+        while (itV.hasNext()) {
+            Map.Entry<String, String> pairs = (Map.Entry<String, String>)itV.next();
+            Resource resource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
+            typeModelValidationResourceMap.put(pairs.getKey(), resource);
+        }
+        
+    }
     
 	public static ProjectMap getProjectMap() {
 		if (projectMap == null) {

@@ -24,7 +24,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.domain.elements.DomainType;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
-import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
 
 
 /**
@@ -65,7 +64,7 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * @throws IllegalArgumentException if the metamodel does not have at least one root package
 	 */
 	// TODO support multiple model instances by alias
-	public void addModel(CoreModel coreModel, TypedModel typedModel, @NonNull Resource model) {
+	public void addModel(TypedModel typedModel, @NonNull Resource model) {
 		
 	    modelMap.put(typedModel, model);
 	}
