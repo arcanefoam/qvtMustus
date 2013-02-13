@@ -46,6 +46,9 @@ import org.eclipse.qvtd.pivot.qvtcore.CorePattern;
 import org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation;
 import org.eclipse.qvtd.pivot.qvtcore.GuardPattern;
 import org.eclipse.qvtd.pivot.qvtcore.Mapping;
+import org.eclipse.qvtd.pivot.qvtcore.MappingCall;
+import org.eclipse.qvtd.pivot.qvtcore.MappingCallBinding;
+import org.eclipse.qvtd.pivot.qvtcore.NestedMapping;
 import org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtcore.VariableAssignment;
@@ -318,14 +321,14 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
             // The transformation only has one mapping, the root mapping. Call
             // nested mappings in correct order, i.e. call all LtoM first then
             // all MtoR
-            for (Mapping m : ((Mapping) rule).getLocal()) {
+            for (NestedMapping m : ((Mapping) rule).getLocal()) {
                 if (isLtoMMapping(m)) {
                     m.accept(this);
                 }
             }
             // Remove all bindings to evaluate MtoR
             getEvaluationEnvironment().clear();
-            for (Mapping m : ((Mapping) rule).getLocal()) {
+            for (NestedMapping m : ((Mapping) rule).getLocal()) {
                 if (isMtoRMapping(m)) {
                     m.accept(this);
                 }
@@ -406,6 +409,22 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         return true;
     }
     
+    @Override
+    @Nullable
+    public Object visitMappingCall(@NonNull MappingCall object) {
+        // TODO Add visit function or decide if it should never be implemented
+        throw new UnsupportedOperationException(
+        "Visit method not implemented yet");
+    }
+    
+    @Override
+    @Nullable
+    public Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
+        // TODO Add visit function or decide if it should never be implemented
+        throw new UnsupportedOperationException(
+        "Visit method not implemented yet");
+    }
+    
     /**
      * Visit left to middle mapping. Mapping's domains define the loop variables 
      * for the middle bottom pattern and nested mappings. 
@@ -433,7 +452,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                             mapping.getBottomPattern().accept(this);
                         //}
                         // Nested mappings
-                        for (Mapping localMapping : mapping.getLocal()) {
+                        for (NestedMapping localMapping : mapping.getLocal()) {
                             localMapping.accept(this);
                         }
                     }
@@ -470,7 +489,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                     for (Domain domain : mapping.getDomain()) {
                         ((CoreDomain) domain).accept(this);
                     }
-                    for (Mapping localMapping : mapping.getLocal()) {
+                    for (NestedMapping localMapping : mapping.getLocal()) {
                         localMapping.accept(this);
                     }
                 }
@@ -488,7 +507,14 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      * @param mapping the mapping
      * @return true, if is mto r mapping
      */
-    private boolean isMtoRMapping(Mapping mapping) {
+    private boolean isMtoRMapping(NestedMapping nestedMapping) {
+        Mapping mapping;
+        if (nestedMapping instanceof MappingCall) {
+            mapping = ((MappingCall)nestedMapping).getReferredMapping();
+        }
+        else {
+            mapping = (Mapping)nestedMapping;
+        }
         if (mapping.getDomain().size() == 0) {
             return false;
         }
@@ -507,7 +533,14 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      * @param mapping the mapping
      * @return true, if is lto m mapping
      */
-    private boolean isLtoMMapping(Mapping mapping) {
+    private boolean isLtoMMapping(NestedMapping nestedMapping) {
+        Mapping mapping;
+        if (nestedMapping instanceof MappingCall) {
+            mapping = ((MappingCall)nestedMapping).getReferredMapping();
+        }
+        else {
+            mapping = (Mapping)nestedMapping;
+        }
         if (mapping.getDomain().size() == 0) {
             return false;
         }
@@ -680,4 +713,5 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         QVTcoreEvaluationVisitorImpl ne = new QVTcoreEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
+
 }

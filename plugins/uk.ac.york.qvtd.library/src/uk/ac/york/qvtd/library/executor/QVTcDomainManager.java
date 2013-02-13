@@ -34,7 +34,10 @@ import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
  * modify the domains's models. 
  */
 public class QVTcDomainManager implements DomainModelManager {
-
+    
+    
+    public static final TypedModel MIDDLE_MODEL = null;
+    
 	// TODO how to manage aliases?
 	/** Map a typed model to its resource (model). */
 	private Map<TypedModel, Resource> modelMap = new HashMap<>();
