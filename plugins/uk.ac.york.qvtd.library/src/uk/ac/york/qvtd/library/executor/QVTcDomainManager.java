@@ -45,8 +45,9 @@ public class QVTcDomainManager implements DomainModelManager {
     
 	// TODO how to manage aliases?
 	/** Map a typed model to its resource (model). */
-	private Map<TypedModel, Resource> modelMap = new HashMap<>();
-
+	private Map<TypedModel, Resource> modelResourceMap = new HashMap<>();
+	
+	private Map<TypedModel, Set<EObject>> modelElementsMap = new HashMap<>();
 	/**
 	 * Instantiates a new QVTc Domain Manager. Responsible for creating new
 	 * instances of the middle model and the middle model EFactory.
@@ -54,8 +55,9 @@ public class QVTcDomainManager implements DomainModelManager {
 	 */
 	public QVTcDomainManager() {
 	    // null entries in the modelMap and pivotMap will be for the middle model
-	    modelMap.put(MIDDLE_MODEL, new ResourceImpl());
+	    modelResourceMap.put(MIDDLE_MODEL, new ResourceImpl());
 	}
+	
 	
 	/**
 	 * Adds the model to the list of models managed by this domain manager. The
@@ -68,7 +70,7 @@ public class QVTcDomainManager implements DomainModelManager {
 	// TODO support multiple model instances by alias
 	public void addModel(@NonNull TypedModel typedModel, @NonNull Resource model) {
 		
-	    modelMap.put(typedModel, model);
+	    modelResourceMap.put(typedModel, model);
 	}
 	
 	
@@ -79,7 +81,7 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * @return the resource
 	 */
 	public Resource getTypeModelResource(@NonNull TypedModel typedModel) {
-		return modelMap.get(typedModel);
+		return modelResourceMap.get(typedModel);
 	}
 	
 	
@@ -89,7 +91,7 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * @return a collection of all the resources
 	 */
 	public Collection<Resource> getAllModelResources() {
-		return modelMap.values();
+		return modelResourceMap.values();
 	}
 
 	
@@ -99,24 +101,33 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * @return the middle model
 	 */
 	public Resource getMiddleModel() {
-		return modelMap.get(MIDDLE_MODEL);
+		return modelResourceMap.get(MIDDLE_MODEL);
 	}
 	
-    
 	
-    /**
+	/**
      * Adds the model element to the resource of the given TypeModel
      *
      * @param tm the TypeModel
      * @param element the element
      * @return true, if successful
      */
-    public boolean addModelElement(@Nullable TypedModel tm, @NonNull Object element) {
+    public void addModelElement(@Nullable TypedModel model, @NonNull Object element) {
         
-        Resource r = modelMap.get(tm);
-        return r.getContents().add((EObject) element);
+        Set<EObject> elements = null;
+        if (modelElementsMap.containsKey(model)) {
+            elements = modelElementsMap.get(model);
+            //modelElements.get(model).add((EObject) element);
+        } else {
+            elements = new HashSet<EObject>();
+            if (model != MIDDLE_MODEL) {
+                elements.addAll(modelResourceMap.get(model).getContents());
+            }
+        }
+        elements.add((EObject) element);
+        modelElementsMap.put(model, elements);
     }
-
+    
     
     /**
      * Gets the all the instances of the specified Type in the given TypeModel
@@ -125,18 +136,32 @@ public class QVTcDomainManager implements DomainModelManager {
      * @param type the type of the elements that are retrieved
      * @return the instances
      */
-    public Set<Object> getInstances(@Nullable TypedModel tm, @NonNull Type type) {
+    public Set<EObject> getElementsByType(@Nullable TypedModel model, @NonNull Type type) {
         
-        Set<Object> objectSet = new HashSet<>();
-        
-        for (TreeIterator<EObject> contents = modelMap.get(tm).getAllContents(); contents.hasNext();) {
-            Object object = contents.next();
-            //object.getClass().getName().equals(var.getType().getName())
-            if (object.getClass().equals(type)) {
-                objectSet.add(object);
+        Set<EObject> elements = new HashSet<EObject>();
+        // Have we copied the elements to the modelElementsMap?
+        if (modelElementsMap.containsKey(model)) {
+            for (EObject root :  modelElementsMap.get(model)) {
+                if (root.eClass().getName().equals(type.getName())) {
+                    elements.add(root);
+                }
+                for (TreeIterator<EObject> contents = root.eAllContents(); contents.hasNext();) {
+                    EObject object = contents.next();
+                    if (object.eClass().getName().equals(type.getName())) {
+                        elements.add(object);
+                    }
+                }
             }
         }
-        return objectSet;
+        else {
+            for (TreeIterator<EObject> contents = modelResourceMap.get(model).getAllContents(); contents.hasNext();) {
+                EObject object = contents.next();
+                if (object.eClass().getName().equals(type.getName())) {
+                    elements.add(object);
+                }
+            }
+        }
+        return elements;
     }
 
 
@@ -144,42 +169,50 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * Saves all the models managed by the domain manager.
 	 */
 	// TODO only save the output models 
-	public void saveModels() {
-		for (Map.Entry<TypedModel, Resource> entry : modelMap.entrySet()) {
-		    Resource model = entry.getValue();
-		    if(entry.getKey() != null) {      // Don't sabe the middle model
-		        try {
-	                Map<Object, Object> options = new HashMap<Object, Object>();
-	                options.put(XMLResource.OPTION_SCHEMA_LOCATION, Boolean.TRUE);
-	                model.save(options);
-	               } catch (IOException e) {
-	                  e.printStackTrace();
-	               }
-		    }
-		}
-	}
-
+    public void saveModels() {
+        for (Map.Entry<TypedModel, Resource> entry : modelResourceMap.entrySet()) {
+            Resource model = entry.getValue();
+            TypedModel key = entry.getKey();
+            if (key != MIDDLE_MODEL) {      // Don't save the middle model
+                if (modelElementsMap.containsKey(key)) {       // Only save modified models
+                    // Move elements without container to the resource contents
+                    for (EObject e : modelElementsMap.get(key)) {
+                        if (e.eContainer() == null) {
+                            model.getContents().add(e);
+                        }
+                    }
+                    try{
+                        Map<Object, Object> options = new HashMap<Object, Object>();
+                        options.put(XMLResource.OPTION_SCHEMA_LOCATION, Boolean.TRUE);
+                        model.save(options);
+                       }catch (IOException e) {
+                          e.printStackTrace();
+                       }
+                }
+            }    
+        }
+    }
 	/**
-	 * Save trace.
-	 */
-    // TODO How to set the save path? Pass it as a parameter here or in the constructor?
-	public void saveTrace() {
-		try{
-			Map<Object, Object> options = new HashMap<Object, Object>();
-	    	options.put(XMLResource.OPTION_SCHEMA_LOCATION, Boolean.TRUE);
-	    	Resource model = modelMap.get(MIDDLE_MODEL);
-	    	model.save(null);
-	       }catch (IOException e) {
-	          e.printStackTrace();
-	       }
-	}
-
+     * Save trace.
+     */
+    public void saveTrace() {
+        Resource r = modelResourceMap.get(MIDDLE_MODEL);
+        r.getContents().addAll(modelElementsMap.get(MIDDLE_MODEL));
+        try{
+            Map<Object, Object> options = new HashMap<Object, Object>();
+            options.put(XMLResource.OPTION_SCHEMA_LOCATION, Boolean.TRUE);
+            Resource model = modelResourceMap.get(NULL);
+            model.save(null);
+           }catch (IOException e) {
+              e.printStackTrace();
+           }
+    }
 	/**
 	 * Dispose.
 	 */
 	public void dispose() {
 		// TODO Auto-generated method stub
-		modelMap = null;
+		modelResourceMap = null;
 		
 	}
 	
@@ -192,6 +225,7 @@ public class QVTcDomainManager implements DomainModelManager {
 		return null;
 	}
 	
+	
 	/**
 	 * Implemented by subclasses to determine whether the specified element
 	 * is an instance of the specified class, according to the metamodel
@@ -203,7 +237,9 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * class; <code>false</code> otherwise
 	 */
 	protected boolean isInstance(@NonNull DomainType type, @NonNull EObject element) {
+	    
 		return false;
 	}
+
 
 }
