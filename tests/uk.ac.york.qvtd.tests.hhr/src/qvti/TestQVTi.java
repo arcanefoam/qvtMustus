@@ -97,7 +97,7 @@ public class TestQVTi extends LoadTestCase {
      */
     @Test
     public void testHierarchicalN2N() {
-        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti.qvtc";
+        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphHierarchical.qvti.qvtc";
         // Load the TypeModel resources
         typeModelResourceMap.clear();
         // This is map reflects how in the future the user input can be passed to the engine
@@ -213,7 +213,8 @@ public class TestQVTi extends LoadTestCase {
             }
             typeModelResourceMap.put(pairs.getKey(), resource);
         }
-        Iterator<Entry<String, String>> itV = typeModelFileMap.entrySet().iterator();
+        // Validation Models
+        Iterator<Entry<String, String>> itV = typeModelValidationFileMap.entrySet().iterator();
         while (itV.hasNext()) {
             Map.Entry<String, String> pairs = (Map.Entry<String, String>)itV.next();
             Resource resource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
