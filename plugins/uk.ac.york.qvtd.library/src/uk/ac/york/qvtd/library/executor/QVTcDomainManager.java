@@ -136,9 +136,9 @@ public class QVTcDomainManager implements DomainModelManager {
      * @param type the type of the elements that are retrieved
      * @return the instances
      */
-    public Set<EObject> getElementsByType(@Nullable TypedModel model, @NonNull Type type) {
+    public Set<Object> getElementsByType(@Nullable TypedModel model, @NonNull Type type) {
         
-        Set<EObject> elements = new HashSet<EObject>();
+        Set<Object> elements = new HashSet<Object>();
         // Have we copied the elements to the modelElementsMap?
         if (modelElementsMap.containsKey(model)) {
             for (EObject root :  modelElementsMap.get(model)) {
