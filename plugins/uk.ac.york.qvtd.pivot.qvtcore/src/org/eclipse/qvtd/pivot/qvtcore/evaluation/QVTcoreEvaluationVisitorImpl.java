@@ -52,6 +52,11 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         implements QVTcoreVisitor<Object> {
     
+    
+    private boolean l2mStarted = false;
+    private boolean m2mStarted = false;
+    private boolean m2rStarted = false;
+        
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
      * 
@@ -167,6 +172,8 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 QVTcoreLMEvaluationVisitor LMVisitor = new QVTcoreLMEvaluationVisitor(
                         getEnvironment(), getEvaluationEnvironment(), modelManager);
                 if (isLtoMMapping(m)) {
+                    assert !m2mStarted && !m2rStarted;
+                    l2mStarted = true;
                     m.accept(LMVisitor);
                 }
             }
@@ -176,9 +183,12 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                 QVTcoreMREvaluationVisitor MRVisitor = new QVTcoreMREvaluationVisitor(
                         getEnvironment(), getEvaluationEnvironment(), modelManager);
                 if (isMtoRMapping(m)) {
+                    assert l2mStarted;
+                    m2rStarted = true;
                     m.accept(MRVisitor);
                 }
             }
+            // Where does the m to m mapping occurs?
         }
         return true;
     }
