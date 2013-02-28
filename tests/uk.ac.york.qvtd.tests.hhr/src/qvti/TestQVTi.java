@@ -6,10 +6,22 @@ package qvti;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.compare.Comparison;
+import org.eclipse.emf.compare.Diff;
+import org.eclipse.emf.compare.EMFCompare;
+import org.eclipse.emf.compare.match.DefaultComparisonFactory;
+import org.eclipse.emf.compare.match.DefaultEqualityHelperFactory;
+import org.eclipse.emf.compare.match.DefaultMatchEngine;
+import org.eclipse.emf.compare.match.IComparisonFactory;
+import org.eclipse.emf.compare.match.IMatchEngine;
+import org.eclipse.emf.compare.match.eobject.IEObjectMatcher;
+import org.eclipse.emf.compare.scope.IComparisonScope;
+import org.eclipse.emf.compare.utils.UseIdentifiers;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -178,15 +190,18 @@ public class TestQVTi extends LoadTestCase {
             it = typeModelResourceMap.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<String, Resource> pairs = (Map.Entry<String, Resource>)it.next();
-                try {
-                    org.eclipse.ocl.examples.xtext.tests.XtextTestCase.assertSameModel(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
+                Comparison comparison = compare(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
+                List<Diff> differences = comparison.getDifferences();
+                assertEquals("Generated model for TypedModel " + pairs.getKey() + " is different than expected Model.", 0, differences.size());
+                /*try {
+                    //org.eclipse.ocl.examples.xtext.tests.XtextTestCase.assertSameModel(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                }
+                }*/
             }
             modelManager.dispose();
         }
@@ -223,7 +238,7 @@ public class TestQVTi extends LoadTestCase {
         
     }
     
-	public static ProjectMap getProjectMap() {
+    private static ProjectMap getProjectMap() {
 		if (projectMap == null) {
 			projectMap = new ProjectMap();
 		}
@@ -231,7 +246,7 @@ public class TestQVTi extends LoadTestCase {
 	}
 	
 	
-	public BaseCSResource createXtextFromURI(MetaModelManager metaModelManager, URI xtextURI) throws IOException {
+	private BaseCSResource createXtextFromURI(MetaModelManager metaModelManager, URI xtextURI) throws IOException {
 		ResourceSet resourceSet2 = metaModelManager.getExternalResourceSet();
 		ProjectMap.initializeURIResourceMap(resourceSet2);
 		ProjectMap.initializeURIResourceMap(null);
@@ -241,7 +256,7 @@ public class TestQVTi extends LoadTestCase {
 	}
 	
 	
-	public PivotResource createPivotFromXtext(MetaModelManager metaModelManager, @NonNull BaseCSResource xtextResource) throws IOException {
+	private PivotResource createPivotFromXtext(MetaModelManager metaModelManager, @NonNull BaseCSResource xtextResource) throws IOException {
 		CS2PivotResourceAdapter adapter = null;
 		try {
 			adapter = CS2PivotResourceAdapter.getAdapter(xtextResource, null);
@@ -253,6 +268,29 @@ public class TestQVTi extends LoadTestCase {
 				adapter.dispose();
 			}
 		}
+	}
+	
+	private Comparison compare(Resource modelA, Resource modelB) {
+	    // Load the two input models
+	    ResourceSet resourceSet1 = new ResourceSetImpl();
+	    ResourceSet resourceSet2 = new ResourceSetImpl();
+	    resourceSet1.getResources().add(modelA);
+	    resourceSet2.getResources().add(modelB);
+	    
+	    //String xmi1 = "path/to/first/model.xmi";
+	    //String xmi2 = "path/to/second/model.xmi";
+	    //load(xmi1, resourceSet1);
+	    //load(xmi2, resourceSet2);
+	 
+	    // Configure EMF Compare
+	    IEObjectMatcher matcher = DefaultMatchEngine.createDefaultEObjectMatcher(UseIdentifiers.NEVER);
+	    IComparisonFactory comparisonFactory = new DefaultComparisonFactory(new DefaultEqualityHelperFactory());
+	    IMatchEngine matchEngine = new DefaultMatchEngine(matcher, comparisonFactory);
+	    EMFCompare comparator = EMFCompare.builder().setMatchEngine(matchEngine).build();
+	 
+	    // Compare the two models
+	    IComparisonScope scope = EMFCompare. createDefaultScope(resourceSet1, resourceSet2);
+	    return comparator.compare(scope);
 	}
 
 
