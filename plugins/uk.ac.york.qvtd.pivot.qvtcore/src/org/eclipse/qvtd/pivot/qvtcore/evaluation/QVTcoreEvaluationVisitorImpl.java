@@ -24,7 +24,6 @@ import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
-import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTbaseEvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtcore.Area;
 import org.eclipse.qvtd.pivot.qvtcore.Assignment;
@@ -42,8 +41,6 @@ import org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtcore.VariableAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
-
-import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -177,6 +174,17 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                     m.accept(LMVisitor);
                 }
             }
+            // Remove all bindings to evaluate MtoM
+            getEvaluationEnvironment().clear();
+            for (NestedMapping m : ((Mapping) rule).getLocal()) {
+                QVTcoreMREvaluationVisitor MRVisitor = new QVTcoreMREvaluationVisitor(
+                        getEnvironment(), getEvaluationEnvironment(), modelManager);
+                if (isMtoMMapping(m)) {
+                    assert l2mStarted;
+                    m2mStarted = true;
+                    m.accept(MRVisitor);
+                }
+            }
             // Remove all bindings to evaluate MtoR
             getEvaluationEnvironment().clear();
             for (NestedMapping m : ((Mapping) rule).getLocal()) {
@@ -188,10 +196,10 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
                     m.accept(MRVisitor);
                 }
             }
-            // Where does the m to m mapping occurs?
         }
         return true;
     }
+
 
     /*
      * (non-Javadoc)
@@ -277,58 +285,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         "Visit method not implemented yet");
     }
 
-    /**
-     * Checks if the mapping is a middle to right mapping. Middle to Right mappings
-     * must have enforce domains
-     *
-     * @param mapping the mapping
-     * @return true, if is mto r mapping
-     */
-    private boolean isMtoRMapping(NestedMapping nestedMapping) {
-        Mapping mapping;
-        if (nestedMapping instanceof MappingCall) {
-            mapping = ((MappingCall)nestedMapping).getReferredMapping();
-        }
-        else {
-            mapping = (Mapping)nestedMapping;
-        }
-        if (mapping.getDomain().size() == 0) {
-            return false;
-        }
-        for (Domain domain : mapping.getDomain()) {
-            if (!domain.isIsEnforceable()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Checks if the mapping is a left to middle mapping. Left to middle mappings
-     * can not have enforce domains
-     *
-     * @param mapping the mapping
-     * @return true, if is lto m mapping
-     */
-    private boolean isLtoMMapping(NestedMapping nestedMapping) {
-        Mapping mapping;
-        if (nestedMapping instanceof MappingCall) {
-            mapping = ((MappingCall)nestedMapping).getReferredMapping();
-        }
-        else {
-            mapping = (Mapping)nestedMapping;
-        }
-        if (mapping.getDomain().size() == 0) {
-            return false;
-        }
-        for (Domain domain : mapping.getDomain()) {
-            if (domain.isIsEnforceable()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
+    
     /*
      * (non-Javadoc)
      * 
@@ -340,55 +297,10 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
     public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
         
         OCLExpression slotExp = propertyAssignment.getSlotExpression(); 
-        /*
-         * LtoM or MtoR Mapping. Property assignments are in the mapping's bottom pattern
-         * and define values for middle model element's attributes. The property
-         * assignments are being visited for each binding of variable in the mapping. 
-         */
-        // TODO Assignments in check domains should be treated as predicates.
         Area area = ((BottomPattern)propertyAssignment.eContainer()).getArea();
-        if (area instanceof Mapping && isLtoMMapping((Mapping)area)) {
-            if (slotExp instanceof VariableExp ) {      // What other type of expressions are there?
-                Variable slotVar = (Variable) ((VariableExp)slotExp).getReferredVariable();
-                if(slotVar != null) {
-                    // The nested evaluation environment is created in the mapping loop
-                    Object value = safeVisit(propertyAssignment.getValue());
-                    // Assign the value to a binding of the slotVar
-                    Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
-                    // TODO what happens if the target property is not a simple attribute?
-                    if (slotBinding != null) {
-                        Property p = propertyAssignment.getTargetProperty();
-                        p.initValue(slotBinding, value);
-                    } else {
-                        throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
-                                + " specification. The referred variable of the slot expression (" + slotExp.getType().getName() 
-                                + ") was not found.");
-                    }
-                    
-                }
-                
-            } else {
-                throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
-                        + " specification. The slot expression type (" + slotExp.getType().getName() 
-                        + ") is not supported yet.");
-            }
-        }
-        /*
-         * MtoR Mapping. Property assignments are in the mapping's bottom pattern
-         * and define values for middle model element's attributes. The property
-         * assignments are being visited for each binding of variable in the mapping. 
-         */
-        // So far this case never happens
-        /*
-         * LtoM or MtoR nested mapping without domains. Property assignments are
-         * in the mapping's bottom pattern and define values for middle model 
-         * element's attributes (complete trace) or values for the R model.  The property
-         * assignments are being visited for each binding of variable in the mapping. 
-         */
-        else if (area instanceof Mapping && ((Mapping)area).getDomain().size() == 0) {
+        if (area instanceof Mapping) {
             // slot vars can either be in L, M or R, this is, they have either a value
             // in validBindings (loop variable) or in tempRealizedElements (realized variables)
-            // 1. Test if the slot variable is in the variableValues
             if (slotExp instanceof VariableExp ) {      // What other type of expressions are there?
                 Variable slotVar = (Variable) ((VariableExp)slotExp).getReferredVariable();
                 if(slotVar != null) {
@@ -425,44 +337,8 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      */
     @Nullable
     public Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
-        /*
-         * LtoM Mapping. Realized variables are in the mapping's bottom pattern
-         * and create elements in the middle model. The realized variables
-         * are being visited for each binding of variable in the mapping. 
-         */
-        Area area = ((BottomPattern)realizedVariable.eContainer()).getArea();
-        if (area instanceof Mapping && isLtoMMapping((Mapping)area)) {
-            Object element =  realizedVariable.getType().createInstance();
-            ((QVTcDomainManager)modelManager).addModelElement(
-                    QVTcDomainManager.MIDDLE_MODEL, element);
-            // Add the realize variable binding to the environment
-            if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
-                getEvaluationEnvironment().add(realizedVariable, element);
-            } else {
-                getEvaluationEnvironment().replace(realizedVariable, element);
-            }
-            return element;
-        }
-        /*
-         * MtoR Mapping. Realized variables are in the R core domain bottom pattern
-         * and create elements in the R model. The realized variables
-         * are being visited for each binding of variable in the mapping. 
-         */
-        else if (area instanceof CoreDomain && isMtoRMapping((Mapping) ((CoreDomain)area).getRule())) {
-            TypedModel tm = ((CoreDomain)area).getTypedModel();
-            // Create an element in the R model that has a kind equal to the variable type
-            Object element = realizedVariable.getType().createInstance();
-            // Add the element to the R resource
-            ((QVTcDomainManager)modelManager).addModelElement(tm, element);
-            // Add the realize variable binding to the environment
-            if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
-                getEvaluationEnvironment().add(realizedVariable, element);
-            } else {
-                getEvaluationEnvironment().replace(realizedVariable, element);
-            }
-            return element;
-        }
-        return null;
+        throw new UnsupportedOperationException(
+                "Visit method should be implemented by extending evaluators.");
     }
 
     /*
@@ -487,6 +363,73 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
         QVTcoreEvaluationVisitorImpl ne = new QVTcoreEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
         return ne;
+    }
+    
+    /**
+     * Checks if the mapping is a middle to right mapping. Middle to Right mappings
+     * must have enforce domains
+     *
+     * @param mapping the mapping
+     * @return true, if is mto r mapping
+     */
+    private boolean isMtoRMapping(NestedMapping nestedMapping) {
+        Mapping mapping;
+        if (nestedMapping instanceof MappingCall) {
+            mapping = ((MappingCall)nestedMapping).getReferredMapping();
+        }
+        else {
+            mapping = (Mapping)nestedMapping;
+        }
+        if (mapping.getDomain().size() == 0) {
+            return false;
+        }
+        for (Domain domain : mapping.getDomain()) {
+            if (!domain.isIsEnforceable()) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private boolean isMtoMMapping(NestedMapping nestedMapping) {
+        Mapping mapping;
+        if (nestedMapping instanceof MappingCall) {
+            mapping = ((MappingCall)nestedMapping).getReferredMapping();
+        }
+        else {
+            mapping = (Mapping)nestedMapping;
+        }
+        if (mapping.getDomain().size() == 0) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the mapping is a left to middle mapping. Left to middle mappings
+     * can not have enforce domains
+     *
+     * @param mapping the mapping
+     * @return true, if is lto m mapping
+     */
+    private boolean isLtoMMapping(NestedMapping nestedMapping) {
+        Mapping mapping;
+        if (nestedMapping instanceof MappingCall) {
+            mapping = ((MappingCall)nestedMapping).getReferredMapping();
+        }
+        else {
+            // FIXME nestedMappings are abstract and dont inherit from mapping?!
+            mapping = (Mapping)nestedMapping;
+        }
+        if (mapping.getDomain().size() == 0) {
+            return false;
+        }
+        for (Domain domain : mapping.getDomain()) {
+            if (domain.isIsEnforceable()) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

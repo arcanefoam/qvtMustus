@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.Variable;
@@ -50,25 +51,36 @@ public class QVTcoreLMEvaluationVisitor extends QVTcoreEvaluationVisitorImpl
     @Override
     public Object visitMapping(@NonNull Mapping mapping) {
         
+        Map<Variable, Set<Object>>  loopVariableValues = new HashMap<>();
+        // Asserrt that there should be only one domain?
+        //assert mapping.getDomain().size() == 1 : "Unsupported " + mapping.eClass().getName() + ". Max supported number of domains is 1."; 
         for (Domain domain : mapping.getDomain()) {
-            @SuppressWarnings("unchecked")
-            Map<Variable, Set<Object>>  loopVariableValues = (Map<Variable, Set<Object>>)((CoreDomain) domain).accept(this);
-            if (loopVariableValues != null) {
-                for (Map.Entry<Variable, Set<Object>> entry : loopVariableValues.entrySet()) {
-                    Variable var = entry.getKey();
-                    for (Object e : entry.getValue()) {
-                        // Use each of the bindings for evaluation in the loop
-                        getEvaluationEnvironment().replace(var, e);
-                        // TODO Implement guard visit methods
-                        // boolean guardMet = (Boolean)mapping.getGuardPattern().accept(this);
-                        //if(guardMet) {
-                        //    MiddleBottomPattern (aka where clause)
-                            mapping.getBottomPattern().accept(this);
-                        //}
-                        // Nested mappings
-                        for (NestedMapping localMapping : mapping.getLocal()) {
-                            localMapping.accept(this);
-                        }
+            try {
+                loopVariableValues.putAll((Map<Variable, Set<Object>>)((CoreDomain) domain).accept(this));
+            } catch (NullPointerException e) {
+                // The domain guard was not met or no variables where bind
+                // Maybe log this?
+            }
+        }
+        // TODO I am not doing a Cartesian product visit of variable bindings!!! Although
+        // there should be only 1 variable binding per domain. Do we assert that there
+        // should be only one variable?
+        //assert loopVariableValues.size() == 1 : "Unsupported " + mapping.eClass().getName() + ". Nested domains provided more than 1 variable binding.";
+        if (loopVariableValues.size() > 0) {
+            for (Map.Entry<Variable, Set<Object>> entry : loopVariableValues.entrySet()) {
+                Variable var = entry.getKey();
+                for (Object e : entry.getValue()) {
+                    // Use each of the bindings for evaluation in the loop
+                    getEvaluationEnvironment().replace(var, e);
+                    // TODO Implement guard visit methods
+                    // boolean guardMet = (Boolean)mapping.getGuardPattern().accept(this);
+                    //if(guardMet) {
+                    //    MiddleBottomPattern (aka where clause)
+                        mapping.getBottomPattern().accept(this);
+                    //}
+                    // Nested mappings
+                    for (NestedMapping localMapping : mapping.getLocal()) {
+                        localMapping.accept(this);
                     }
                 }
             }
@@ -144,6 +156,81 @@ public class QVTcoreLMEvaluationVisitor extends QVTcoreEvaluationVisitorImpl
                     enforceOp.accept(this);
                 }
             }
+        }
+        return null;
+    }
+    
+    // IT WAS IDENTICAL TO THE OTHER CASE SO NOT NEEDED
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitPropertyAssignment
+     * (org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment)
+     */
+    /*@Override
+    @Nullable
+    public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
+        
+        OCLExpression slotExp = propertyAssignment.getSlotExpression(); 
+        //LtoM or MtoR Mapping. Property assignments are in the mapping's bottom pattern
+        // and define values for middle model element's attributes. The property
+        // assignments are being visited for each binding of variable in the mapping. 
+        // TODO Assignments in check domains should be treated as predicates.
+        Area area = ((BottomPattern)propertyAssignment.eContainer()).getArea();
+        if (area instanceof Mapping && ((Mapping)area).getDomain().size() != 0) {
+            if (slotExp instanceof VariableExp ) {      // What other type of expressions are there?
+                Variable slotVar = (Variable) ((VariableExp)slotExp).getReferredVariable();
+                if(slotVar != null) {
+                 // Assign the value to a binding of the slotVar
+                    Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
+                    if (slotBinding != null) {
+                        // The nested evaluation environment is created in the mapping loop
+                        Object value = safeVisit(propertyAssignment.getValue());
+                        // TODO what happens if the target property is not a simple attribute?
+                        Property p = propertyAssignment.getTargetProperty();
+                        p.initValue(slotBinding, value);
+                    } else {
+                        throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
+                                + " specification. The referred variable of the slot expression (" + slotExp.getType().getName() 
+                                + ") was not found.");
+                    }
+                    
+                }
+                
+            } else {
+                super.visitPropertyAssignment(propertyAssignment);
+            }
+        }
+        return true;
+    }*/
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitRealizedVariable
+     * (org.eclipse.qvtd.pivot.qvtcore.RealizedVariable)
+     */
+    @Override
+    @Nullable
+    public Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
+        
+        // LtoM Mapping. Realized variables are in the mapping's bottom pattern
+        // and create elements in the middle model. The realized variables
+        // are being visited for each binding of variable in the mapping. 
+        Area area = ((BottomPattern)realizedVariable.eContainer()).getArea();
+        if (area instanceof Mapping) {
+            Object element =  realizedVariable.getType().createInstance();
+            ((QVTcDomainManager)modelManager).addModelElement(
+                    QVTcDomainManager.MIDDLE_MODEL, element);
+            // Add the realize variable binding to the environment
+            if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
+                getEvaluationEnvironment().add(realizedVariable, element);
+            } else {
+                getEvaluationEnvironment().replace(realizedVariable, element);
+            }
+            return element;
         }
         return null;
     }

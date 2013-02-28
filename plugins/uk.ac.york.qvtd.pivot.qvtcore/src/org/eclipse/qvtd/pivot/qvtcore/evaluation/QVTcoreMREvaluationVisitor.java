@@ -17,12 +17,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcore.Area;
 import org.eclipse.qvtd.pivot.qvtcore.Assignment;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
@@ -30,6 +32,7 @@ import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation;
 import org.eclipse.qvtd.pivot.qvtcore.Mapping;
 import org.eclipse.qvtd.pivot.qvtcore.NestedMapping;
+import org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 
@@ -48,15 +51,24 @@ public class QVTcoreMREvaluationVisitor extends QVTcoreEvaluationVisitorImpl
     @Override
     public Object visitMapping(@NonNull Mapping mapping) {
         
-        Map<Variable, Set<Object>>  loopVariableValues = null;
+        Map<Variable, Set<Object>>  loopVariableValues = new HashMap<>();
         // TODO Implement guard visit methods
         // boolean guardMet = (Boolean)mapping.getGuardPattern().accept(this);
         //if(guardMet) {
         //    MiddleBottomPattern (aka where clause)
             //@SuppressWarnings("unchecked")
-            loopVariableValues = (Map<Variable, Set<Object>>)mapping.getBottomPattern().accept(this);
+            try {
+                loopVariableValues.putAll((Map<Variable, Set<Object>>)mapping.getBottomPattern().accept(this));
+            } catch (NullPointerException e) {
+                // The bottom pattern no variables where bind
+                // Maybe log this?
+            }
         //}
-        if (loopVariableValues != null) {
+        // TODO I am not doing a Cartesian product visit of variable bindings!!! Although
+        // there should be only 1 variable binding per domain. Do we assert that there
+        // should be only one variable?
+        //assert loopVariableValues.size() == 1 : "Unsupported " + mapping.eClass().getName() + ". Nested domains provided more than 1 variable binding.";
+        if (loopVariableValues.size() > 0) {
             for (Variable var : loopVariableValues.keySet()) {
                 for (Object e : loopVariableValues.get(var)) {
                     // Use each of the bindings for evaluation in the loop
@@ -139,6 +151,58 @@ public class QVTcoreMREvaluationVisitor extends QVTcoreEvaluationVisitorImpl
                     enforceOp.accept(this);
                 }
             }
+        }
+        return null;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitPropertyAssignment
+     * (org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment)
+     */
+    @Override
+    @Nullable
+    public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
+        
+        /*
+         * MtoR Mapping. Property assignments are in the mapping's bottom pattern
+         * and define values for middle model element's attributes. The property
+         * assignments are being visited for each binding of variable in the mapping. 
+         */
+        // So far this case never happens
+        return super.visitPropertyAssignment(propertyAssignment);
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitRealizedVariable
+     * (org.eclipse.qvtd.pivot.qvtcore.RealizedVariable)
+     */
+    @Override
+    @Nullable
+    public Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
+        
+        // MtoR Mapping. Realized variables are in the R core domain bottom pattern
+        // and create elements in the R model. The realized variables
+        // are being visited for each binding of variable in the mapping. 
+        Area area = ((BottomPattern)realizedVariable.eContainer()).getArea();
+        if (area instanceof CoreDomain) {
+            TypedModel tm = ((CoreDomain)area).getTypedModel();
+            // Create an element in the R model that has a kind equal to the variable type
+            Object element = realizedVariable.getType().createInstance();
+            // Add the element to the R resource
+            ((QVTcDomainManager)modelManager).addModelElement(tm, element);
+            // Add the realize variable binding to the environment
+            if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
+                getEvaluationEnvironment().add(realizedVariable, element);
+            } else {
+                getEvaluationEnvironment().replace(realizedVariable, element);
+            }
+            return element;
         }
         return null;
     }
