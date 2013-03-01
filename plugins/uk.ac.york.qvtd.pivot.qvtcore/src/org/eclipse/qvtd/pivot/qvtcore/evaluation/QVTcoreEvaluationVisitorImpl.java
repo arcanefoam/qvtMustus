@@ -10,6 +10,9 @@
  ******************************************************************************/
 package org.eclipse.qvtd.pivot.qvtcore.evaluation;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
@@ -42,7 +45,6 @@ import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtcore.VariableAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 
-// TODO: Auto-generated Javadoc
 /**
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
@@ -126,12 +128,21 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
              * LtoM Mapping. The visit to the core domain should return the map
              * of valid bindings for the domain variables (in the L model)
              */
-            // TODO Implement guard visit methods
-            //boolean guardMet = (Boolean)coreDomain.getGuardPattern().accept(this);
-            //if(guardMet) {
-                return coreDomain.getBottomPattern().accept(this);
-            //}
-            
+            Map<Variable, Set<Object>>  guardBindings = (Map<Variable, Set<Object>>) coreDomain.getGuardPattern().accept(this);
+            if(guardBindings != null) {
+                // Add the bindings to the visitor environment
+                // Evaluate the bottom pattern for each binding
+                // No predicates in CodeDomain bottom Patterns, so no use to visit bottom patterns at all??
+                for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
+                    Variable var = entry.getKey();
+                    for (Object e : entry.getValue()) {
+                        // Use each of the bindings for evaluation in the loop
+                        getEvaluationEnvironment().replace(var, e);
+                        coreDomain.getBottomPattern().accept(this); 
+                    }
+                }
+            }
+            return guardBindings;
         } else if (isMtoRMapping((Mapping) coreDomain.getRule())) {
             /*
              * MtoR Mapping. The visit to the core domain should create the realized
@@ -237,8 +248,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      * org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
      */
     @Nullable
-    public Object visitGuardPattern(@NonNull GuardPattern object) {
-        // TODO Add visit function or decide if it should never be implemented
+    public Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
         throw new UnsupportedOperationException(
                 "Visit method not implemented yet");
     }
