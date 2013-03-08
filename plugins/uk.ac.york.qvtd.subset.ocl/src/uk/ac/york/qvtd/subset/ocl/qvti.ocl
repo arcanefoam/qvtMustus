@@ -40,5 +40,8 @@ context Mapping
 	
 	/* R Domain's GuardPatterns must have 1 realized variable */
 	
+	-- assert bottomPattern.getVariable().size() == 0 : "Error: BottomPattern of L Coredomain has variables.";
+    -- assert bottomPattern.getPredicate().size() == 0 : "Error: BottomPattern of L CoreDomain has constraints.";
+    
 	
 endpackage

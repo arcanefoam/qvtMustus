@@ -7,70 +7,55 @@ transformation copyGraph {
 	imports SimpleGraph2Graph;
 }
 
-map upper2lower in copyGraph {
-	map {	        							-- L to M for G
-	    check upperGraph() {
-	        g1:Graph |
-	    }
-	    where () {
-	        realize g2g:Graph2Graph |
-	        g2g.graph1 := g1;
-	    }
-        map {
-            where () {
-                g2g.name := g1.name.toLowerCase();
-            }
-        }
-	    map {							        -- L to M for N
-	        check upperGraph() {
-	            n1:Node |
-	            n1.graph = g1;
-	        }
-	        where () {
-	            realize n2n:Node2Node |
-	            n2n.owner := g2g;
-	            n2n.node1 := n1;
-	        }
-            map {
-                where () {
-                    n2n.label := n1.label.toLowerCase();
-                    -- Should you validate that all attributes off all nodes of the middle model be asigned a value?
-                }
-            }
-		}
-	}
-	map {
-		-- check upperGraph() {}
-        enforce lowerGraph() {
-            realize g2:Graph |
-        }
+map upper2lowerLM in copyGraph {	        					-- L to M for G
+    check upperGraph(g1:Graph |) { }
+    where () {
+        realize g2g:Graph2Graph |
+        g2g.graph1 := g1;
+    }
+    map {
         where () {
-			g2g:Graph2Graph |    -- M to R for G
+            g2g.name := g1.name.toLowerCase();
+        }
+    }
+    map {							        -- L to M for N
+        check upperGraph(n1:Node | n1.graph = g1;) { }
+        where () {
+            realize n2n:Node2Node |
+            n2n.owner := g2g;
+            n2n.node1 := n1;
         }
         map {
             where () {
-            	g2g.graph2 := g2;
-            	g2.name := g2g.name;
-                -- Can I acces g1 from here by navigating g2g.graph1 ??
-            }
-        }
-        map {						        -- M to R for N
-        	-- check upperGraph() {}
-            enforce lowerGraph () {
-                realize n2:Node |
-            }
-            where () {
-                n2n:Node2Node |
-                n2n.owner = g2g;
-            }
-            map {
-            	where () {
-            		n2n.node2 := n2;
-					n2.graph := n2n.owner.graph2;
-                    n2.label := n2n.label;
-                }
+                n2n.label := n1.label.toLowerCase();
             }
         }
 	}
 }
 
+map upper2lowerLM in copyGraph {								-- M to R for G
+	enforce lowerGraph() {
+        realize g2:Graph |
+    }
+    where (g2g:Graph2Graph |) { }
+    map {
+        where () {
+        	g2g.graph2 := g2;
+        	g2.name := g2g.name;
+        }
+    }
+    map {						        -- M to R for N
+    	enforce lowerGraph () {
+            realize n2:Node |
+        }
+        where (n2n:Node2Node | n2n.owner = g2g;) {
+        }
+        map {
+        	where () {
+        		n2n.node2 := n2;
+				n2.graph := n2n.owner.graph2;
+                n2.label := n2n.label;
+            }
+        }
+    }
+}

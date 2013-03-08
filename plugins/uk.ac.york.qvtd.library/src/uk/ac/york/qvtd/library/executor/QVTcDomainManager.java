@@ -17,6 +17,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.eclipse.emf.common.util.BasicEList;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -29,8 +31,6 @@ import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 
-
-// TODO: Auto-generated Javadoc
 /**
  * QVTc Domain Manager is the class responsible for managing the QVTc virtual
  * machine meta-models and models. 
@@ -47,7 +47,8 @@ public class QVTcDomainManager implements DomainModelManager {
 	/** Map a typed model to its resource (model). */
 	private Map<TypedModel, Resource> modelResourceMap = new HashMap<>();
 	
-	private Map<TypedModel, Set<EObject>> modelElementsMap = new HashMap<>();
+	private Map<TypedModel, EList<EObject>> modelElementsMap = new HashMap<>();
+	
 	/**
 	 * Instantiates a new QVTc Domain Manager. Responsible for creating new
 	 * instances of the middle model and the middle model EFactory.
@@ -114,12 +115,11 @@ public class QVTcDomainManager implements DomainModelManager {
      */
     public void addModelElement(@Nullable TypedModel model, @NonNull Object element) {
         
-        Set<EObject> elements = null;
+        EList<EObject> elements = null;
         if (modelElementsMap.containsKey(model)) {
             elements = modelElementsMap.get(model);
-            //modelElements.get(model).add((EObject) element);
         } else {
-            elements = new HashSet<EObject>();
+            elements = new BasicEList<EObject>();
             if (model != MIDDLE_MODEL) {
                 elements.addAll(modelResourceMap.get(model).getContents());
             }
@@ -168,7 +168,6 @@ public class QVTcDomainManager implements DomainModelManager {
 	/**
 	 * Saves all the models managed by the domain manager.
 	 */
-	// TODO only save the output models 
     public void saveModels() {
         for (Map.Entry<TypedModel, Resource> entry : modelResourceMap.entrySet()) {
             Resource model = entry.getValue();
@@ -192,6 +191,8 @@ public class QVTcDomainManager implements DomainModelManager {
             }    
         }
     }
+    
+    
 	/**
      * Save trace.
      */
@@ -207,6 +208,8 @@ public class QVTcDomainManager implements DomainModelManager {
               e.printStackTrace();
            }
     }
+    
+    
 	/**
 	 * Dispose.
 	 */

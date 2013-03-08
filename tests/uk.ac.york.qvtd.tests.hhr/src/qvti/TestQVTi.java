@@ -40,7 +40,7 @@ import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingS
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
-import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreEvaluationVisitorImpl;
+import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreAbstractEvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
 import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
@@ -179,7 +179,7 @@ public class TestQVTi extends LoadTestCase {
                 typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
                 modelManager.addModel(typedModel, pairs.getValue());
             }
-            QVTcoreVisitor<Object> visitor = new QVTcoreEvaluationVisitorImpl(env, evalEnv, modelManager);
+            QVTcoreVisitor<Object> visitor = new QVTcoreAbstractEvaluationVisitorImpl(env, evalEnv, modelManager);
             Object sucess = coreModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
             modelManager.saveModels();
@@ -193,15 +193,15 @@ public class TestQVTi extends LoadTestCase {
                 Comparison comparison = compare(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
                 List<Diff> differences = comparison.getDifferences();
                 assertEquals("Generated model for TypedModel " + pairs.getKey() + " is different than expected Model.", 0, differences.size());
-                /*try {
-                    //org.eclipse.ocl.examples.xtext.tests.XtextTestCase.assertSameModel(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
+                try {
+                    org.eclipse.ocl.examples.xtext.tests.XtextTestCase.assertSameModel(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
-                }*/
+                }
             }
             modelManager.dispose();
         }

@@ -10,8 +10,10 @@
  ******************************************************************************/
 package org.eclipse.qvtd.pivot.qvtcore.evaluation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -19,18 +21,20 @@ import java.util.Set;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
+import org.eclipse.ocl.examples.domain.values.CollectionValue;
+import org.eclipse.ocl.examples.pivot.Element;
 import org.eclipse.ocl.examples.pivot.Environment;
+import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
-import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcore.Area;
-import org.eclipse.qvtd.pivot.qvtcore.Assignment;
 import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
-import org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation;
 import org.eclipse.qvtd.pivot.qvtcore.Mapping;
+import org.eclipse.qvtd.pivot.qvtcore.MappingCall;
+import org.eclipse.qvtd.pivot.qvtcore.MappingCallBinding;
 import org.eclipse.qvtd.pivot.qvtcore.NestedMapping;
 import org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
@@ -38,9 +42,20 @@ import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
-public class QVTcoreMREvaluationVisitor extends QVTcoreEvaluationVisitorImpl
+// TODO: Auto-generated Javadoc
+/**
+ * QVTcoreMREvaluationVisitor is the class for ...
+ */
+public class QVTcoreMREvaluationVisitor extends QVTcoreAbstractEvaluationVisitorImpl
         implements QVTcoreVisitor<Object> {
 
+    /**
+     * Instantiates a new qV tcore mr evaluation visitor.
+     *
+     * @param env the environment
+     * @param evalEnv the evaluation environment
+     * @param modelManager the model manager
+     */
     public QVTcoreMREvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
@@ -48,111 +63,151 @@ public class QVTcoreMREvaluationVisitor extends QVTcoreEvaluationVisitorImpl
         // TODO Auto-generated constructor stub
     }
     
-    @Override
-    public Object visitMapping(@NonNull Mapping mapping) {
-        
-        Map<Variable, Set<Object>>  loopVariableValues = new HashMap<>();
-        // TODO Implement guard visit methods
-        // boolean guardMet = (Boolean)mapping.getGuardPattern().accept(this);
-        //if(guardMet) {
-        //    MiddleBottomPattern (aka where clause)
-            //@SuppressWarnings("unchecked")
-            try {
-                loopVariableValues.putAll((Map<Variable, Set<Object>>)mapping.getBottomPattern().accept(this));
-            } catch (NullPointerException e) {
-                // The bottom pattern no variables where bind
-                // Maybe log this?
-            }
-        //}
-        // TODO I am not doing a Cartesian product visit of variable bindings!!! Although
-        // there should be only 1 variable binding per domain. Do we assert that there
-        // should be only one variable?
-        //assert loopVariableValues.size() == 1 : "Unsupported " + mapping.eClass().getName() + ". Nested domains provided more than 1 variable binding.";
-        if (loopVariableValues.size() > 0) {
-            for (Variable var : loopVariableValues.keySet()) {
-                for (Object e : loopVariableValues.get(var)) {
-                    // Use each of the bindings for evaluation in the loop
-                    getEvaluationEnvironment().replace(var, e);
-                    for (Domain domain : mapping.getDomain()) {
-                        ((CoreDomain) domain).accept(this);
-                    }
-                    for (NestedMapping localMapping : mapping.getLocal()) {
-                        localMapping.accept(this);
-                    }
-                }
-            }
-        }
-        return true;
-    }
     
+    /* (non-Javadoc)
+     * @see org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreAbstractEvaluationVisitorImpl#visitBottomPattern(org.eclipse.qvtd.pivot.qvtcore.BottomPattern)
+     */
     @Override
     public Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
         
-        Object visited = super.visitBottomPattern(bottomPattern);
-        if (visited != null) {
-            Area area = bottomPattern.getArea();
-            /*
-             * MtoR Mapping. The bottomPattern belongs to a mapping, get all possible
-             * variable bindings from the middle model and then use the predicates to leave
-             * only the valid bindings
-             */
-            if (area instanceof Mapping) {
-                Map<Variable, Set<Object>> patternValidBindings = new HashMap<>();
-                for (Variable var : bottomPattern.getVariable()) {
-                    // We are in a M->R
-                    // Values of variables in a where clause exist in the middle model
-                    Set<Object> bindingValuesSet = ((QVTcDomainManager) modelManager).getElementsByType(
-                            QVTcDomainManager.MIDDLE_MODEL, var.getType());
-                    patternValidBindings.put(var, bindingValuesSet);
-                }
-                // For each binding visit the predicates to leave only the valid bindings
-                Iterator<Entry<Variable, Set<Object>>> it = patternValidBindings.entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<Variable, Set<Object>> pairs = (Map.Entry<Variable, Set<Object>>)it.next();
-                    Iterator<Object> bindingIt = pairs.getValue().iterator();
-                    while (bindingIt.hasNext()) {
-                        Variable var = pairs.getKey();
-                        if (var != null) {
-                            getEvaluationEnvironment().replace(var, bindingIt.next());
-                            for (Predicate predicate : bottomPattern.getPredicate()) {
-                                // If the predicate is not true, the binding is not valid
-                                Boolean result = (Boolean) predicate.accept(this);
-                                if (result != null && !result) {
-                                    // If the predicates fails, the binding is not valid
-                                    it.remove();
-                                    break;
-                                }
+        Map<Variable, Set<Object>> patternValidBindings = new HashMap<>();
+        Area area = bottomPattern.getArea();
+        if (area instanceof CoreDomain) {
+            for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
+                rVar.accept(this);
+            }
+            /*// There should be no assignments
+            for (Assignment assigment : bottomPattern.getAssignment()) {
+                assigment.accept(this);
+            }*/
+            /*// There should be no predicates
+            for (Assignment assigment : bottomPattern.getAssignment()) {
+                assigment.accept(this);
+            }*/
+            /* // Probably enforcement operations must be called too
+            for (EnforcementOperation enforceOp : bottomPattern
+                    .getEnforcementOperation()) {
+                enforceOp.accept(this);
+            }*/
+        }
+        else if (area instanceof Mapping) {
+            assert bottomPattern.getRealizedVariable().size() == 0 : "Unsupported " + bottomPattern.eClass().getName() + " defines 1 or more realized variables.";
+            for (Variable var : bottomPattern.getVariable()) {
+                // Values of variables exist in the middle model
+                Set<Object> bindingValues = ((QVTcDomainManager) modelManager).getElementsByType(
+                        QVTcDomainManager.MIDDLE_MODEL, var.getType());
+                patternValidBindings.put(var, bindingValues);
+            }
+            // For each binding visit the predicates to leave only the valid bindings
+            Iterator<Entry<Variable, Set<Object>>> it = patternValidBindings.entrySet().iterator();
+            while (it.hasNext()) {
+                Map.Entry<Variable, Set<Object>> pairs = (Map.Entry<Variable, Set<Object>>)it.next();
+                Iterator<Object> bindingIt = pairs.getValue().iterator();
+                while (bindingIt.hasNext()) {
+                    Variable var = pairs.getKey();
+                    if (var != null) {
+                        getEvaluationEnvironment().replace(var, bindingIt.next());
+                        for (Predicate predicate : bottomPattern.getPredicate()) {
+                            // If the predicate is not true, the binding is not valid
+                            Boolean result = (Boolean) predicate.accept(this);
+                            if (result != null && !result) {
+                                it.remove();
                             }
                         }
                     }
                 }
-                return patternValidBindings;
             }
-            /*
-             * MtoRM Mapping. The bottomPattern belongs to a CoreDomain and it is visited once per
-             * binding of the middle model. The bottom pattern should have the realized variables of the
-             * R model. Use the assignments to set values to their properties
-             * 
-             */
-            else if (area instanceof CoreDomain) {
-                for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
-                    if (bottomPattern.getArea() instanceof CoreDomain && !((CoreDomain)bottomPattern.getArea()).isIsEnforceable()) {
-                        throw new UnsupportedOperationException("Unsupported " + bottomPattern.eClass().getName()
-                                + " specification. Realized variables can only exist in Enforced domains");
+        }
+        return patternValidBindings;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitCoreDomain(org
+     * .eclipse.qvtd.pivot.qvtcore.CoreDomain)
+     */
+    @Nullable
+    public Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
+        
+        /*// THERE SHULD BE NO GUARD PATTERN IN THE R CoreDomain
+        coreDomain.getGuardPattern().accept(this);
+        */
+        return coreDomain.getBottomPattern().accept(this);
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreAbstractEvaluationVisitorImpl#visitMapping(org.eclipse.qvtd.pivot.qvtcore.Mapping)
+     */
+    @Override
+    public Object visitMapping(@NonNull Mapping mapping) {
+        
+        if (mapping.getDomain().size() != 1) {
+            MtoRMappingError(mapping, "Max supported number of domains is 1.");
+        }
+        if (mapping.getGuardPattern().getVariable().size() == 0) {
+            mapping.getBottomPattern().accept(this);
+            for (Domain domain : mapping.getDomain()) {
+                domain.accept(this);
+            }
+            for (NestedMapping localMapping : mapping.getLocal()) {
+                localMapping.accept(this);
+            }
+        } else {
+            Map<Variable, Set<Object>> guardBindings = (Map<Variable, Set<Object>>) mapping.getGuardPattern().accept(this);
+            assert guardBindings.size() <= 1 : "Unsupported " 
+                    + mapping.eClass().getName() + ". BottomGuardPattern provided more than 1 variable binding.";
+            
+            for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
+                Variable var = entry.getKey();
+                for (Object e : entry.getValue()) {
+                    getEvaluationEnvironment().replace(var, e);
+                    mapping.getBottomPattern().accept(this);
+                    
+                    for (NestedMapping localMapping : mapping.getLocal()) {
+                        if (localMapping.getClass().isInstance(MappingCall.class)) {
+                            List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<>();
+                            for (MappingCallBinding binding : ((MappingCall)localMapping).getBinding()) {
+                                OCLExpression value = binding.getValue();
+                                Object result = safeVisit(value);
+                                List<Map<Variable, Object>> bindingValues = new ArrayList<>();
+                                if (result.getClass().isInstance(CollectionValue.class)) {
+                                    // Create a binding for each of the elements in the collection
+                                    for (Object resValue : ((CollectionValue)result).asCollection()) {
+                                        Map<Variable, Object> varValue = new HashMap<>();
+                                        varValue.put(var, resValue);
+                                        bindingValues.add(varValue);
+                                   }
+                                } else {
+                                    Map<Variable, Object> varValue = new HashMap<>();
+                                    varValue.put(var, result);
+                                    bindingValues.add(varValue);
+                                }
+                                bindingCartesian.add(bindingValues);
+                            }
+                            // Calculate the Cartesian list of bindings
+                            List<List<Map<Variable, Object>>> cartesian = cartesianBindings(bindingCartesian);
+                            for (List<Map<Variable, Object>> bindings : cartesian) {
+                                for (Map<Variable, Object> binding : bindings) {
+                                    Iterator<Entry<Variable, Object>> it = binding.entrySet().iterator();
+                                    while (it.hasNext()) {
+                                        Map.Entry<Variable, Object> pairs = (Map.Entry<Variable, Object>)it.next();
+                                        getEvaluationEnvironment().replace(pairs.getKey(), pairs.getValue());
+                                    }
+                                }
+                                localMapping.accept(this);
+                            }
+                        } else if (localMapping.getClass().isInstance(Mapping.class)) {
+                            localMapping.accept(this);
+                        }
                     }
-                    rVar.accept(this);
-                }
-                for (Assignment assigment : bottomPattern.getAssignment()) {
-                    assigment.accept(this);
-                }
-                // Probably enforcement operations must be called too
-                for (EnforcementOperation enforceOp : bottomPattern
-                        .getEnforcementOperation()) {
-                    enforceOp.accept(this);
                 }
             }
         }
-        return null;
+        
+        return true;
     }
     
     /*
@@ -174,37 +229,10 @@ public class QVTcoreMREvaluationVisitor extends QVTcoreEvaluationVisitorImpl
         // So far this case never happens
         return super.visitPropertyAssignment(propertyAssignment);
     }
-    
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitRealizedVariable
-     * (org.eclipse.qvtd.pivot.qvtcore.RealizedVariable)
-     */
-    @Override
-    @Nullable
-    public Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
-        
-        // MtoR Mapping. Realized variables are in the R core domain bottom pattern
-        // and create elements in the R model. The realized variables
-        // are being visited for each binding of variable in the mapping. 
-        Area area = ((BottomPattern)realizedVariable.eContainer()).getArea();
-        if (area instanceof CoreDomain) {
-            TypedModel tm = ((CoreDomain)area).getTypedModel();
-            // Create an element in the R model that has a kind equal to the variable type
-            Object element = realizedVariable.getType().createInstance();
-            // Add the element to the R resource
-            ((QVTcDomainManager)modelManager).addModelElement(tm, element);
-            // Add the realize variable binding to the environment
-            if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
-                getEvaluationEnvironment().add(realizedVariable, element);
-            } else {
-                getEvaluationEnvironment().replace(realizedVariable, element);
-            }
-            return element;
-        }
-        return null;
-    }
 
+    
+    private void MtoRMappingError(Element node, String cause) {
+        throw new IllegalArgumentException("Unsupported " + node.eClass().getName()
+                + " specification in Middle to Right mapping. " + cause);
+    }
 }

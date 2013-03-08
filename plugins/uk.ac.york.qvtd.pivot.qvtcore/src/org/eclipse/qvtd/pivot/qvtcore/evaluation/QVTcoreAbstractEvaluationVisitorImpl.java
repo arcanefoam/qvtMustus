@@ -10,6 +10,10 @@
  ******************************************************************************/
 package org.eclipse.qvtd.pivot.qvtcore.evaluation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -25,8 +29,10 @@ import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
+import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTbaseEvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtcore.Area;
 import org.eclipse.qvtd.pivot.qvtcore.Assignment;
@@ -45,10 +51,12 @@ import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtcore.VariableAssignment;
 import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
 
+import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
+
 /**
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
-public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
+public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         implements QVTcoreVisitor<Object> {
     
     
@@ -66,7 +74,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      * @param modelManager
      *            the model manager
      */
-    public QVTcoreEvaluationVisitorImpl(@NonNull Environment env,
+    public QVTcoreAbstractEvaluationVisitorImpl(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
@@ -96,21 +104,8 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      */
     @Nullable
     public Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
-        
-        // This visit should be called for MiddleBottomPatterns with no domains
-        Area area = bottomPattern.getArea();
-        if (area instanceof Mapping && ((Mapping)area).getDomain().size() == 0) {
-            // What is the environment??
-            for (Assignment assigment : bottomPattern.getAssignment()) {
-                assigment.accept(this);
-            }
-            // Probably enforcement operations must be called too
-            for (EnforcementOperation enforceOp : bottomPattern.getEnforcementOperation()) {
-                enforceOp.accept(this);
-            }
-            return true;
-        }
-        return null;
+        throw new UnsupportedOperationException(
+                "Visit method not implemented yet");
     }
 
     /*
@@ -122,42 +117,9 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      */
     @Nullable
     public Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
+        throw new UnsupportedOperationException(
+                "Visit method not implemented yet");
         
-        if (isLtoMMapping((Mapping) coreDomain.getRule())) {
-            /*
-             * LtoM Mapping. The visit to the core domain should return the map
-             * of valid bindings for the domain variables (in the L model)
-             */
-            Map<Variable, Set<Object>>  guardBindings = (Map<Variable, Set<Object>>) coreDomain.getGuardPattern().accept(this);
-            if(guardBindings != null) {
-                // Add the bindings to the visitor environment
-                // Evaluate the bottom pattern for each binding
-                // No predicates in CodeDomain bottom Patterns, so no use to visit bottom patterns at all??
-                for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
-                    Variable var = entry.getKey();
-                    for (Object e : entry.getValue()) {
-                        // Use each of the bindings for evaluation in the loop
-                        getEvaluationEnvironment().replace(var, e);
-                        coreDomain.getBottomPattern().accept(this); 
-                    }
-                }
-            }
-            return guardBindings;
-        } else if (isMtoRMapping((Mapping) coreDomain.getRule())) {
-            /*
-             * MtoR Mapping. The visit to the core domain should create the realized
-             * variables (in the R model). The core domain is visited once per
-             * binding, so only create the realized variables and visit the
-             * assignments once
-             */
-            // TODO Implement guard visit methods
-            //boolean guardMet = (Boolean)coreDomain.getGuardPattern().accept(this);
-            //if(guardMet) {
-                return coreDomain.getBottomPattern().accept(this);
-            //}
-            
-        }
-        return null;
     }
 
     /*
@@ -172,39 +134,36 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         // CoreModel has a transformation (nestedPackage)
         // DEFINE Can a single QVT model has multiple transformations?
         Transformation transformation = ((Transformation) coreModel.getNestedPackage().get(0));
+        QVTcoreLMEvaluationVisitor LMVisitor = new QVTcoreLMEvaluationVisitor(
+                getEnvironment(), getEvaluationEnvironment(), modelManager);
         for (Rule rule : transformation.getRule()) {
             // The transformation only has one mapping, the root mapping. Call
             // nested mappings in correct order, i.e. call all LtoM first then
             // all MtoR
             for (NestedMapping m : ((Mapping) rule).getLocal()) {
-                QVTcoreLMEvaluationVisitor LMVisitor = new QVTcoreLMEvaluationVisitor(
-                        getEnvironment(), getEvaluationEnvironment(), modelManager);
                 if (isLtoMMapping(m)) {
-                    assert !m2mStarted && !m2rStarted;
-                    l2mStarted = true;
                     m.accept(LMVisitor);
+                    LMVisitor.getEvaluationEnvironment().clear();   // Mappings at the same level dont share environment
                 }
             }
             // Remove all bindings to evaluate MtoM
-            getEvaluationEnvironment().clear();
+            /*getEvaluationEnvironment().clear();
             for (NestedMapping m : ((Mapping) rule).getLocal()) {
                 QVTcoreMREvaluationVisitor MRVisitor = new QVTcoreMREvaluationVisitor(
                         getEnvironment(), getEvaluationEnvironment(), modelManager);
                 if (isMtoMMapping(m)) {
-                    assert l2mStarted;
-                    m2mStarted = true;
                     m.accept(MRVisitor);
                 }
-            }
+            }*/
             // Remove all bindings to evaluate MtoR
             getEvaluationEnvironment().clear();
+            QVTcoreMREvaluationVisitor MRVisitor = new QVTcoreMREvaluationVisitor(
+                    getEnvironment(), getEvaluationEnvironment(), modelManager);
+            
             for (NestedMapping m : ((Mapping) rule).getLocal()) {
-                QVTcoreMREvaluationVisitor MRVisitor = new QVTcoreMREvaluationVisitor(
-                        getEnvironment(), getEvaluationEnvironment(), modelManager);
                 if (isMtoRMapping(m)) {
-                    assert l2mStarted;
-                    m2rStarted = true;
                     m.accept(MRVisitor);
+                    MRVisitor.getEvaluationEnvironment().clear();   // Mappings at the same level dont share environment
                 }
             }
         }
@@ -247,10 +206,46 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitGuardPattern(
      * org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
      */
-    @Nullable
+    @Override
     public Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
+        
+        Area area = guardPattern.getArea();
+        Map<Variable, Set<Object>> patternValidBindings = new HashMap<>();
+        assert guardPattern.getVariable().size() == 1 : "Unsupported " + guardPattern.eClass().getName() + " defines more than 1 variable.";
+        for (Variable var : guardPattern.getVariable()) {
+            // Add the variable to the environment so we can assign it a value later
+            getEvaluationEnvironment().add(var, null);
+            TypedModel m;
+            if (area instanceof CoreDomain) {
+                 m = ((CoreDomain)area).getTypedModel();                // L to M
+            } else {
+                m = ((QVTcDomainManager) modelManager).MIDDLE_MODEL;    // M to R
+            }
+            Set<Object> bindingValuesSet = ((QVTcDomainManager) modelManager).getElementsByType(m, var.getType());
+            patternValidBindings.put(var, bindingValuesSet);
+        }
+        // For each binding visit the constraints, remove bindings that do not meet any
+        // of the constraints
+        for (Map.Entry<Variable, Set<Object>> entry : patternValidBindings.entrySet()) {
+            Iterator<Object> bindingIt = entry.getValue().iterator();
+            while (bindingIt.hasNext()) {
+                Variable var = entry.getKey();
+                if (var != null) {
+                    getEvaluationEnvironment().replace(var, bindingIt.next());
+                    for (Predicate predicate : guardPattern.getPredicate()) {
+                        // If the predicate is not true, the binding is not valid
+                        boolean result = (boolean) predicate.accept(this);
+                        if (!result) {
+                            // If the predicates fails, the binding is not valid
+                            bindingIt.remove();
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return patternValidBindings;
+        
     }
 
     /*
@@ -345,10 +340,27 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
      * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitRealizedVariable
      * (org.eclipse.qvtd.pivot.qvtcore.RealizedVariable)
      */
+    @Override
     @Nullable
     public Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
-        throw new UnsupportedOperationException(
-                "Visit method should be implemented by extending evaluators.");
+        
+        // LtoM Mapping. Realized variables are in the mapping's bottom pattern
+        // and create elements in the middle model. The realized variables
+        // are being visited for each binding of variable in the mapping. 
+        Area area = ((BottomPattern)realizedVariable.eContainer()).getArea();
+        Object element =  realizedVariable.getType().createInstance();
+        TypedModel tm = QVTcDomainManager.MIDDLE_MODEL;     // L to M
+        if (area instanceof CoreDomain) {
+            tm = ((CoreDomain)area).getTypedModel();        // M to R
+        }
+        ((QVTcDomainManager)modelManager).addModelElement(tm, element);
+        // Add the realize variable binding to the environment
+        if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
+            getEvaluationEnvironment().add(realizedVariable, element);
+        } else {
+            getEvaluationEnvironment().replace(realizedVariable, element);
+        }
+        return element;
     }
 
     /*
@@ -371,7 +383,7 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
         EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
-        QVTcoreEvaluationVisitorImpl ne = new QVTcoreEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
+        QVTcoreAbstractEvaluationVisitorImpl ne = new QVTcoreAbstractEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
     
@@ -441,5 +453,25 @@ public class QVTcoreEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
         }
         return true;
     }
+    
+    protected List<List<Map<Variable, Object>>> cartesianBindings(List<List<Map<Variable, Object>>> lists) {
+        List<List<Map<Variable, Object>>> resultLists = new ArrayList<List<Map<Variable, Object>>>();
+        if (lists.size() == 0) {
+          resultLists.add(new ArrayList<Map<Variable, Object>>());
+          return resultLists;
+        } else {
+            List<Map<Variable, Object>> firstList = lists.get(0);
+            List<List<Map<Variable, Object>>> remainingLists = cartesianBindings(lists.subList(1, lists.size()));
+            for (Map<Variable, Object> condition : firstList) {
+                for (List<Map<Variable, Object>> remainingList : remainingLists) {
+                    List<Map<Variable, Object>> resultList = new ArrayList<Map<Variable, Object>>();
+                    resultList.add(condition);
+                    resultList.addAll(remainingList);
+                    resultLists.add(resultList);
+            }
+          }
+        }
+        return resultLists;
+      }
 
 }
