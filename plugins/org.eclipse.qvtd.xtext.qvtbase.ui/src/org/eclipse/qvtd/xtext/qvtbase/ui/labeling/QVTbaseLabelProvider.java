@@ -2,6 +2,8 @@ package org.eclipse.qvtd.xtext.qvtbase.ui.labeling;
 
 import org.eclipse.emf.edit.ui.provider.AdapterFactoryLabelProvider;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.domain.elements.Nameable;
 import org.eclipse.ocl.examples.pivot.NamedElement;
 import org.eclipse.ocl.examples.xtext.essentialocl.ui.labeling.EssentialOCLLabelProvider;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
@@ -22,6 +24,18 @@ import com.google.inject.Inject;
  */
 public class QVTbaseLabelProvider extends EssentialOCLLabelProvider
 {
+	public static final String QVTBASE_UI_ICONS = "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/";
+
+	public static @NonNull String getSafeName(@Nullable Nameable ele) {
+		if (ele == null) {
+			return "";
+		}
+		String name = ele.getName();
+		if (name == null) {
+			return "";
+		}
+		return name;
+	}
 
 	@Inject
 	public QVTbaseLabelProvider(@NonNull AdapterFactoryLabelProvider delegate) {
@@ -29,47 +43,47 @@ public class QVTbaseLabelProvider extends EssentialOCLLabelProvider
 	}
 
 	protected String image(Domain ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/Domain.gif";
+		return QVTBASE_UI_ICONS + "Domain.gif";
 	}
 
 	protected String image(Function ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/Function.gif";
+		return QVTBASE_UI_ICONS + "Function.gif";
 	}
 
 	protected String image(FunctionParameter ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/FunctionParameter.gif";
+		return QVTBASE_UI_ICONS + "FunctionParameter.gif";
 	}
 
 	protected String image(Pattern ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/Pattern.gif";
+		return QVTBASE_UI_ICONS + "Pattern.gif";
 	}
 
 	protected String image(Predicate ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/Predicate.gif";
+		return QVTBASE_UI_ICONS + "Predicate.gif";
 	}
 
 	protected String image(Rule ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/Rule.gif";
+		return QVTBASE_UI_ICONS + "Rule.gif";
 	}
 
 	protected String image(Transformation ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/Transformation.gif";
+		return QVTBASE_UI_ICONS + "Transformation.gif";
 	}
 
 	protected String image(TypedModel ele) {
-		return "/org.eclipse.qvtd.xtext.qvtbase.ui/icons/TypedModel.gif";
+		return QVTBASE_UI_ICONS + "TypedModel.gif";
 	}
 
 	protected String text(Domain ele) {
-		return ele.getName();
+		return getSafeName(ele);
 	}
 
 	protected String text(Rule ele) {
-		return ele.getName();
+		return getSafeName(ele);
 	}
 
 	protected String text(Transformation ele) {
-		return ele.getName();
+		return getSafeName(ele);
 	}
 
 	protected String text(TypedModel ele) {
