@@ -46,7 +46,7 @@ import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
-import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
+import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
 import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
@@ -92,7 +92,7 @@ public class TestQVTi extends LoadTestCase {
     @Test
     public void testMinimalQVTi() {
         
-        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti.qvtc";
+        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti";
         // Load the TypeModel resources
         typeModelResourceMap.clear();
         // This is maps reflects how in the future the user input can be passed to the engine
@@ -116,7 +116,7 @@ public class TestQVTi extends LoadTestCase {
      */
     @Test
     public void testHierarchicalN2N() {
-        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphHierarchical.qvti.qvtc";
+        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphHierarchical.qvti";
         // Load the TypeModel resources
         typeModelResourceMap.clear();
         // This is map reflects how in the future the user input can be passed to the engine
@@ -171,13 +171,13 @@ public class TestQVTi extends LoadTestCase {
             fail("There was an error loading the QVTc file");
         }
         if (qvtResource != null) {
-            CoreModel coreModel = (CoreModel) qvtResource.getContents().get(0);
+            ImperativeModel imperativeModel = (ImperativeModel) qvtResource.getContents().get(0);
             PivotEnvironmentFactory envFactory = new PivotEnvironmentFactory(null, metaModelManager);
             PivotEnvironment env = envFactory.createEnvironment();
             PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
             
             QVTcDomainManager modelManager = new QVTcDomainManager();
-            Transformation transformation = ((Transformation)coreModel.getNestedPackage().get(0));
+            Transformation transformation = ((Transformation)imperativeModel.getNestedPackage().get(0));
             TypedModel typedModel;
             /* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
             Iterator<Entry<String, Resource>> it = typeModelResourceMap.entrySet().iterator();
@@ -187,7 +187,7 @@ public class TestQVTi extends LoadTestCase {
                 modelManager.addModel(typedModel, pairs.getValue());
             }
             QVTimperativeVisitor<Object> visitor = new QVTimperativeAbstractEvaluationVisitorImpl(env, evalEnv, modelManager);
-            Object sucess = coreModel.accept(visitor);
+            Object sucess = imperativeModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
             modelManager.saveModels();
             //modelManager.saveTrace();

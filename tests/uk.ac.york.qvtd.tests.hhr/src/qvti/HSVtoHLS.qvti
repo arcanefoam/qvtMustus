@@ -24,11 +24,7 @@ map HSV2MiddleRoot in ColorChanger {	-- Mapping root nodes L to M
 	where() {
 		realize middleRoot : HSVNode2HLSNode |
 		middleRoot.hsv := hsvRoot;
-	}
-	map {
-		where () {
-			middleRoot.rgb := hsv2rgb(hsvRoot.hsv);
-		}
+		middleRoot.rgb := hsv2rgb(hsvRoot.hsv);
 	}
 	map HSV2MiddleRecursion {		-- recursive call to visit children
 		hsvNode := hsvRoot.children;
@@ -45,11 +41,7 @@ map HSV2MiddleRecursion in ColorChanger { -- Mapping child nodes L to M
 		realize middleNode : HSVNode2HLSNode |
 		middleNode.parent := middleParent;
 		middleNode.hsv := hsvNode;
-	}
-	map {
-		where () {
-			middleNode.rgb := hsv2rgb(hsvNode.hsv);
-		}
+		middleNode.rgb := hsv2rgb(hsvNode.hsv);
 	}
 	map HSV2MiddleRecursion {		-- recursive call to visit children
 		hsvNode := hsvNode.children;
@@ -63,12 +55,8 @@ map Middle2HLSRoot in ColorChanger { -- Mapping root nodes M to R
 	}
 	where(middleNode : HSVNode2HLSNode |) {
 		hlsNode.parent := null;
-	}
-	map {
-		where () {
-			middleNode.hls := hlsNode;
-			hlsNode.hls := rgb2hls(middleNode.rgb);
-		}
+		middleNode.hls := hlsNode;
+		hlsNode.hls := rgb2hls(middleNode.rgb);
 	}
 	map Middle2HLSRecursion {		-- recursive call to visit children
 		middleNode := middleNode.children;
@@ -81,12 +69,8 @@ map Middle2HLSRecursion in ColorChanger { -- Mapping child nodes M to R
 	}
 	where(middleNode : HSVNode2HLSNode |) {
 		hlsNode.parent := middleNode.parent.hls;
-	}
-	map {
-		where () {
-			middleNode.hls := hlsNode;
+		middleNode.hls := hlsNode;
 			hlsNode.hls := rgb2hls(middleNode.rgb);
-		}
 	}
 	map Middle2HLSRecursion {		-- recursive call to visit children
 		middleNode := middleNode.children;
