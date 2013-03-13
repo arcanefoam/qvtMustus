@@ -8,7 +8,7 @@
  * Contributors:
  *     Horacio Hoyos - initial API and implementation
  ******************************************************************************/
-package org.eclipse.qvtd.pivot.qvtcore.evaluation;
+package uk.ac.york.qvtd.pivot.qvtcorebase.evaluation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,47 +22,32 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
-import org.eclipse.ocl.examples.pivot.OCLExpression;
-import org.eclipse.ocl.examples.pivot.Property;
 import org.eclipse.ocl.examples.pivot.Variable;
-import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
-import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
-import org.eclipse.qvtd.pivot.qvtbase.Rule;
-import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTbaseEvaluationVisitorImpl;
-import org.eclipse.qvtd.pivot.qvtcore.Area;
-import org.eclipse.qvtd.pivot.qvtcore.Assignment;
-import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
-import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
-import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
-import org.eclipse.qvtd.pivot.qvtcore.CorePattern;
-import org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation;
-import org.eclipse.qvtd.pivot.qvtcore.GuardPattern;
-import org.eclipse.qvtd.pivot.qvtcore.Mapping;
-import org.eclipse.qvtd.pivot.qvtcore.MappingCall;
-import org.eclipse.qvtd.pivot.qvtcore.MappingCallBinding;
-import org.eclipse.qvtd.pivot.qvtcore.NestedMapping;
-import org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment;
-import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
-import org.eclipse.qvtd.pivot.qvtcore.VariableAssignment;
-import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
+import org.eclipse.qvtd.pivot.qvtcorebase.Area;
+import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
+import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
+import org.eclipse.qvtd.pivot.qvtcorebase.CorePattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.EnforcementOperation;
+import org.eclipse.qvtd.pivot.qvtcorebase.GuardPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
+import org.eclipse.qvtd.pivot.qvtcorebase.RealizedVariable;
+import org.eclipse.qvtd.pivot.qvtcorebase.VariableAssignment;
+import org.eclipse.qvtd.pivot.qvtcorebase.util.QVTcoreBaseVisitor;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
+
 
 /**
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
-public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
-        implements QVTcoreVisitor<Object> {
-    
-    
-    private boolean l2mStarted = false;
-    private boolean m2mStarted = false;
-    private boolean m2rStarted = false;
+public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
+        implements QVTcoreBaseVisitor<Object> {
         
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
@@ -74,11 +59,11 @@ public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisit
      * @param modelManager
      *            the model manager
      */
-    public QVTcoreAbstractEvaluationVisitorImpl(@NonNull Environment env,
+    public QVTcoreBaseEvaluationVisitorImpl(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
-        // TODO Auto-generated constructor stub
+
     }
 
     /*
@@ -123,53 +108,12 @@ public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisit
     }
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitCoreModel(org
-     * .eclipse.qvtd.pivot.qvtcore.CoreModel)
-     */
     @Nullable
     public Object visitCoreModel(@NonNull CoreModel coreModel) {
-        // CoreModel has a transformation (nestedPackage)
-        // DEFINE Can a single QVT model has multiple transformations?
-        Transformation transformation = ((Transformation) coreModel.getNestedPackage().get(0));
-        QVTcoreLMEvaluationVisitor LMVisitor = new QVTcoreLMEvaluationVisitor(
-                getEnvironment(), getEvaluationEnvironment(), modelManager);
-        for (Rule rule : transformation.getRule()) {
-            // The transformation only has one mapping, the root mapping. Call
-            // nested mappings in correct order, i.e. call all LtoM first then
-            // all MtoR
-            for (NestedMapping m : ((Mapping) rule).getLocal()) {
-                if (isLtoMMapping(m)) {
-                    m.accept(LMVisitor);
-                    LMVisitor.getEvaluationEnvironment().clear();   // Mappings at the same level dont share environment
-                }
-            }
-            // Remove all bindings to evaluate MtoM
-            /*getEvaluationEnvironment().clear();
-            for (NestedMapping m : ((Mapping) rule).getLocal()) {
-                QVTcoreMREvaluationVisitor MRVisitor = new QVTcoreMREvaluationVisitor(
-                        getEnvironment(), getEvaluationEnvironment(), modelManager);
-                if (isMtoMMapping(m)) {
-                    m.accept(MRVisitor);
-                }
-            }*/
-            // Remove all bindings to evaluate MtoR
-            getEvaluationEnvironment().clear();
-            QVTcoreMREvaluationVisitor MRVisitor = new QVTcoreMREvaluationVisitor(
-                    getEnvironment(), getEvaluationEnvironment(), modelManager);
-            
-            for (NestedMapping m : ((Mapping) rule).getLocal()) {
-                if (isMtoRMapping(m)) {
-                    m.accept(MRVisitor);
-                    MRVisitor.getEvaluationEnvironment().clear();   // Mappings at the same level dont share environment
-                }
-            }
-        }
-        return true;
+        throw new UnsupportedOperationException(
+                "Visit method not implemented yet");
     }
-
+     */
 
     /*
      * (non-Javadoc)
@@ -249,19 +193,12 @@ public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisit
     }
 
     /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitMapping(org.eclipse
-     * .qvtd.pivot.qvtcore.Mapping)
-     */
     @Nullable
     public Object visitMapping(@NonNull Mapping mapping) {
-        /* There can be four types of mappings: root mapping, L->M, M->R and
-         * domain-less mappings
-         * Mappings with only check domains are L->M, mappings with only
-         * enforce domains are M->R 
-         */
+        // There can be four types of mappings: root mapping, L->M, M->R and
+        // domain-less mappings
+        // Mappings with only check domains are L->M, mappings with only
+        // enforce domains are M->R 
         if (mapping.getDomain().size() == 0) {
             // Only visit the bottom pattern, which should have middle model assignments.
             // Since this should be a nested mapping, it will be called once per
@@ -273,34 +210,31 @@ public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisit
         }
         return true;
     }
+    */
     
-    @Override
-    @Nullable
-    public Object visitMappingCall(@NonNull MappingCall object) {
+    /*
+    public Object visitMappingCall(@NonNull Mapping object) {
         // TODO Add visit function or decide if it should never be implemented
         throw new UnsupportedOperationException(
         "Visit method not implemented yet");
     }
+    */
     
-    @Override
-    @Nullable
+    /*
     public Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
         // TODO Add visit function or decide if it should never be implemented
         throw new UnsupportedOperationException(
         "Visit method not implemented yet");
     }
+    */
 
     
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitPropertyAssignment
-     * (org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment)
-     */
+    
+     
     @Nullable
     public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
-        
+         /*
+         
         OCLExpression slotExp = propertyAssignment.getSlotExpression(); 
         Area area = ((BottomPattern)propertyAssignment.eContainer()).getArea();
         if (area instanceof Mapping) {
@@ -329,8 +263,9 @@ public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisit
                         + " specification. The slot expression type (" + slotExp.getType().getName() 
                         + ") is not supported yet.");
             }
-        }
-        return true;
+        }*/
+        throw new UnsupportedOperationException(
+                "Visit method not implemented yet");
     }
 
     /*
@@ -383,76 +318,11 @@ public class QVTcoreAbstractEvaluationVisitorImpl extends QVTbaseEvaluationVisit
         Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
         EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
-        QVTcoreAbstractEvaluationVisitorImpl ne = new QVTcoreAbstractEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
+        QVTcoreBaseEvaluationVisitorImpl ne = new QVTcoreBaseEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
     
-    /**
-     * Checks if the mapping is a middle to right mapping. Middle to Right mappings
-     * must have enforce domains
-     *
-     * @param mapping the mapping
-     * @return true, if is mto r mapping
-     */
-    private boolean isMtoRMapping(NestedMapping nestedMapping) {
-        Mapping mapping;
-        if (nestedMapping instanceof MappingCall) {
-            mapping = ((MappingCall)nestedMapping).getReferredMapping();
-        }
-        else {
-            mapping = (Mapping)nestedMapping;
-        }
-        if (mapping.getDomain().size() == 0) {
-            return false;
-        }
-        for (Domain domain : mapping.getDomain()) {
-            if (!domain.isIsEnforceable()) {
-                return false;
-            }
-        }
-        return true;
-    }
     
-    private boolean isMtoMMapping(NestedMapping nestedMapping) {
-        Mapping mapping;
-        if (nestedMapping instanceof MappingCall) {
-            mapping = ((MappingCall)nestedMapping).getReferredMapping();
-        }
-        else {
-            mapping = (Mapping)nestedMapping;
-        }
-        if (mapping.getDomain().size() == 0) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the mapping is a left to middle mapping. Left to middle mappings
-     * can not have enforce domains
-     *
-     * @param mapping the mapping
-     * @return true, if is lto m mapping
-     */
-    private boolean isLtoMMapping(NestedMapping nestedMapping) {
-        Mapping mapping;
-        if (nestedMapping instanceof MappingCall) {
-            mapping = ((MappingCall)nestedMapping).getReferredMapping();
-        }
-        else {
-            // FIXME nestedMappings are abstract and dont inherit from mapping?!
-            mapping = (Mapping)nestedMapping;
-        }
-        if (mapping.getDomain().size() == 0) {
-            return false;
-        }
-        for (Domain domain : mapping.getDomain()) {
-            if (domain.isIsEnforceable()) {
-                return false;
-            }
-        }
-        return true;
-    }
     
     protected List<List<Map<Variable, Object>>> cartesianBindings(List<List<Map<Variable, Object>>> lists) {
         List<List<Map<Variable, Object>>> resultLists = new ArrayList<List<Map<Variable, Object>>>();

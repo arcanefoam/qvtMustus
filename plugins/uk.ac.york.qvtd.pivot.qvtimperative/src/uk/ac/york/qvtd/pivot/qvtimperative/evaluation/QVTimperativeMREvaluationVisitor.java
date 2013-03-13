@@ -8,7 +8,7 @@
  * Contributors:
  *     hhoyos - initial API and implementation
  ******************************************************************************/
-package org.eclipse.qvtd.pivot.qvtcore.evaluation;
+package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,16 +29,15 @@ import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
-import org.eclipse.qvtd.pivot.qvtcore.Area;
-import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
-import org.eclipse.qvtd.pivot.qvtcore.CoreDomain;
-import org.eclipse.qvtd.pivot.qvtcore.Mapping;
-import org.eclipse.qvtd.pivot.qvtcore.MappingCall;
-import org.eclipse.qvtd.pivot.qvtcore.MappingCallBinding;
-import org.eclipse.qvtd.pivot.qvtcore.NestedMapping;
-import org.eclipse.qvtd.pivot.qvtcore.PropertyAssignment;
-import org.eclipse.qvtd.pivot.qvtcore.RealizedVariable;
-import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
+import org.eclipse.qvtd.pivot.qvtcorebase.Area;
+import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
+import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
+import org.eclipse.qvtd.pivot.qvtcorebase.RealizedVariable;
+import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
+import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
+import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
+import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
@@ -46,8 +45,8 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTcoreMREvaluationVisitor is the class for ...
  */
-public class QVTcoreMREvaluationVisitor extends QVTcoreAbstractEvaluationVisitorImpl
-        implements QVTcoreVisitor<Object> {
+public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvaluationVisitorImpl
+        implements QVTimperativeVisitor<Object> {
 
     /**
      * Instantiates a new qV tcore mr evaluation visitor.
@@ -56,7 +55,7 @@ public class QVTcoreMREvaluationVisitor extends QVTcoreAbstractEvaluationVisitor
      * @param evalEnv the evaluation environment
      * @param modelManager the model manager
      */
-    public QVTcoreMREvaluationVisitor(@NonNull Environment env,
+    public QVTimperativeMREvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
@@ -152,9 +151,6 @@ public class QVTcoreMREvaluationVisitor extends QVTcoreAbstractEvaluationVisitor
             for (Domain domain : mapping.getDomain()) {
                 domain.accept(this);
             }
-            for (NestedMapping localMapping : mapping.getLocal()) {
-                localMapping.accept(this);
-            }
         } else {
             Map<Variable, Set<Object>> guardBindings = (Map<Variable, Set<Object>>) mapping.getGuardPattern().accept(this);
             assert guardBindings.size() <= 1 : "Unsupported " 
@@ -165,42 +161,37 @@ public class QVTcoreMREvaluationVisitor extends QVTcoreAbstractEvaluationVisitor
                 for (Object e : entry.getValue()) {
                     getEvaluationEnvironment().replace(var, e);
                     mapping.getBottomPattern().accept(this);
-                    
-                    for (NestedMapping localMapping : mapping.getLocal()) {
-                        if (localMapping.getClass().isInstance(MappingCall.class)) {
-                            List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<>();
-                            for (MappingCallBinding binding : ((MappingCall)localMapping).getBinding()) {
-                                OCLExpression value = binding.getValue();
-                                Object result = safeVisit(value);
-                                List<Map<Variable, Object>> bindingValues = new ArrayList<>();
-                                if (result.getClass().isInstance(CollectionValue.class)) {
-                                    // Create a binding for each of the elements in the collection
-                                    for (Object resValue : ((CollectionValue)result).asCollection()) {
-                                        Map<Variable, Object> varValue = new HashMap<>();
-                                        varValue.put(var, resValue);
-                                        bindingValues.add(varValue);
-                                   }
-                                } else {
+                    for (MappingCall mappingCall : mapping.getMappingCall()) {
+                        List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<>();
+                        for (MappingCallBinding binding : ((MappingCall)mappingCall).getBinding()) {
+                            OCLExpression value = binding.getValue();
+                            Object result = safeVisit(value);
+                            List<Map<Variable, Object>> bindingValues = new ArrayList<>();
+                            if (result.getClass().isInstance(CollectionValue.class)) {
+                                // Create a binding for each of the elements in the collection
+                                for (Object resValue : ((CollectionValue)result).asCollection()) {
                                     Map<Variable, Object> varValue = new HashMap<>();
-                                    varValue.put(var, result);
+                                    varValue.put(var, resValue);
                                     bindingValues.add(varValue);
-                                }
-                                bindingCartesian.add(bindingValues);
+                               }
+                            } else {
+                                Map<Variable, Object> varValue = new HashMap<>();
+                                varValue.put(var, result);
+                                bindingValues.add(varValue);
                             }
-                            // Calculate the Cartesian list of bindings
-                            List<List<Map<Variable, Object>>> cartesian = cartesianBindings(bindingCartesian);
-                            for (List<Map<Variable, Object>> bindings : cartesian) {
-                                for (Map<Variable, Object> binding : bindings) {
-                                    Iterator<Entry<Variable, Object>> it = binding.entrySet().iterator();
-                                    while (it.hasNext()) {
-                                        Map.Entry<Variable, Object> pairs = (Map.Entry<Variable, Object>)it.next();
-                                        getEvaluationEnvironment().replace(pairs.getKey(), pairs.getValue());
-                                    }
+                            bindingCartesian.add(bindingValues);
+                        }
+                        // Calculate the Cartesian list of bindings
+                        List<List<Map<Variable, Object>>> cartesian = cartesianBindings(bindingCartesian);
+                        for (List<Map<Variable, Object>> bindings : cartesian) {
+                            for (Map<Variable, Object> binding : bindings) {
+                                Iterator<Entry<Variable, Object>> it = binding.entrySet().iterator();
+                                while (it.hasNext()) {
+                                    Map.Entry<Variable, Object> pairs = (Map.Entry<Variable, Object>)it.next();
+                                    getEvaluationEnvironment().replace(pairs.getKey(), pairs.getValue());
                                 }
-                                localMapping.accept(this);
                             }
-                        } else if (localMapping.getClass().isInstance(Mapping.class)) {
-                            localMapping.accept(this);
+                            mappingCall.accept(this);
                         }
                     }
                 }

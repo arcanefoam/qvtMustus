@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Qvtcorebase
+Bundle-SymbolicName: uk.ac.york.qvtd.pivot.qvtcorebase
+Bundle-Version: 0.2.0.qualifier
+Bundle-Activator: uk.ac.york.qvtd.pivot.qvtcorebase.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ uk.ac.york.qvtd.pivot.qvtbase;bundle-version="0.1.0",
+ org.eclipse.qvtd.pivot.qvtcorebase;bundle-version="0.10.0",
+ uk.ac.york.qvtd.library;bundle-version="0.1.0"
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Export-Package: uk.ac.york.qvtd.pivot.qvtcorebase.evaluation

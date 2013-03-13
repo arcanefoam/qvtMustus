@@ -8,25 +8,26 @@
  * Contributors:
  *     hhoyos - initial API and implementation
  ******************************************************************************/
-package org.eclipse.qvtd.pivot.qvtcore.evaluation;
+package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
-import org.eclipse.qvtd.pivot.qvtcore.Area;
-import org.eclipse.qvtd.pivot.qvtcore.Assignment;
-import org.eclipse.qvtd.pivot.qvtcore.BottomPattern;
-import org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation;
 import org.eclipse.qvtd.pivot.qvtcore.Mapping;
+import org.eclipse.qvtd.pivot.qvtcorebase.Area;
+import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
+import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.EnforcementOperation;
+import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
 
 /**
  * QVTcoreMMEvaluationVisitorImpl is the class for ...
  */
-public class QVTcoreMMEvaluationVisitor extends
-        QVTcoreAbstractEvaluationVisitorImpl {
+public class QVTimperativeMMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitorImpl
+        implements QVTimperativeVisitor<Object> {
 
     /**
      * Instantiates a new QVTcore MM Evaluation Visitor.
@@ -35,7 +36,7 @@ public class QVTcoreMMEvaluationVisitor extends
      * @param evalEnv the evaluation environment
      * @param modelManager the model manager
      */
-    public QVTcoreMMEvaluationVisitor(@NonNull Environment env,
+    public QVTimperativeMMEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
     }

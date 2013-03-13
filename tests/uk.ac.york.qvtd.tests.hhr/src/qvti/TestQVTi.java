@@ -1,6 +1,13 @@
-/*
+/*******************************************************************************
+ * Copyright (c) 2012 The University of York and Willink Transformations.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
  * 
- */
+ * Contributors:
+ *     Horacio Hoyos - initial API and implementation
+ ******************************************************************************/
 package qvti;
 
 import java.io.IOException;
@@ -40,8 +47,7 @@ import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingS
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcore.CoreModel;
-import org.eclipse.qvtd.pivot.qvtcore.evaluation.QVTcoreAbstractEvaluationVisitorImpl;
-import org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor;
+import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
 import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
 import org.junit.After;
@@ -49,6 +55,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
+import uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeAbstractEvaluationVisitorImpl;
 
 /**
  * Test001 is a set if simple tests on the QVTc API.
@@ -179,7 +186,7 @@ public class TestQVTi extends LoadTestCase {
                 typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
                 modelManager.addModel(typedModel, pairs.getValue());
             }
-            QVTcoreVisitor<Object> visitor = new QVTcoreAbstractEvaluationVisitorImpl(env, evalEnv, modelManager);
+            QVTimperativeVisitor<Object> visitor = new QVTimperativeAbstractEvaluationVisitorImpl(env, evalEnv, modelManager);
             Object sucess = coreModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
             modelManager.saveModels();

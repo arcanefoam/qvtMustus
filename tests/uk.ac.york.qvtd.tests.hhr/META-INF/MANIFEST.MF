@@ -2,13 +2,15 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: QVTdTests
 Bundle-SymbolicName: uk.ac.york.qvtd.tests.hhr
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 0.2.0.qualifier
 Export-Package: qvti
 Require-Bundle: org.eclipse.qvtd.xtext.qvtbase.tests;bundle-version="0.10.0",
  org.eclipse.qvtd.xtext.qvtcore;bundle-version="0.10.0",
- uk.ac.york.qvtd.pivot.qvtcore;bundle-version="1.0.0",
- uk.ac.york.qvtd.pivot.qvtbase;bundle-version="1.0.0",
- uk.ac.york.qvtd.library;bundle-version="1.0.0",
+ org.eclipse.qvtd.pivot.qvtimperative;bundle-version="0.10.0",
  org.eclipse.ocl.examples.xtext.tests;bundle-version="3.3.0",
+ uk.ac.york.qvtd.pivot.qvtbase;bundle-version="0.1.0",
+ uk.ac.york.qvtd.library;bundle-version="0.1.0",
+ uk.ac.york.qvtd.pivot.qvtimperative;bundle-version="0.1.0",
+ uk.ac.york.qvtd.pivot.qvtcorebase;bundle-version="0.1.0",
  org.eclipse.emf.compare;bundle-version="3.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
