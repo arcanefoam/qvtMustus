@@ -8,7 +8,7 @@
  * Contributors:
  *     Horacio Hoyos - initial API and implementation
  ******************************************************************************/
-package qvti;
+package junit;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -93,6 +93,7 @@ public class TestQVTi extends LoadTestCase {
     public void testMinimalQVTi() {
         
         final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti";
+        //final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvtc/UpperToLower.qvtc";
         // Load the TypeModel resources
         typeModelResourceMap.clear();
         // This is maps reflects how in the future the user input can be passed to the engine
