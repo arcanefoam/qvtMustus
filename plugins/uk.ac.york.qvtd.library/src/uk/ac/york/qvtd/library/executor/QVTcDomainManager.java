@@ -193,8 +193,9 @@ public class QVTcDomainManager implements DomainModelManager {
         }
     }
     
-    public void saveTrace(ResourceSet resourceSet, String uriPath) {
+    public void saveTrace(String name, ResourceSet resourceSet, String uriPath) {
         
+        uriPath += "trace" + name + ".xmi";
         Resource r = resourceSet.createResource(URI.createURI(uriPath));
         for (EObject e : modelElementsMap.get(MIDDLE_MODEL)) {
             if (e.eContainer() == null) {

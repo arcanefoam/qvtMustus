@@ -143,7 +143,7 @@ public class TestQVTi extends LoadTestCase {
         // This is map reflects how in the future the user input can be passed to the engine
         Map<String,String> typeModelFileMap = new HashMap<String,String>();
         typeModelFileMap.put("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNode.xmi");
-        typeModelFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/HSLNode.xmi");
+        typeModelFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/HLSNode.xmi");
         Map<String, Boolean> typeModelModeMap = new HashMap<String, Boolean>();     // Load or create, true = create
         typeModelModeMap.put("hsv", Boolean.FALSE);
         typeModelModeMap.put("hls", Boolean.TRUE);
@@ -151,7 +151,7 @@ public class TestQVTi extends LoadTestCase {
         typeModelValidationResourceMap.clear();
         Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
         typeModelValidationFileMap.put("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNodeValidate.xmi");
-        typeModelValidationFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSLNodeValidate.xmi");
+        typeModelValidationFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HLSNodeValidate.xmi");
         loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
         doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
         
@@ -213,7 +213,7 @@ public class TestQVTi extends LoadTestCase {
             Object sucess = imperativeModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
             modelManager.saveModels();
-            modelManager.saveTrace(resourceSet, "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/trace.xmi");
+            modelManager.saveTrace(imperativeModel.getNestedPackage().get(0).getName(), resourceSet, "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/");
             System.out.println("Result of the transformation was " + (Boolean)sucess);
             
             // Validate against reference models

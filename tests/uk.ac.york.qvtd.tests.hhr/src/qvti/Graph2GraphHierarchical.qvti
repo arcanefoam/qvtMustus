@@ -1,13 +1,13 @@
 import SimpleGraph : '../../model/SimpleGraph.ecore'::simplegraph;
 import SimpleGraph2Graph : '../../model/SimpleGraph2Graph.ecore'::simplegraph2graph;
 
-transformation copyGraph {
+transformation CopyGraph {
 	upperGraph imports SimpleGraph;
 	lowerGraph imports SimpleGraph;
 	imports SimpleGraph2Graph;
 }
 
-map Graph2Middle in copyGraph {	        					-- L to M for G
+map Graph2Middle in CopyGraph {	        					-- L to M for G
     check upperGraph(g1:Graph |) { }
     where () {
         realize middleG2G:Graph2Graph |
@@ -23,7 +23,7 @@ map Graph2Middle in copyGraph {	        					-- L to M for G
     }
 }
 
-map Node2Middle in copyGraph {    							-- L to M for N
+map Node2Middle in CopyGraph {    							-- L to M for N
     check upperGraph(n1:Node |) { }
     where (middleParent:Graph2Graph |) {
         realize n2n:Node2Node |
@@ -33,7 +33,7 @@ map Node2Middle in copyGraph {    							-- L to M for N
     }
 }
 	
-map Middle2Graph in copyGraph {								-- M to R for G
+map Middle2Graph in CopyGraph {								-- M to R for G
 	enforce lowerGraph() {
         realize g2:Graph |
     }
@@ -46,7 +46,7 @@ map Middle2Graph in copyGraph {								-- M to R for G
     }
 }
 
-map Middle2Node in copyGraph {						        -- M to R for N
+map Middle2Node in CopyGraph {						        -- M to R for N
 	enforce lowerGraph () {
         realize n2:Node |
     }
