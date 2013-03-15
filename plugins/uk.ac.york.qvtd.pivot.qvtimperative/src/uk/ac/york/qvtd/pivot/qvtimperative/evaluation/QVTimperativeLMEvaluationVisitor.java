@@ -10,21 +10,15 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
-import org.eclipse.ocl.examples.domain.values.CollectionValue;
 import org.eclipse.ocl.examples.pivot.Element;
 import org.eclipse.ocl.examples.pivot.Environment;
-import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
@@ -36,9 +30,12 @@ import org.eclipse.qvtd.pivot.qvtcorebase.EnforcementOperation;
 import org.eclipse.qvtd.pivot.qvtcorebase.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
-import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
+// TODO: Auto-generated Javadoc
+/**
+ * QVTimperativeLMEvaluationVisitor is the class for ...
+ */
 public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitorImpl 
         implements QVTimperativeVisitor<Object> {
 
@@ -56,6 +53,9 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
     }
     
 
+    /* (non-Javadoc)
+     * @see uk.ac.york.qvtd.pivot.qvtcorebase.evaluation.QVTcoreBaseEvaluationVisitorImpl#visitBottomPattern(org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern)
+     */
     @Override
     public Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
         
@@ -107,46 +107,51 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
     }
     
     
+    /* (non-Javadoc)
+     * @see uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeAbstractEvaluationVisitorImpl#visitMapping(org.eclipse.qvtd.pivot.qvtimperative.Mapping)
+     */
     @Override
     public Object visitMapping(@NonNull Mapping mapping) {
         
         assert mapping.getDomain().size() == 1 : "Unsupported "
                 + mapping.eClass().getName() + ". Max supported number of domains is 1.";
-        Map<Variable, Set<Object>>  domainBindings = new HashMap<>();
+        Map<Variable, Set<Object>>  mappingBindings = new HashMap<>();
         for (Domain domain : mapping.getDomain()) {
-            domainBindings.putAll((Map<Variable, Set<Object>>)domain.accept(this));
-            assert domainBindings.size() == 1 : "Unsupported " 
+            mappingBindings.putAll((Map<Variable, Set<Object>>)domain.accept(this));
+            assert mappingBindings.size() == 1 : "Unsupported " 
                     + mapping.eClass().getName() + ". Nested domains provided more than 1 variable binding.";
         }
-        for (Map.Entry<Variable, Set<Object>> domainEntry : domainBindings.entrySet()) {
+        /* Do we have guard patterns in LM mappings?
+        for (Map.Entry<Variable, Set<Object>> domainEntry : mappingBindings.entrySet()) {
             Variable domainVar = domainEntry.getKey();
-            Map<Variable, Set<Object>>  guardBindings = new HashMap<>();
             for (Object binding : domainEntry.getValue()) {
                 getEvaluationEnvironment().replace(domainVar, binding);
-                guardBindings.putAll((Map<Variable, Set<Object>>) mapping.getGuardPattern().accept(this));
+                mappingBindings.putAll((Map<Variable, Set<Object>>) mapping.getGuardPattern().accept(this));
             }
-            for (Map.Entry<Variable, Set<Object>> mappingEntry : guardBindings.entrySet()) {
-                Variable var = mappingEntry.getKey();
-                for (Object binding : mappingEntry.getValue()) {
-                    getEvaluationEnvironment().replace(var, binding);
-                    mapping.getBottomPattern().accept(this);
-                }
+        }
+        */
+        for (Map.Entry<Variable, Set<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
+            Variable var = mappingBindingEntry.getKey();
+            for (Object binding : mappingBindingEntry.getValue()) {
+                getEvaluationEnvironment().replace(var, binding);
+                visitBoundMapping(mapping);
+                /*mapping.getBottomPattern().accept(this);
                 for (MappingCall mappingCall : mapping.getMappingCall())  {
                     List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<>();
-                    for (MappingCallBinding binding : mappingCall.getBinding()) {
-                        OCLExpression value = binding.getValue();
+                    for (MappingCallBinding callBinding : mappingCall.getBinding()) {
+                        OCLExpression value = callBinding.getValue();
                         Object result = safeVisit(value);
                         List<Map<Variable, Object>> bindingValues = new ArrayList<>();
-                        if (result.getClass().isInstance(CollectionValue.class)) {
+                        if (result instanceof CollectionValue) {
                             // Create a binding for each of the elements in the collection
                             for (Object resValue : ((CollectionValue)result).asCollection()) {
                                 Map<Variable, Object> varValue = new HashMap<>();
-                                varValue.put(var, resValue);
+                                varValue.put(callBinding.getBoundVariable(), resValue);
                                 bindingValues.add(varValue);
                            }
                         } else {
                             Map<Variable, Object> varValue = new HashMap<>();
-                            varValue.put(var, result);
+                            varValue.put(callBinding.getBoundVariable(), result);
                             bindingValues.add(varValue);
                         }
                         bindingCartesian.add(bindingValues);
@@ -163,39 +168,54 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
                         }
                         mappingCall.accept(this);
                     }
-                }
+                }*/
             }
+            
         }
         return true;
     }
     
+    /* (non-Javadoc)
+     * @see uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeAbstractEvaluationVisitorImpl#visitMappingCall(org.eclipse.qvtd.pivot.qvtimperative.MappingCall)
+     */
     @Override
     @Nullable
     public Object visitMappingCall(@NonNull MappingCall mappingCall) {
         
-        // Verify that the invoked mapping variables are defined in the
-        // environment
-        for (Domain domain : mappingCall.getReferredMapping().getDomain()) {
-            for(Variable variable : ((CoreDomain)domain).getGuardPattern().getVariable()) {
+        if (isLtoMMapping(mappingCall.getReferredMapping())) {
+            // Verify that the invoked mapping variables (in domain and mapping guards) are defined in the
+            // environment
+            for (Domain domain : mappingCall.getReferredMapping().getDomain()) {
+                for(Variable variable : ((CoreDomain)domain).getGuardPattern().getVariable()) {
+                    Object value = getEvaluationEnvironment().getValueOf(variable);
+                    if (value == null) {
+                        throw new IllegalArgumentException("Unsupported " + mappingCall.eClass().getName()
+                                + " specification. Referenced mapping variables not bound.");
+                    }
+                }
+            }
+            for (Variable variable : mappingCall.getReferredMapping().getGuardPattern().getVariable()) {
                 Object value = getEvaluationEnvironment().getValueOf(variable);
                 if (value == null) {
                     throw new IllegalArgumentException("Unsupported " + mappingCall.eClass().getName()
                             + " specification. Referenced mapping variables not bound.");
                 }
             }
+            visitBoundMapping(mappingCall.getReferredMapping());
+        } else if (isMtoRMapping(mappingCall.getReferredMapping())) {
+            QVTimperativeMREvaluationVisitor MRVisitor = new QVTimperativeMREvaluationVisitor(
+                    getEnvironment(), getEvaluationEnvironment(), modelManager);
+            mappingCall.accept(MRVisitor);
         }
-        for (Variable variable : mappingCall.getReferredMapping().getBottomPattern().getVariable()) {
-            Object value = getEvaluationEnvironment().getValueOf(variable);
-            if (value == null) {
-                throw new IllegalArgumentException("Unsupported " + mappingCall.eClass().getName()
-                        + " specification. Referenced mapping variables not bound.");
-            }
-        }
-        
-        
         return null;
     }
     
+    /**
+     * Lto m mapping error.
+     *
+     * @param node the node
+     * @param cause the cause
+     */
     private void LtoMMappingError(Element node, String cause) {
         throw new IllegalArgumentException("Unsupported " + node.eClass().getName()
                 + " specification in Left to Middle mapping. " + cause);

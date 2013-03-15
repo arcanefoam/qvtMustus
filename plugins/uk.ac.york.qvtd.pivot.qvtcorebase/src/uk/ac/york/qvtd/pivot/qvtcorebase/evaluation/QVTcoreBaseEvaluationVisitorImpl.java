@@ -107,13 +107,6 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
         
     }
 
-    /*
-    @Nullable
-    public Object visitCoreModel(@NonNull CoreModel coreModel) {
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
-    }
-     */
 
     /*
      * (non-Javadoc)
@@ -155,7 +148,7 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
         
         Area area = guardPattern.getArea();
         Map<Variable, Set<Object>> patternValidBindings = new HashMap<>();
-        assert guardPattern.getVariable().size() == 1 : "Unsupported " + guardPattern.eClass().getName() + " defines more than 1 variable.";
+        assert guardPattern.getVariable().size() > 0 : "Unsupported " + guardPattern.eClass().getName() + " defines no variables.";
         for (Variable var : guardPattern.getVariable()) {
             // Add the variable to the environment so we can assign it a value later
             getEvaluationEnvironment().add(var, null);
@@ -191,79 +184,14 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
         return patternValidBindings;
         
     }
-
-    /*
-    @Nullable
-    public Object visitMapping(@NonNull Mapping mapping) {
-        // There can be four types of mappings: root mapping, L->M, M->R and
-        // domain-less mappings
-        // Mappings with only check domains are L->M, mappings with only
-        // enforce domains are M->R 
-        if (mapping.getDomain().size() == 0) {
-            // Only visit the bottom pattern, which should have middle model assignments.
-            // Since this should be a nested mapping, it will be called once per
-            // binding.
-            mapping.getBottomPattern().accept(this);
-        } else {
-            throw new IllegalArgumentException("Unsupported " + mapping.eClass().getName()
-                    + " specification. Mappings can only have check or check+enforce domains");
-        }
-        return true;
-    }
-    */
-    
-    /*
-    public Object visitMappingCall(@NonNull Mapping object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-        "Visit method not implemented yet");
-    }
-    */
-    
-    /*
-    public Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-        "Visit method not implemented yet");
-    }
-    */
-
-    
     
      
+    /* (non-Javadoc)
+     * @see org.eclipse.qvtd.pivot.qvtcorebase.util.QVTcoreBaseVisitor#visitPropertyAssignment(org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment)
+     */
     @Nullable
     public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
-         /*
-         
-        OCLExpression slotExp = propertyAssignment.getSlotExpression(); 
-        Area area = ((BottomPattern)propertyAssignment.eContainer()).getArea();
-        if (area instanceof Mapping) {
-            // slot vars can either be in L, M or R, this is, they have either a value
-            // in validBindings (loop variable) or in tempRealizedElements (realized variables)
-            if (slotExp instanceof VariableExp ) {      // What other type of expressions are there?
-                Variable slotVar = (Variable) ((VariableExp)slotExp).getReferredVariable();
-                if(slotVar != null) {
-                    Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
-                    if(slotBinding != null) {
-                        Object value = safeVisit(propertyAssignment.getValue());
-                        Property p = propertyAssignment.getTargetProperty();
-                        p.initValue(slotBinding, value);
-                    } else {
-                        throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
-                                + " specification. The assigment refers to a variable not defined in the" +
-                                " current environment");
-                    } 
-                } else {
-                    throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
-                            + " specification. The referred variable of the slot expression (" + slotExp.getType().getName() 
-                            + ") was not found.");
-                }
-            } else {
-                throw new IllegalArgumentException("Unsupported " + propertyAssignment.eClass().getName()
-                        + " specification. The slot expression type (" + slotExp.getType().getName() 
-                        + ") is not supported yet.");
-            }
-        }*/
+
         throw new UnsupportedOperationException(
                 "Visit method not implemented yet");
     }
@@ -313,6 +241,9 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
     }
 
     /* ========== HELPER METHODS ========== */
+    /* (non-Javadoc)
+     * @see org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl#createNestedEvaluator()
+     */
     @Override
     public @NonNull EvaluationVisitor createNestedEvaluator() {
         Environment environment = getEnvironment();
@@ -324,6 +255,12 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
     
     
     
+    /**
+     * Cartesian bindings.
+     *
+     * @param lists the lists
+     * @return the list
+     */
     protected List<List<Map<Variable, Object>>> cartesianBindings(List<List<Map<Variable, Object>>> lists) {
         List<List<Map<Variable, Object>>> resultLists = new ArrayList<List<Map<Variable, Object>>>();
         if (lists.size() == 0) {

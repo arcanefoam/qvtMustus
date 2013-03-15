@@ -49,7 +49,7 @@ import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
-import org.eclipse.qvtd.xtext.qvtcore.QVTcoreStandaloneSetup;
+import org.eclipse.qvtd.xtext.qvtimperative.QVTimperativeStandaloneSetup;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +74,7 @@ public class TestQVTi extends LoadTestCase {
 	    
 		EssentialOCLLinkingService.DEBUG_RETRY = true;
 		super.setUp();
-		QVTcoreStandaloneSetup.doSetup();
+		QVTimperativeStandaloneSetup.doSetup();
 		
         getProjectMap().initializeResourceSet(resourceSet);
         metaModelManager = new MetaModelManager();
@@ -93,7 +93,6 @@ public class TestQVTi extends LoadTestCase {
     public void testMinimalQVTi() {
         
         final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti";
-        //final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvtc/UpperToLower.qvtc";
         // Load the TypeModel resources
         typeModelResourceMap.clear();
         // This is maps reflects how in the future the user input can be passed to the engine
@@ -135,6 +134,29 @@ public class TestQVTi extends LoadTestCase {
         loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
         doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
     }
+    
+    @Test
+    public void testRecursiveN2N() {
+        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/HSVtoHLS.qvti";
+        // Load the TypeModel resources
+        typeModelResourceMap.clear();
+        // This is map reflects how in the future the user input can be passed to the engine
+        Map<String,String> typeModelFileMap = new HashMap<String,String>();
+        typeModelFileMap.put("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNode.xmi");
+        typeModelFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/HSLNode.xmi");
+        Map<String, Boolean> typeModelModeMap = new HashMap<String, Boolean>();     // Load or create, true = create
+        typeModelModeMap.put("hsv", Boolean.FALSE);
+        typeModelModeMap.put("hls", Boolean.TRUE);
+        // validation TypeModel resources
+        typeModelValidationResourceMap.clear();
+        Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
+        typeModelValidationFileMap.put("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNodeValidate.xmi");
+        typeModelValidationFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSLNodeValidate.xmi");
+        loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
+        doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
+        
+    }
+    
     
     @Test
     public void testN2LessNGuarded() {
@@ -191,7 +213,7 @@ public class TestQVTi extends LoadTestCase {
             Object sucess = imperativeModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
             modelManager.saveModels();
-            //modelManager.saveTrace();
+            modelManager.saveTrace(resourceSet, "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/trace.xmi");
             System.out.println("Result of the transformation was " + (Boolean)sucess);
             
             // Validate against reference models
@@ -213,7 +235,6 @@ public class TestQVTi extends LoadTestCase {
             }
             modelManager.dispose();
         }
-        
     }
     
     /* ================== NON - TEST ========================= */

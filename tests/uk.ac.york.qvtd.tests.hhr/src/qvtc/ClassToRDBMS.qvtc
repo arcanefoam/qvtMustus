@@ -26,7 +26,7 @@ map packageToSchema in umlRdbms {
         s:Schema |
     }
     where () {
-        p2s:PackageToSchema|
+        p2s:PackageToSchema |
         p2s.umlPackage = p;
         p2s.schema = s;
     }
@@ -51,14 +51,14 @@ map packageToSchema in umlRdbms {
 */
 map primitiveToName in umlRdbms {
     uml (p:Package |) {
-        prim:PrimitiveDataType|
+        prim:PrimitiveDataType |
         prim.namespace = p;
     }
     check enforce rdbms () {
         sqlType:String |
     }
     where (p2s:PackageToSchema| p2s.umlPackage=p;) {
-        realize p2n:PrimitiveToName|
+        realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
         p2n.typeName := sqlType;
@@ -98,8 +98,10 @@ map stringToVarchar in umlRdbms refines primitiveToName {
 }
 
 -- utility functions for flattening   
+-- TODO Move this to queries
 map flattening in umlRdbms {
-    /*getAllSupers(cls : Class |) : Set(Class) {
+    /*
+    getAllSupers(cls : Class |) : Set(Class) {
         cls.general->collect(gen|self.getAllSupers(gen))->
             including(cls)->asSet();
     }
@@ -108,7 +110,8 @@ map flattening in umlRdbms {
     }
     getAllForwards(cls : Class| ) : Set(Association) {
         getAllSupers(cls).forward;
-    }*/
+    }
+    */
 }
  
 /*  -- Class and Table mapping
@@ -131,12 +134,12 @@ map classToTable in umlRdbms {
         c.namespace := p;
     }
     check enforce rdbms (s:Schema |) {
-        realize t:Table|
+        realize t:Table |
         t.kind <> 'meta';
         default t.kind := 'base';
         t.schema := s;
     }
-    where (p2s:PackageToSchema| p2s.umlPackage=p; p2s.schema=s;) {
+    where (p2s:PackageToSchema | p2s.umlPackage=p; p2s.schema=s;) {
         realize c2t:ClassToTable |
         c2t.owner := p2s;
         c2t.umlClass := c;
@@ -153,7 +156,7 @@ map classToTable in umlRdbms {
     map {
         check enforce rdbms () {
             realize pk:Key,
-            realize pc:Column|
+            realize pc:Column |
             pk.owner := t;
             pk.kind := 'primary';
             pc.owner := t;
@@ -163,7 +166,7 @@ map classToTable in umlRdbms {
         }
         where () {
             c2t.primaryKey := pk;
-            c2t.column := pc;
+            -- c2t.column := pc; // TODO Check this
         }
         map {
             check enforce rdbms () {
@@ -187,42 +190,40 @@ map classToTable in umlRdbms {
 */
 
 map associationToForeignKey in umlRdbms refines flattening {
-    check enforce uml (p:Package, sc:Class, dc:Class| sc.namespace = p;) {
+    check enforce uml (p:Package, sc:Class, dc:Class | sc.namespace = p;) {
         realize a:Association|
-        getAllForwards(sc)->includes(a);
+        -- getAllForwards(sc)->includes(a);
         default a.source := sc;
-        getAllSupers(dc)->includes(a.destination);
+        -- getAllSupers(dc)->includes(a.destination);
         default a.destination := dc;
         default a.namespace := p;
     }
-    check enforce rdbms (s:Schema, st:Table, dt:Table, rk:Key|
-        st.schema = s;
-        rk.owner = dt;
-        rk.kind = 'primary';
-    ) {
+    check enforce rdbms (s:Schema, st:Table, dt:Table, rk:Key |
+	        st.schema = s;
+	        rk.owner = dt;
+	        rk.kind = 'primary';) {
         realize fk:ForeignKey,
-        realize fc:Column|
+        realize fc:Column |
         fk.owner := st;
         fc.owner := st;
         fk.refersTo := rk;
-        fc.foreignKey->includes(fk);
-        default fc.foreignKey := Set(ForeignKey){fk};
+        fc.foreignKeys->includes(fk);
+        default fc.foreignKeys := Set(ForeignKey){fk};
     }
-    where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable|
-        sc2t.owner = p2s;
-        p2s.umlPackage = p;
-        p2s.schema = s;
-        sc2t.table = st;
-        dc2t.table = dt;
-        sc2t.umlClass = sc;
-        dc2t.umlClass = dc;
-    ) {
+    where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable |
+	        sc2t.owner = p2s;
+	        p2s.umlPackage = p;
+	        p2s.schema = s;
+	        sc2t.table = st;
+	        dc2t.table = dt;
+	        sc2t.umlClass = sc;
+	        dc2t.umlClass = dc; ) {
         realize a2f:AssociationToForeignKey|
         a2f.owner := sc2t;
         a2f.referenced := dc2t;
         a2f.association := a;
         a2f.foreignKey := fk;
-        a2f.column := fc;
+        -- a2f.column := fc;	// TODO Check this
     }
     map {
         where () {
@@ -234,13 +235,13 @@ map associationToForeignKey in umlRdbms refines flattening {
                         then a.name+'_'+sc.name
                         else dc.name+'_'+a.name+'_'+sc.name
                         endif endif endif;
+            a2f.name := fk.name;
             a.name := if a.destination=dc and a.source=sc
                       then a2f.name
                       else a.name
                       endif;
-            fk.name := name;
-            name := fk.name;
-            fc.name := name+'_tid';
+            fk.name := a2f.name;
+            fc.name := a2f.name +'_tid';
         }
     }
     map {
@@ -276,12 +277,12 @@ map associationToForeignKey in umlRdbms refines flattening {
 
 map attributes in umlRdbms refines flattening {
     check enforce uml (c:Class |) {
-        realize a:Attribute|
+        realize a:Attribute |
         default a.owner := c;
-        getAllAttributes(c)->includes(a);
+        --getAllAttributes(c)->includes(a);
     }
     where (fao:FromAttributeOwner |) {
-        fa : FromAttribute|
+        fa : FromAttribute |
         fa.attribute := a;
         fa.owner := fao;
     }
@@ -294,7 +295,7 @@ map attributes in umlRdbms refines flattening {
 }
 
 map classAttributes in umlRdbms refines attributes {
-    where (fao:ClassToTable| fao.umlClass=c;) {}
+    where (ctt:ClassToTable | ctt.umlClass=c;) {}
     map {
         where () {
             fa.name := a.name;
@@ -307,23 +308,23 @@ map primitiveAttribute in umlRdbms refines attributes {
     check enforce uml (t:PrimitiveDataType |) {
         a.type := t;
     }
-    where (p2n:PrimitiveToName|p2n.primitive=t ;) {
-        realize fa:AttributeToColumn|
-        fa.type := p2n;
+    where (p2n:PrimitiveToName | p2n.primitive=t ;) {
+        realize atc:AttributeToColumn |
+        atc.type := p2n;
     }
     map {
         where () {
-            fa.leafs := Set(AttributeToColumn) {fa};
+            atc.leafs := Set(AttributeToColumn) {fa};
         }
     }
 }
 
 map complexAttributeAttributes in umlRdbms refines attributes {
-    check uml (ca:Attribute|ca.type=c;) {}
-    where (fao:NonLeafAttribute | fao.attribute=ca;) {}
+    check uml (ca:Attribute | ca.type=c;) {}
+    where (nla:NonLeafAttribute | nla.attribute=ca;) {}
     map {
         where () {
-            fa.name := fao.name+'_'+a.name;
+            fa.name := ca.name + '_' + a.name;
         }
     }
 }
@@ -333,11 +334,12 @@ map complexAttribute in umlRdbms refines attributes {
         a.type = t;
     }
     where () {
-        realize fa:NonLeafAttribute |
+        realize la:NonLeafAttribute |
     }
     map {           
     	where () {
-            fa.leafs := fromAttributes.leafs;
+    		la.attribute = t;	-- TODO check the whole attribute rules
+            -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
         }
     }
 }
@@ -350,15 +352,15 @@ map complexAttributeComplexAttributes in umlRdbms refines complexAttributeAttrib
     -- column mapping
 map attributeColumns in umlRdbms {
     check enforce rdbms (t:Table |) {
-        realize c:Column|
+        realize c:Column |
         c.owner := t;
         c.key->size()=0;
-        c.foreignKey->size()=0;
+        c.foreignKeys->size()=0;
     }
-    where (c2t:ClassToTable| c2t.table=t;) {
-        realize a2c:AttributeToColumn|
+    where (c2t:ClassToTable | c2t.table=t;) {
+        realize a2c:AttributeToColumn |
         a2c.column := c;
-        c2t.fromAttribute.leafs->include(a2c);
+        c2t.fromAttributes.leafs->includes(a2c);
         default a2c.owner := c2t;
     }
     map {

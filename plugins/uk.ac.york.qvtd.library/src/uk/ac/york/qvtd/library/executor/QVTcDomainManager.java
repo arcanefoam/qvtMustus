@@ -20,9 +20,10 @@ import java.util.Set;
 import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.emf.ecore.resource.impl.ResourceImpl;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -56,7 +57,7 @@ public class QVTcDomainManager implements DomainModelManager {
 	 */
 	public QVTcDomainManager() {
 	    // null entries in the modelMap and pivotMap will be for the middle model
-	    modelResourceMap.put(MIDDLE_MODEL, new ResourceImpl());
+	    //modelResourceMap.put(MIDDLE_MODEL, new ResourceImpl());
 	}
 	
 	
@@ -192,19 +193,19 @@ public class QVTcDomainManager implements DomainModelManager {
         }
     }
     
-    
-	/**
-     * Save trace.
-     */
-    public void saveTrace() {
-        Resource r = modelResourceMap.get(MIDDLE_MODEL);
-        r.getContents().addAll(modelElementsMap.get(MIDDLE_MODEL));
+    public void saveTrace(ResourceSet resourceSet, String uriPath) {
+        
+        Resource r = resourceSet.createResource(URI.createURI(uriPath));
+        for (EObject e : modelElementsMap.get(MIDDLE_MODEL)) {
+            if (e.eContainer() == null) {
+                r.getContents().add(e);
+            }
+        }
         try{
             Map<Object, Object> options = new HashMap<Object, Object>();
             options.put(XMLResource.OPTION_SCHEMA_LOCATION, Boolean.TRUE);
-            Resource model = modelResourceMap.get(NULL);
-            model.save(null);
-           }catch (IOException e) {
+            r.save(options);
+           } catch (IOException e) {
               e.printStackTrace();
            }
     }
