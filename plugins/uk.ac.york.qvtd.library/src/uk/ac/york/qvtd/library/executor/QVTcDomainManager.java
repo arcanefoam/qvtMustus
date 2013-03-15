@@ -11,9 +11,10 @@
 package uk.ac.york.qvtd.library.executor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,8 +57,7 @@ public class QVTcDomainManager implements DomainModelManager {
 	 *
 	 */
 	public QVTcDomainManager() {
-	    // null entries in the modelMap and pivotMap will be for the middle model
-	    //modelResourceMap.put(MIDDLE_MODEL, new ResourceImpl());
+	    
 	}
 	
 	
@@ -137,9 +137,9 @@ public class QVTcDomainManager implements DomainModelManager {
      * @param type the type of the elements that are retrieved
      * @return the instances
      */
-    public Set<Object> getElementsByType(@Nullable TypedModel model, @NonNull Type type) {
+    public List<Object> getElementsByType(@Nullable TypedModel model, @NonNull Type type) {
         
-        Set<Object> elements = new HashSet<Object>();
+        List<Object> elements = new ArrayList<Object>();
         // Have we copied the elements to the modelElementsMap?
         if (modelElementsMap.containsKey(model)) {
             for (EObject root :  modelElementsMap.get(model)) {

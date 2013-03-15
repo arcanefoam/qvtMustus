@@ -10,8 +10,8 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -149,11 +149,11 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
                 domain.accept(this);
             }
         } else {
-            Map<Variable, Set<Object>> mappingBindings = (Map<Variable, Set<Object>>) mapping.getGuardPattern().accept(this);
+            Map<Variable, List<Object>> mappingBindings = (Map<Variable, List<Object>>) mapping.getGuardPattern().accept(this);
             assert mappingBindings.size() <= 1 : "Unsupported " 
                     + mapping.eClass().getName() + ". BottomGuardPattern provided more than 1 variable binding.";
             
-            for (Map.Entry<Variable, Set<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
+            for (Map.Entry<Variable, List<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
                 Variable var = mappingBindingEntry.getKey();
                 for (Object binding : mappingBindingEntry.getValue()) {
                     getEvaluationEnvironment().replace(var, binding);

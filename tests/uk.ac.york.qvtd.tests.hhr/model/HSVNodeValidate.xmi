@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ASCII"?>
+<pfx:HSVNode xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:pfx="http://http://www.eclipse.org/qvt/examples/0.1/HSVTree" xsi:schemaLocation="http://http://www.eclipse.org/qvt/examples/0.1/HSVTree HSVTree.ecore" hsv="90,0.2,0.5">
+  <children hsv="90,0.21,0.5">
+    <children hsv="90,0.21,0.51"/>
+  </children>
+  <children hsv="90,0.22,0.5">
+    <children hsv="90,0.22,0.51"/>
+    <children hsv="90,0.22,0.52"/>
+  </children>
+  <children hsv="90,0.23,0.5">
+    <children hsv="90,0.23.1,0.5">
+      <children/>
+    </children>
+  </children>
+</pfx:HSVNode>

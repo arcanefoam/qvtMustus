@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -147,7 +146,7 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
     public Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
         
         Area area = guardPattern.getArea();
-        Map<Variable, Set<Object>> patternValidBindings = new HashMap<>();
+        Map<Variable, List<Object>> patternValidBindings = new HashMap<>();
         assert guardPattern.getVariable().size() > 0 : "Unsupported " + guardPattern.eClass().getName() + " defines no variables.";
         for (Variable var : guardPattern.getVariable()) {
             // Add the variable to the environment so we can assign it a value later
@@ -158,12 +157,12 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
             } else {
                 m = ((QVTcDomainManager) modelManager).MIDDLE_MODEL;    // M to R
             }
-            Set<Object> bindingValuesSet = ((QVTcDomainManager) modelManager).getElementsByType(m, var.getType());
+            List<Object> bindingValuesSet = ((QVTcDomainManager) modelManager).getElementsByType(m, var.getType());
             patternValidBindings.put(var, bindingValuesSet);
         }
         // For each binding visit the constraints, remove bindings that do not meet any
         // of the constraints
-        for (Map.Entry<Variable, Set<Object>> entry : patternValidBindings.entrySet()) {
+        for (Map.Entry<Variable, List<Object>> entry : patternValidBindings.entrySet()) {
             Iterator<Object> bindingIt = entry.getValue().iterator();
             while (bindingIt.hasNext()) {
                 Variable var = entry.getKey();

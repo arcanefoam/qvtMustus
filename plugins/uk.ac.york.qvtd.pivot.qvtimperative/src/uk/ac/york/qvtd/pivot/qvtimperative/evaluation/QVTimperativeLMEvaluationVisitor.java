@@ -11,8 +11,8 @@
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -93,8 +93,8 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
     @Nullable
     public Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
-        Map<Variable, Set<Object>>  guardBindings =  new HashMap<>();
-        guardBindings.putAll((Map<Variable, Set<Object>>) coreDomain.getGuardPattern().accept(this));
+        Map<Variable, List<Object>>  guardBindings =  new HashMap<>();
+        guardBindings.putAll((Map<Variable, List<Object>>) coreDomain.getGuardPattern().accept(this));
         /* THERE SHOULD BE NO VARIABLES OR PREDICATES IN THE BottomPattern
         for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
             Variable var = entry.getKey();
@@ -115,9 +115,9 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
         
         assert mapping.getDomain().size() == 1 : "Unsupported "
                 + mapping.eClass().getName() + ". Max supported number of domains is 1.";
-        Map<Variable, Set<Object>>  mappingBindings = new HashMap<>();
+        Map<Variable, List<Object>>  mappingBindings = new HashMap<>();
         for (Domain domain : mapping.getDomain()) {
-            mappingBindings.putAll((Map<Variable, Set<Object>>)domain.accept(this));
+            mappingBindings.putAll((Map<Variable, List<Object>>)domain.accept(this));
             assert mappingBindings.size() == 1 : "Unsupported " 
                     + mapping.eClass().getName() + ". Nested domains provided more than 1 variable binding.";
         }
@@ -130,7 +130,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
             }
         }
         */
-        for (Map.Entry<Variable, Set<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
+        for (Map.Entry<Variable, List<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
             Variable var = mappingBindingEntry.getKey();
             for (Object binding : mappingBindingEntry.getValue()) {
                 getEvaluationEnvironment().replace(var, binding);
