@@ -6,6 +6,13 @@
     xmlns:pfx="http://http://www.eclipse.org/qvt/examples/0.1/HLSTree"
     xsi:schemaLocation="http://http://www.eclipse.org/qvt/examples/0.1/HLSTree HLSTree.ecore">
   <children>
+    <children/>
+  </children>
+  <children>
+    <children/>
+    <children/>
+  </children>
+  <children>
     <children>
       <children/>
     </children>
