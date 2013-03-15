@@ -44,7 +44,7 @@ import uk.ac.york.qvtd.pivot.qvtcorebase.evaluation.QVTcoreBaseEvaluationVisitor
 /**
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
-public class QVTimperativeAbstractEvaluationVisitorImpl extends QVTcoreBaseEvaluationVisitorImpl
+public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVisitorImpl
         implements QVTimperativeVisitor<Object> {
 
         
@@ -58,7 +58,7 @@ public class QVTimperativeAbstractEvaluationVisitorImpl extends QVTcoreBaseEvalu
      * @param modelManager
      *            the model manager
      */
-    public QVTimperativeAbstractEvaluationVisitorImpl(@NonNull Environment env,
+    public QVTimperativeEvaluationVisitorImpl(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);

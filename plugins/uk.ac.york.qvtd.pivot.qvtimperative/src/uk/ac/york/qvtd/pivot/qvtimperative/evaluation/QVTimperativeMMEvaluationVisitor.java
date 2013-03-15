@@ -26,7 +26,7 @@ import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 /**
  * QVTcoreMMEvaluationVisitorImpl is the class for ...
  */
-public class QVTimperativeMMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitorImpl
+public class QVTimperativeMMEvaluationVisitor extends QVTimperativeEvaluationVisitorImpl
         implements QVTimperativeVisitor<Object> {
 
     /**

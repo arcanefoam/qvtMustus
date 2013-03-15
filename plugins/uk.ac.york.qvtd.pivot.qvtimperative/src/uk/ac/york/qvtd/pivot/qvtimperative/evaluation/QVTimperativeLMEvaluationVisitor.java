@@ -36,7 +36,7 @@ import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 /**
  * QVTimperativeLMEvaluationVisitor is the class for ...
  */
-public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitorImpl 
+public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVisitorImpl 
         implements QVTimperativeVisitor<Object> {
 
     /**
@@ -135,40 +135,6 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
             for (Object binding : mappingBindingEntry.getValue()) {
                 getEvaluationEnvironment().replace(var, binding);
                 visitBoundMapping(mapping);
-                /*mapping.getBottomPattern().accept(this);
-                for (MappingCall mappingCall : mapping.getMappingCall())  {
-                    List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<>();
-                    for (MappingCallBinding callBinding : mappingCall.getBinding()) {
-                        OCLExpression value = callBinding.getValue();
-                        Object result = safeVisit(value);
-                        List<Map<Variable, Object>> bindingValues = new ArrayList<>();
-                        if (result instanceof CollectionValue) {
-                            // Create a binding for each of the elements in the collection
-                            for (Object resValue : ((CollectionValue)result).asCollection()) {
-                                Map<Variable, Object> varValue = new HashMap<>();
-                                varValue.put(callBinding.getBoundVariable(), resValue);
-                                bindingValues.add(varValue);
-                           }
-                        } else {
-                            Map<Variable, Object> varValue = new HashMap<>();
-                            varValue.put(callBinding.getBoundVariable(), result);
-                            bindingValues.add(varValue);
-                        }
-                        bindingCartesian.add(bindingValues);
-                    }
-                    // Calculate the Cartesian list of bindings
-                    List<List<Map<Variable, Object>>> cartesian = cartesianBindings(bindingCartesian);
-                    for (List<Map<Variable, Object>> bindings : cartesian) {
-                        for (Map<Variable, Object> binding : bindings) {
-                            Iterator<Entry<Variable, Object>> it = binding.entrySet().iterator();
-                            while (it.hasNext()) {
-                                Map.Entry<Variable, Object> pairs = (Map.Entry<Variable, Object>)it.next();
-                                getEvaluationEnvironment().replace(pairs.getKey(), pairs.getValue());
-                            }
-                        }
-                        mappingCall.accept(this);
-                    }
-                }*/
             }
             
         }

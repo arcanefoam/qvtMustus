@@ -55,7 +55,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
-import uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeAbstractEvaluationVisitorImpl;
+import uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeEvaluationVisitorImpl;
 
 /**
  * Test001 is a set if simple tests on the QVTc API.
@@ -209,7 +209,7 @@ public class TestQVTi extends LoadTestCase {
                 typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
                 modelManager.addModel(typedModel, pairs.getValue());
             }
-            QVTimperativeVisitor<Object> visitor = new QVTimperativeAbstractEvaluationVisitorImpl(env, evalEnv, modelManager);
+            QVTimperativeVisitor<Object> visitor = new QVTimperativeEvaluationVisitorImpl(env, evalEnv, modelManager);
             Object sucess = imperativeModel.accept(visitor);
             assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
             modelManager.saveModels();

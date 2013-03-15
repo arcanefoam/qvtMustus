@@ -34,7 +34,7 @@ import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 /**
  * QVTcoreMREvaluationVisitor is the class for ...
  */
-public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvaluationVisitorImpl
+public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVisitorImpl
         implements QVTimperativeVisitor<Object> {
 
     /**
