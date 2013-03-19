@@ -22,6 +22,7 @@ import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -112,7 +113,6 @@ public class QVTcDomainManager implements DomainModelManager {
      *
      * @param tm the TypeModel
      * @param element the element
-     * @return true, if successful
      */
     public void addModelElement(@Nullable TypedModel model, @NonNull Object element) {
         
@@ -140,7 +140,7 @@ public class QVTcDomainManager implements DomainModelManager {
     public List<Object> getElementsByType(@Nullable TypedModel model, @NonNull Type type) {
         
         List<Object> elements = new ArrayList<Object>();
-        // Have we copied the elements to the modelElementsMap?
+        // Is the TypedModel the middle or output, hence we have elements in the elementsMap
         if (modelElementsMap.containsKey(model)) {
             for (EObject root :  modelElementsMap.get(model)) {
                 if (root.eClass().getName().equals(type.getName())) {
@@ -148,7 +148,7 @@ public class QVTcDomainManager implements DomainModelManager {
                 }
                 for (TreeIterator<EObject> contents = root.eAllContents(); contents.hasNext();) {
                     EObject object = contents.next();
-                    if (object.eClass().getName().equals(type.getName())) {
+                    if (type.getETarget().eClass().isInstance(object.eClass())) {
                         elements.add(object);
                     }
                 }
@@ -157,7 +157,7 @@ public class QVTcDomainManager implements DomainModelManager {
         else {
             for (TreeIterator<EObject> contents = modelResourceMap.get(model).getAllContents(); contents.hasNext();) {
                 EObject object = contents.next();
-                if (object.eClass().getName().equals(type.getName())) {
+                if (type.getETarget().eClass().isInstance(object.eClass())) {
                     elements.add(object);
                 }
             }

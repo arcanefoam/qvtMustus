@@ -157,7 +157,7 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
                 Variable var = mappingBindingEntry.getKey();
                 for (Object binding : mappingBindingEntry.getValue()) {
                     getEvaluationEnvironment().replace(var, binding);
-                    visitBoundMapping(mapping);
+                    finishMappingVisit(mapping);
                 }
             }
         }
@@ -187,7 +187,7 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
             for (Domain domain : mappingCall.getReferredMapping().getDomain()) {
                 domain.accept(this);
             }
-            visitBoundMapping(mappingCall.getReferredMapping());
+            finishMappingVisit(mappingCall.getReferredMapping());
         } else if (isLtoMMapping(mappingCall.getReferredMapping())) {
             QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
                     getEnvironment(), getEvaluationEnvironment(), modelManager);

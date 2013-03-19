@@ -10,5 +10,6 @@
         upperBound="-1" eType="#//HSVNode" containment="true" eOpposite="#//HSVNode/parent"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="hsv" lowerBound="1" eType="#//HSV"
         defaultValueLiteral=""/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

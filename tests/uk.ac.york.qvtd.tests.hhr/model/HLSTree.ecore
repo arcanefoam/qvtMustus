@@ -10,5 +10,6 @@
         upperBound="-1" eType="#//HLSNode" containment="true" eOpposite="#//HLSNode/parent"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="hls" lowerBound="1" eType="#//HLS"
         defaultValueLiteral="1"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
 </ecore:EPackage>

@@ -101,8 +101,6 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
         OCLExpression slotExp = propertyAssignment.getSlotExpression(); 
         Area area = ((BottomPattern)propertyAssignment.eContainer()).getArea();
         if (area instanceof Mapping) {
-            // slot vars can either be in L, M or R, this is, they have either a value
-            // in validBindings (loop variable) or in tempRealizedElements (realized variables)
             if (slotExp instanceof VariableExp ) {      // What other type of expressions are there?
                 Variable slotVar = (Variable) ((VariableExp)slotExp).getReferredVariable();
                 if(slotVar != null) {
@@ -223,7 +221,7 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
      * 
      * @param mapping the mapping
      */
-    protected void visitBoundMapping(Mapping mapping) {
+    protected void finishMappingVisit(Mapping mapping) {
         mapping.getBottomPattern().accept(this);
         for (MappingCall mappingCall : mapping.getMappingCall()) {
             List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<>();

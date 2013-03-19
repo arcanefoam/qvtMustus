@@ -10,6 +10,5 @@ Require-Bundle: org.eclipse.qvtd.xtext.qvtbase.tests;bundle-version="0.10.0",
  uk.ac.york.qvtd.library;bundle-version="0.1.0",
  uk.ac.york.qvtd.pivot.qvtbase;bundle-version="0.1.0",
  uk.ac.york.qvtd.pivot.qvtcorebase;bundle-version="0.1.0",
- uk.ac.york.qvtd.pivot.qvtimperative;bundle-version="0.1.0",
- org.eclipse.emf.compare;bundle-version="3.0.0"
+ uk.ac.york.qvtd.pivot.qvtimperative;bundle-version="0.1.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
