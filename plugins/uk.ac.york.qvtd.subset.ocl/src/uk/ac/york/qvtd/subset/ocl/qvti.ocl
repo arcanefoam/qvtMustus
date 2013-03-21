@@ -17,6 +17,7 @@
  * the mapping composition tree.
  */
 import qvtc : 'http://www.eclipse.org/qvt/0.9/QVTcore'
+
 include 'qvtm.ocl'
 
 package qvtcore
@@ -27,7 +28,7 @@ context Mapping
  	 * or middle guard patterns and the root mapping introduces no variables.
  	 */	
  	inv: _'context'.oclIsUndefined() and self.oclAsType(Area)->union(domain.oclAsType(CoreDomain)).guardPattern.variable->size() <= 1
- 	 
+ 	
 	inv: not _'context'.oclIsUndefined() and self.oclAsType(Area)->union(domain.oclAsType(CoreDomain)).guardPattern.variable->size() = 1
 	
 	/* Where clauses of check domains must have realized variables of the middle mm. This means l->m */

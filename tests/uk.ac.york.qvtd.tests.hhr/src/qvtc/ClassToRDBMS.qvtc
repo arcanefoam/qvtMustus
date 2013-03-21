@@ -113,6 +113,19 @@ map flattening in umlRdbms {
     }
     */
 }
+
+query umlRdbms::getAllSupers(cls : SimpleUML::Class) : Set(SimpleUML::Class) {
+	cls.general->collect(gen | getAllSupers(gen))->including(cls)->asSet()
+    }
+
+query umlRdbms::getAllAttributes(cls :  SimpleUML::Class) : Set( SimpleUML::Attribute) {
+        getAllSupers(cls)->collect(c | c.attribute)
+    }
+    
+query umlRdbms::getAllForwards(cls :  SimpleUML::Class) : Set( SimpleUML::Association) {
+        getAllSupers(cls)->collect(c | true)
+    }
+
  
 /*  -- Class and Table mapping
     class ClassToTable extends FromAttributeOwner, ToColumn {
@@ -191,7 +204,7 @@ map classToTable in umlRdbms {
 
 map associationToForeignKey in umlRdbms refines flattening {
     check enforce uml (p:Package, sc:Class, dc:Class | sc.namespace = p;) {
-        realize a:Association|
+        realize a:Association |
         -- getAllForwards(sc)->includes(a);
         default a.source := sc;
         -- getAllSupers(dc)->includes(a.destination);

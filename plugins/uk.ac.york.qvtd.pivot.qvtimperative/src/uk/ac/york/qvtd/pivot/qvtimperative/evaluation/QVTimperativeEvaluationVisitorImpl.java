@@ -101,6 +101,11 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
         OCLExpression slotExp = propertyAssignment.getSlotExpression(); 
         Area area = ((BottomPattern)propertyAssignment.eContainer()).getArea();
         if (area instanceof Mapping) {
+        	// TODO Check this approach
+        	//if (!(exp instanceof VariableExp)) {
+        	//    return modelManager.illFormedModelClass(VariableExp.class, exp, "visitPropertyAssignment");
+        	//}
+        	//VariableExp variableExp = (VariableExp)exp;
             if (slotExp instanceof VariableExp ) {      // What other type of expressions are there?
                 Variable slotVar = (Variable) ((VariableExp)slotExp).getReferredVariable();
                 if(slotVar != null) {
