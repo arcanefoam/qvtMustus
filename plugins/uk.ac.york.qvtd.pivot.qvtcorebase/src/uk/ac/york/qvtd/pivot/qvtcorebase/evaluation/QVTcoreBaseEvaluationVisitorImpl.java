@@ -142,11 +142,10 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
      * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitGuardPattern(
      * org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
      */
-    @Override
     public Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
         
         Area area = guardPattern.getArea();
-        Map<Variable, List<Object>> patternValidBindings = new HashMap<>();
+        Map<Variable, List<Object>> patternValidBindings = new HashMap<Variable, List<Object>>();
         assert guardPattern.getVariable().size() > 0 : "Unsupported " + guardPattern.eClass().getName() + " defines no variables.";
         for (Variable var : guardPattern.getVariable()) {
             // Add the variable to the environment so we can assign it a value later
@@ -170,7 +169,7 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
                     getEvaluationEnvironment().replace(var, bindingIt.next());
                     for (Predicate predicate : guardPattern.getPredicate()) {
                         // If the predicate is not true, the binding is not valid
-                        boolean result = (boolean) predicate.accept(this);
+                        boolean result = (Boolean) predicate.accept(this);
                         if (!result) {
                             // If the predicates fails, the binding is not valid
                             bindingIt.remove();
@@ -202,7 +201,6 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
      * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitRealizedVariable
      * (org.eclipse.qvtd.pivot.qvtcore.RealizedVariable)
      */
-    @Override
     @Nullable
     public Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
         

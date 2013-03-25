@@ -93,7 +93,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
     @Nullable
     public Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
-        Map<Variable, List<Object>>  guardBindings =  new HashMap<>();
+        Map<Variable, List<Object>>  guardBindings =  new HashMap<Variable, List<Object>>();
         guardBindings.putAll((Map<Variable, List<Object>>) coreDomain.getGuardPattern().accept(this));
         /* THERE SHOULD BE NO VARIABLES OR PREDICATES IN THE BottomPattern
         for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
@@ -115,7 +115,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
         
         assert mapping.getDomain().size() == 1 : "Unsupported "
                 + mapping.eClass().getName() + ". Max supported number of domains is 1.";
-        Map<Variable, List<Object>>  mappingBindings = new HashMap<>();
+        Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
         for (Domain domain : mapping.getDomain()) {
             mappingBindings.putAll((Map<Variable, List<Object>>)domain.accept(this));
             assert mappingBindings.size() == 1 : "Unsupported " 

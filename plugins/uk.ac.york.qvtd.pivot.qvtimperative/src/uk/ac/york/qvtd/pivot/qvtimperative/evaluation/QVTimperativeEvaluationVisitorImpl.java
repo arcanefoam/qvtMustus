@@ -65,7 +65,6 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
         // TODO Auto-generated constructor stub
     }
 
-    @Override
     @Nullable
     public Object visitImperativeModel(@NonNull ImperativeModel imperativeModel) {
         // CoreModel has a transformation (nestedPackage)
@@ -78,7 +77,6 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
     }
 
     
-    @Override
     @Nullable
     public Object visitMappingCall(@NonNull MappingCall object) {
         // TODO Add visit function or decide if it should never be implemented
@@ -86,7 +84,6 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
                 "Visit method not implemented yet");
     }
 
-    @Override
     @Nullable
     public Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
         // TODO Add visit function or decide if it should never be implemented
@@ -141,7 +138,6 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
                 "Visit method not implemented yet");
     }
     
-    @Override
     @Nullable
     public Object visitMapping(@NonNull Mapping object) {
         throw new UnsupportedOperationException(
@@ -229,20 +225,20 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
     protected void finishMappingVisit(Mapping mapping) {
         mapping.getBottomPattern().accept(this);
         for (MappingCall mappingCall : mapping.getMappingCall()) {
-            List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<>();
+            List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<List<Map<Variable, Object>>>();
             for (MappingCallBinding binding : ((MappingCall)mappingCall).getBinding()) {
                 OCLExpression value = binding.getValue();
                 Object result = safeVisit(value);
-                List<Map<Variable, Object>> bindingValues = new ArrayList<>();
+                List<Map<Variable, Object>> bindingValues = new ArrayList<Map<Variable, Object>>();
                 if (result instanceof CollectionValue) {
                     // Create a binding for each of the elements in the collection
                     for (Object resValue : ((CollectionValue)result).asCollection()) {
-                        Map<Variable, Object> varValue = new HashMap<>();
+                        Map<Variable, Object> varValue = new HashMap<Variable, Object>();
                         varValue.put(binding.getBoundVariable(), resValue);
                         bindingValues.add(varValue);
                    }
                 } else {
-                    Map<Variable, Object> varValue = new HashMap<>();
+                    Map<Variable, Object> varValue = new HashMap<Variable, Object>();
                     varValue.put(binding.getBoundVariable(), result);
                     bindingValues.add(varValue);
                 }

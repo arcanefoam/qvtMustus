@@ -22,7 +22,6 @@ import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -48,9 +47,9 @@ public class QVTcDomainManager implements DomainModelManager {
     
 	// TODO how to manage aliases?
 	/** Map a typed model to its resource (model). */
-	private Map<TypedModel, Resource> modelResourceMap = new HashMap<>();
+	private Map<TypedModel, Resource> modelResourceMap = new HashMap<TypedModel, Resource>();
 	
-	private Map<TypedModel, EList<EObject>> modelElementsMap = new HashMap<>();
+	private Map<TypedModel, EList<EObject>> modelElementsMap = new HashMap<TypedModel, EList<EObject>>();
 	
 	/**
 	 * Instantiates a new QVTc Domain Manager. Responsible for creating new
@@ -224,7 +223,6 @@ public class QVTcDomainManager implements DomainModelManager {
 	/* (non-Javadoc)
 	 * @see org.eclipse.ocl.examples.domain.evaluation.DomainModelManager#get(org.eclipse.ocl.examples.domain.elements.DomainType)
 	 */
-	@Override
 	public @NonNull Set<EObject> get(@NonNull DomainType type) {
 		// TODO Auto-generated method stub
 		return null;
