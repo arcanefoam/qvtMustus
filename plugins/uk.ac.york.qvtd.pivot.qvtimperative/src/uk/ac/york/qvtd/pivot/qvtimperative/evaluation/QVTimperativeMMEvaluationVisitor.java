@@ -14,7 +14,9 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
+import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
@@ -26,7 +28,7 @@ import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 /**
  * QVTcoreMMEvaluationVisitorImpl is the class for ...
  */
-public class QVTimperativeMMEvaluationVisitor extends QVTimperativeEvaluationVisitorImpl
+public class QVTimperativeMMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor
         implements QVTimperativeVisitor<Object> {
 
     /**
@@ -40,7 +42,16 @@ public class QVTimperativeMMEvaluationVisitor extends QVTimperativeEvaluationVis
             @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
     }
-    
+
+    @Override
+    public @NonNull EvaluationVisitor createNestedEvaluator() {
+        Environment environment = getEnvironment();
+        EnvironmentFactory factory = environment.getFactory();
+        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
+        QVTimperativeMMEvaluationVisitor ne = new QVTimperativeMMEvaluationVisitor(environment, nestedEvalEnv, getModelManager());
+        return ne;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -48,8 +59,7 @@ public class QVTimperativeMMEvaluationVisitor extends QVTimperativeEvaluationVis
      * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitBottomPattern
      * (org.eclipse.qvtd.pivot.qvtcore.BottomPattern)
      */
-    @Nullable
-    public Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
+    public @Nullable Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
         
         // This visit should be called for MiddleBottomPatterns with no domains
         Area area = bottomPattern.getArea();

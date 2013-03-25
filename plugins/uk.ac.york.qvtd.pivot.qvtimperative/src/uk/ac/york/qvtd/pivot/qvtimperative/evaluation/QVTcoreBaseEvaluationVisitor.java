@@ -8,7 +8,7 @@
  * Contributors:
  *     Horacio Hoyos - initial API and implementation
  ******************************************************************************/
-package uk.ac.york.qvtd.pivot.qvtcorebase.evaluation;
+package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,13 +20,21 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
-import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
+import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
+import org.eclipse.qvtd.pivot.qvtbase.BaseModel;
+import org.eclipse.qvtd.pivot.qvtbase.Domain;
+import org.eclipse.qvtd.pivot.qvtbase.Function;
+import org.eclipse.qvtd.pivot.qvtbase.FunctionParameter;
+import org.eclipse.qvtd.pivot.qvtbase.Pattern;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
+import org.eclipse.qvtd.pivot.qvtbase.Rule;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
-import org.eclipse.qvtd.pivot.qvtbase.evaluation.QVTbaseEvaluationVisitorImpl;
+import org.eclipse.qvtd.pivot.qvtbase.Unit;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
@@ -45,7 +53,7 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
-public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorImpl
+public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
         implements QVTcoreBaseVisitor<Object> {
         
     /**
@@ -58,82 +66,49 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
      * @param modelManager
      *            the model manager
      */
-    public QVTcoreBaseEvaluationVisitorImpl(@NonNull Environment env,
+    public QVTcoreBaseEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
+    }
+	
+    public abstract @NonNull EvaluationVisitor createNestedEvaluator();
 
+    public @Nullable Object visitAssignment(@NonNull Assignment object) {
+		return visiting(object);
+    }
+	
+	public @Nullable Object visitBaseModel(@NonNull BaseModel object) {
+		return visiting(object);
+	}
+
+    public @Nullable Object visitBottomPattern(@NonNull BottomPattern object) {
+		return visiting(object);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitAssignment(org
-     * .eclipse.qvtd.pivot.qvtcore.Assignment)
-     */
-    @Nullable
-    public Object visitAssignment(@NonNull Assignment object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
+    public @Nullable Object visitCoreDomain(@NonNull CoreDomain object) {
+		return visiting(object);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitBottomPattern
-     * (org.eclipse.qvtd.pivot.qvtcore.BottomPattern)
-     */
-    @Nullable
-    public Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
+	public @Nullable Object visitDomain(@NonNull Domain object) {
+		return visiting(object);
+	}
+
+    public @Nullable Object visitCorePattern(@NonNull CorePattern object) {
+		return visiting(object);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitCoreDomain(org
-     * .eclipse.qvtd.pivot.qvtcore.CoreDomain)
-     */
-    @Nullable
-    public Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
-        
+    public @Nullable Object visitEnforcementOperation(@NonNull EnforcementOperation object) {
+		return visiting(object);
     }
 
+	public @Nullable Object visitFunction(@NonNull Function object) {
+		return visiting(object);
+	}
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitCorePattern(org
-     * .eclipse.qvtd.pivot.qvtcore.CorePattern)
-     */
-    @Nullable
-    public Object visitCorePattern(@NonNull CorePattern object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitEnforcementOperation
-     * (org.eclipse.qvtd.pivot.qvtcore.EnforcementOperation)
-     */
-    @Nullable
-    public Object visitEnforcementOperation(@NonNull EnforcementOperation object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
-    }
+	public @Nullable Object visitFunctionParameter(@NonNull FunctionParameter object) {
+		return visiting(object);
+	}
 
     /*
      * (non-Javadoc)
@@ -142,7 +117,7 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
      * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitGuardPattern(
      * org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
      */
-    public Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
+    public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
         
         Area area = guardPattern.getArea();
         Map<Variable, List<Object>> patternValidBindings = new HashMap<Variable, List<Object>>();
@@ -154,7 +129,7 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
             if (area instanceof CoreDomain) {
                  m = ((CoreDomain)area).getTypedModel();                // L to M
             } else {
-                m = ((QVTcDomainManager) modelManager).MIDDLE_MODEL;    // M to R
+                m = QVTcDomainManager.MIDDLE_MODEL;    					// M to R
             }
             List<Object> bindingValuesSet = ((QVTcDomainManager) modelManager).getElementsByType(m, var.getType());
             patternValidBindings.put(var, bindingValuesSet);
@@ -182,16 +157,22 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
         return patternValidBindings;
         
     }
-    
-     
-    /* (non-Javadoc)
-     * @see org.eclipse.qvtd.pivot.qvtcorebase.util.QVTcoreBaseVisitor#visitPropertyAssignment(org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment)
-     */
-    @Nullable
-    public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
 
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
+	public @Nullable Object visitPattern(@NonNull Pattern object) {
+		return visiting(object);
+	}
+
+	public @Nullable Object visitPredicate(@NonNull Predicate predicate) {
+        
+        // Each predicate has a conditionExpression that is an OCLExpression
+        OCLExpression exp = predicate.getConditionExpression();
+        // The predicated is visited with a nested environment
+        Object expResult = exp.accept(this);
+        return expResult;
+	}
+
+    public @Nullable Object visitPropertyAssignment(@NonNull PropertyAssignment object) {
+		return visiting(object);
     }
 
     /*
@@ -201,8 +182,7 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
      * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitRealizedVariable
      * (org.eclipse.qvtd.pivot.qvtcore.RealizedVariable)
      */
-    @Nullable
-    public Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
+    public @Nullable Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
         
         // LtoM Mapping. Realized variables are in the mapping's bottom pattern
         // and create elements in the middle model. The realized variables
@@ -223,32 +203,30 @@ public class QVTcoreBaseEvaluationVisitorImpl extends QVTbaseEvaluationVisitorIm
         return element;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitVariableAssignment
-     * (org.eclipse.qvtd.pivot.qvtcore.VariableAssignment)
-     */
-    @Nullable
-    public Object visitVariableAssignment(@NonNull VariableAssignment object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
+	public @Nullable Object visitRule(@NonNull Rule object) {
+		return visiting(object);
+	}
+
+	public @Nullable Object visitTransformation(@NonNull Transformation object) {
+		return visiting(object);
+	}
+
+	public @Nullable Object visitTypedModel(@NonNull TypedModel object) {
+		return visiting(object);
+	}
+
+	public @Nullable Object visitUnit(@NonNull Unit object) {
+		return visiting(object);
+	}
+
+    public @Nullable Object visitVariableAssignment(@NonNull VariableAssignment object) {
+		return visiting(object);
     }
 
     /* ========== HELPER METHODS ========== */
     /* (non-Javadoc)
      * @see org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl#createNestedEvaluator()
      */
-    @Override
-    public @NonNull EvaluationVisitor createNestedEvaluator() {
-        Environment environment = getEnvironment();
-        EnvironmentFactory factory = environment.getFactory();
-        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
-        QVTcoreBaseEvaluationVisitorImpl ne = new QVTcoreBaseEvaluationVisitorImpl(environment, nestedEvalEnv, getModelManager());
-        return ne;
-    }
     
     
     

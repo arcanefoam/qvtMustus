@@ -28,9 +28,7 @@ import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
-import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
-import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
@@ -39,12 +37,10 @@ import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
-import uk.ac.york.qvtd.pivot.qvtcorebase.evaluation.QVTcoreBaseEvaluationVisitorImpl;
-
 /**
- * QVTcoreEvaluationVisitorImpl is the class for ...
+ * QVTimperativeAbstractEvaluationVisitor is the class for ...
  */
-public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVisitorImpl
+public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBaseEvaluationVisitor
         implements QVTimperativeVisitor<Object> {
 
         
@@ -58,42 +54,31 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
      * @param modelManager
      *            the model manager
      */
-    public QVTimperativeEvaluationVisitorImpl(@NonNull Environment env,
+    public QVTimperativeAbstractEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
         // TODO Auto-generated constructor stub
     }
 
-    @Nullable
-    public Object visitImperativeModel(@NonNull ImperativeModel imperativeModel) {
-        // CoreModel has a transformation (nestedPackage)
-        // DEFINE Can a single QVT model has multiple transformations?
-        Transformation transformation = ((Transformation) imperativeModel.getNestedPackage().get(0));
-        QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
-                getEnvironment(), getEvaluationEnvironment(), modelManager);
-        transformation.getRule().get(0).accept(LMVisitor);
-        return true;
+    public @Nullable Object visitImperativeModel(@NonNull ImperativeModel object) {
+		return visiting(object);
     }
-
     
-    @Nullable
-    public Object visitMappingCall(@NonNull MappingCall object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
+    public @Nullable Object visitMapping(@NonNull Mapping object) {
+		return visiting(object);
     }
 
-    @Nullable
-    public Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
+    public @Nullable Object visitMappingCall(@NonNull MappingCall object) {
+		return visiting(object);
+    }
+
+    public @Nullable Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
+		return visiting(object);
     }
     
     @Override
-    @Nullable
-    public Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
+    public @Nullable Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
         
         OCLExpression slotExp = propertyAssignment.getSlotExpression(); 
         Area area = ((BottomPattern)propertyAssignment.eContainer()).getArea();
@@ -128,20 +113,6 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTcoreBaseEvaluationVis
             }
         }
         return true;
-    }
-    
-    @Override
-    @Nullable
-    public Object visitAssignment(@NonNull Assignment object) {
-        // TODO Add visit function or decide if it should never be implemented
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
-    }
-    
-    @Nullable
-    public Object visitMapping(@NonNull Mapping object) {
-        throw new UnsupportedOperationException(
-                "Visit method not implemented yet");
     }
     
     /**
