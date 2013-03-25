@@ -17,6 +17,7 @@ import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 
@@ -53,12 +54,25 @@ public class QVTimperativeEvaluationVisitor extends QVTimperativeAbstractEvaluat
 
     @Override
     public @Nullable Object visitImperativeModel(@NonNull ImperativeModel imperativeModel) {
-        // CoreModel has a transformation (nestedPackage)
-        // DEFINE Can a single QVT model has multiple transformations?
-        Transformation transformation = ((Transformation) imperativeModel.getNestedPackage().get(0));
+    	for (org.eclipse.ocl.examples.pivot.Package pkge : imperativeModel.getNestedPackage()) {
+    		pkge.accept(this);
+    	}
+        return true;
+    }
+
+    @Override
+    public @Nullable Object visitPackage(@NonNull org.eclipse.ocl.examples.pivot.Package pkge) {
+        return true;
+    }
+
+    @Override
+    public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
         QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
                 getEnvironment(), getEvaluationEnvironment(), modelManager);
-        transformation.getRule().get(0).accept(LMVisitor);
+    	for (Rule rule : transformation.getRule()) {
+    		rule.accept(LMVisitor);
+    		break;		// FIXME ?? multiple rules
+    	}
         return true;
     }
 }
