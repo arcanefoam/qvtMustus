@@ -26,7 +26,7 @@ map packageToSchema in umlRdbms {
         realize s:Schema |
     }
     where () {
-        p2s:PackageToSchema |
+        realize p2s:PackageToSchema |
         p2s.umlPackage := p;
         p2s.schema := s;
     }
@@ -295,7 +295,7 @@ map attributes in umlRdbms refines flattening {
         --getAllAttributes(c)->includes(a);
     }
     where (fao:FromAttributeOwner |) {
-        fa : FromAttribute |
+        realize fa : FromAttribute |
         fa.attribute := a;
         fa.owner := fao;
     }

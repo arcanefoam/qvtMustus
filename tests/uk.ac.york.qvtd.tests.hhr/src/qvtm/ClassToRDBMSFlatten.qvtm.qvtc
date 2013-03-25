@@ -3,25 +3,12 @@ import SimpleRDBMS: '../../model/SimpleRDBMS.ecore'::simplerdbms;
 import UMLtoRDBMS: '../../model/UMLtoRDBMS.ecore'::umltordbms;
 
 
-/*
- * QVTu refactoring, RDBMS chosen as target direction and with create.
- */
 transformation umlRdbms {
     uml imports SimpleUML;
     rdbms imports SimpleRDBMS;
     imports UMLtoRDBMS;
 }
-/*    -- Package and Schema mapping
-    class PackageToSchema {
-        composite classesToTables : Set(ClassToTable) opposites owner;
-        composite primitivesToNames : Set(PrimitiveToName) opposites owner;
-        name : String;
-        -- uml
-        umlPackage : Package;
-        -- rdbms
-        schema : Schema;
-    }
-*/
+
 map packageToSchema in umlRdbms {
     uml () {
         p:Package |
@@ -41,23 +28,16 @@ map packageToSchema in umlRdbms {
         }
     }
 }
-/*    -- Primitive data type marshaling
-    class PrimitiveToName {
-        owner : PackageToSchema opposites primitivesToNames;
-        name : String;
-        -- uml
-        primitive : PrimitiveDataType;
-        -- rdbms
-        typeName : String;
-    }
-*/
-map primitiveToName in umlRdbms {
+
+map integerToNumber in umlRdbms {
     uml (p:Package |) {
-        prim:PrimitiveDataType |
+    	prim:PrimitiveDataType |
         prim.namespace = p;
+        prim.name = 'Integer';
     }
     enforce rdbms () {
-        sqlType:String |
+    	sqlType:String |
+        sqlType := 'NUMBER';
     }
     where (p2s:PackageToSchema| p2s.umlPackage=p;) {
         realize p2n:PrimitiveToName |
@@ -71,48 +51,48 @@ map primitiveToName in umlRdbms {
     }
 }
 
-map integerToNumber in umlRdbms refines primitiveToName {
-    uml () {
-        prim.name = 'Integer';
-    }
-    enforce rdbms () {
-        sqlType := 'NUMBER';
-    }
-}
-
-map booleanToBoolean in umlRdbms refines primitiveToName {
-    uml () {
+map booleanToBoolean in umlRdbms {
+     uml (p:Package |) {
+    	prim:PrimitiveDataType |
+        prim.namespace = p;
         prim.name = 'Boolean';
     }
     enforce rdbms () {
+    	sqlType:String |
         sqlType := 'BOOLEAN';
+    }
+    where (p2s:PackageToSchema| p2s.umlPackage=p;) {
+        realize p2n:PrimitiveToName |
+        p2n.owner := p2s;
+        p2n.primitive := prim;
+    }
+    map {
+        where () {
+            p2n.name := prim.name + '2' + sqlType;		-- What to do when a predicate in M uses L and R?
+        }
     }
 }
 
-map stringToVarchar in umlRdbms refines primitiveToName {
-    uml () {
+map stringToVarchar in umlRdbms {
+     uml (p:Package |) {
+    	prim:PrimitiveDataType |
+        prim.namespace = p;
         prim.name = 'String';
     }
     enforce rdbms () {
+    	sqlType:String |
         sqlType := 'VARCHAR';
     }
-}
-
--- utility functions for flattening   
--- TODO Move this to queries
-map flattening in umlRdbms {
-    /*
-    getAllSupers(cls : Class |) : Set(Class) {
-        cls.general->collect(gen|self.getAllSupers(gen))->
-            including(cls)->asSet();
+    where (p2s:PackageToSchema| p2s.umlPackage=p;) {
+        realize p2n:PrimitiveToName |
+        p2n.owner := p2s;
+        p2n.primitive := prim;
     }
-    getAllAttributes(cls : Class |) : Set(Attribute) {
-        getAllSupers(cls).attribute;
+    map {
+        where () {
+            p2n.name := prim.name + '2' + sqlType;		-- What to do when a predicate in M uses L and R?
+        }
     }
-    getAllForwards(cls : Class| ) : Set(Association) {
-        getAllSupers(cls).forward;
-    }
-    */
 }
 
 query umlRdbms::getAllSupers(cls : SimpleUML::Class) : Set(SimpleUML::Class) {
@@ -127,20 +107,7 @@ query umlRdbms::getAllForwards(cls :  SimpleUML::Class) : Set( SimpleUML::Associ
     getAllSupers(cls)->collect(c | true)
 }
 
- 
-/*  -- Class and Table mapping
-    class ClassToTable extends FromAttributeOwner, ToColumn {
-        owner : PackageToSchema opposites classesToTables;
-        composite associationToForeignKeys :
-            OrderedSet(AssociationToForeignKey) opposites owner;
-        name : String;
-        -- uml
-        umlClass : Class;
-        -- rdbms
-        table : Table;
-        primaryKey : Key;
-    }
-*/
+
 map classToTable in umlRdbms {
     uml (p:Package |) {
         c:Class |
@@ -189,19 +156,7 @@ map classToTable in umlRdbms {
     }
 }
 
-/*    -- Association and ForeignKey mapping
-    class AssociationToForeignKey extends ToColumn {
-        referenced : ClassToTable;
-        owner : ClassToTable opposites associationToForeignKeys;
-        name : String;
-        -- uml
-        association : Association;
-        -- rdbms
-        foreignKey : ForeignKey;
-    }
-*/
-
-map associationToForeignKey in umlRdbms refines flattening {
+map associationToForeignKey in umlRdbms {
     uml (p:Package, sc:Class, dc:Class | sc.namespace = p;) {
         a:Association |
         -- getAllForwards(sc)->includes(a);
@@ -258,31 +213,7 @@ map associationToForeignKey in umlRdbms refines flattening {
     }
 }
 
-/*    -- attribute mapping
-    abstract class FromAttributeOwner {
-        composite fromAttributes : Set(FromAttribute) opposites owner;
-    }
-    abstract class FromAttribute {
-        name : String;
-        kind : String;
-        owner : FromAttributeOwner opposites fromAttributes;
-        leafs : Set(AttributeToColumn);
-        -- uml
-        attribute : Attribute to uml;
-    }
-    abstract class ToColumn {
-        -- rdbms
-        column : Column;
-    }
-    class NonLeafAttribute extends FromAttributeOwner, FromAttribute {
-        leafs := fromAttributes.leafs;
-    }
-    class AttributeToColumn extends FromAttribute, ToColumn {
-        type : PrimitiveToName;
-    }
-*/
-
-map attributes in umlRdbms refines flattening {
+map attributes in umlRdbms {
     uml (c:Class |) {
         a:Attribute |
         a.owner = c;
@@ -300,8 +231,22 @@ map attributes in umlRdbms refines flattening {
     }
 }
 
-map classAttributes in umlRdbms refines attributes {
-    where (ctt:ClassToTable | ctt.umlClass=c;) {}
+map classAttributes in umlRdbms {
+	uml (c:Class |) {
+        a:Attribute |
+        a.owner = c;
+        --getAllAttributes(c)->includes(a);
+    }
+    where (fao:FromAttributeOwner, ctt:ClassToTable | ctt.umlClass=c;) {
+        realize fa : FromAttribute |
+        fa.attribute := a;
+        fa.owner := fao;
+    }
+    map {
+        where () {
+            fa.kind := a.kind;
+        }
+    }
     map {
         where () {
             fa.name := a.name;
@@ -309,24 +254,48 @@ map classAttributes in umlRdbms refines attributes {
     }
 }
 
-map primitiveAttribute in umlRdbms refines attributes {
-    uml (t:PrimitiveDataType |) {
+map primitiveAttribute in umlRdbms {
+    uml (c:Class, t:PrimitiveDataType |) {
+    	a:Attribute |
+        a.owner = c;
+        --getAllAttributes(c)->includes(a);
         a.type = t;
     }
-    where (p2n:PrimitiveToName | p2n.primitive=t ;) {
-        realize atc:AttributeToColumn |
+    where (fao:FromAttributeOwner, p2n:PrimitiveToName | p2n.primitive=t ;) {
+    	realize atc:AttributeToColumn  |
+        atc.attribute := a;
+        atc.owner := fao;
         atc.type := p2n;
     }
     map {
         where () {
-            atc.leafs := Set(AttributeToColumn) {fa};
+            atc.kind := a.kind;
+        }
+    }
+    map {
+        where () {
+            atc.leafs := Set(AttributeToColumn) {atc};
         }
     }
 }
 
-map complexAttributeAttributes in umlRdbms refines attributes {
-    uml (ca:Attribute | ca.type=c;) {}
-    where (nla:NonLeafAttribute | nla.attribute=ca;) {}
+map complexAttributeAttributes in umlRdbms {
+    uml (c:Class, ca:Attribute | ca.type=c;) {
+    	a:Attribute |
+    	a.owner = c;
+        --getAllAttributes(c)->includes(a);
+    }
+    where (nla:NonLeafAttribute |
+    		nla.attribute=ca;) {
+    	realize fa : FromAttribute |
+        fa.attribute := a;
+        fa.owner := nla;	
+    }
+    map {
+        where () {
+            fa.kind := a.kind;
+        }
+    }
     map {
         where () {
             fa.name := ca.name + '_' + a.name;
@@ -334,12 +303,22 @@ map complexAttributeAttributes in umlRdbms refines attributes {
     }
 }
 
-map complexAttribute in umlRdbms refines attributes {
-    uml (t:Class |) {
+map complexAttribute in umlRdbms {
+    uml (c:Class, t:Class |) {
+        a:Attribute |
+        a.owner = c;
+        --getAllAttributes(c)->includes(a);
         a.type = t;
     }
-    where () {
+    where (fao:FromAttributeOwner |) {
         realize la:NonLeafAttribute |
+        la.attribute := a;
+        la.owner := fao;
+    }
+    map {
+        where () {
+            la.kind := a.kind;
+        }
     }
     map {           
     	where () {
@@ -349,10 +328,140 @@ map complexAttribute in umlRdbms refines attributes {
     }
 }
 
-map classPrimitiveAttributes in umlRdbms refines classAttributes, primitiveAttribute {}
-map classComplexAttributes in umlRdbms refines classAttributes, complexAttribute {}
-map complexAttributePrimitiveAttributes in umlRdbms refines complexAttributeAttributes, primitiveAttribute {}
-map complexAttributeComplexAttributes in umlRdbms refines complexAttributeAttributes, complexAttribute {}
+map classPrimitiveAttributes in umlRdbms {
+	uml (c:Class, t:PrimitiveDataType |) {
+        a:Attribute |
+        a.owner = c;
+        --getAllAttributes(c)->includes(a);
+        a.type = t;
+    }
+    where (ctt:ClassToTable, p2n:PrimitiveToName |
+    		ctt.umlClass=c;
+    		p2n.primitive=t ;) {
+        realize atc:AttributeToColumn |
+        atc.attribute := a;
+        atc.owner := ctt;
+        atc.type := p2n;
+    }
+    map {
+        where () {
+            atc.kind := a.kind;
+        }
+    }
+    map {
+        where () {
+            atc.name := a.name;
+        }
+    }
+    map {
+        where () {
+            atc.leafs := Set(AttributeToColumn) {atc};
+        }
+    }
+	
+}
+
+
+
+map classComplexAttributes in umlRdbms {
+	uml (c:Class, t:Class |) {
+        a:Attribute |
+        a.owner = c;
+        --getAllAttributes(c)->includes(a);
+         a.type = t;
+    }
+    where (ctt:ClassToTable | ctt.umlClass=c;) {
+        realize la:NonLeafAttribute |
+        la.attribute := a;
+        la.owner := ctt;
+    }
+    map {
+        where () {
+            la.kind := a.kind;
+        }
+    }
+    map {
+        where () {
+            la.name := a.name;
+        }
+    }
+    map {
+        where () {
+            la.kind := a.kind;
+        }
+    }
+    map {           
+    	where () {
+    		la.attribute = t;	-- TODO check the whole attribute rules
+            -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
+        }
+    }
+}
+
+
+map complexAttributePrimitiveAttributes in umlRdbms {
+	uml (c:Class, ca:Attribute, t:PrimitiveDataType |
+			ca.type=c;) {
+    	a:Attribute |
+    	a.owner = c;
+        --getAllAttributes(c)->includes(a);
+         a.type = t;
+    }
+    where (nla:NonLeafAttribute, p2n:PrimitiveToName |
+    		nla.attribute=ca;
+    		p2n.primitive=t ;) {
+    	realize atc:AttributeToColumn |
+        atc.attribute := a;
+        atc.owner := nla;	
+        atc.type := p2n;
+    }
+    map {
+        where () {
+            atc.kind := a.kind;
+        }
+    }
+    map {
+        where () {
+            atc.name := ca.name + '_' + a.name;
+        }
+    }
+    map {
+        where () {
+            atc.leafs := Set(AttributeToColumn) {atc};
+        }
+    }
+}
+
+map complexAttributeComplexAttributes in umlRdbms {
+	uml (c:Class, ca:Attribute, t:Class | ca.type=c;) {
+    	a:Attribute |
+    	a.owner = c;
+        --getAllAttributes(c)->includes(a);
+        a.type = t;
+    }
+    where (nla:NonLeafAttribute |
+    		nla.attribute=ca;) {
+    	realize la:NonLeafAttribute |
+        la.attribute := a;
+        la.owner := nla;	
+    }
+    map {
+        where () {
+            la.kind := a.kind;
+        }
+    }
+    map {
+        where () {
+            la.name := ca.name + '_' + a.name;
+        }
+    }
+    map {           
+    	where () {
+    		la.attribute = t;	-- TODO check the whole attribute rules
+            -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
+        }
+    }
+}
 
     -- column mapping
 map attributeColumns in umlRdbms {
@@ -384,7 +493,7 @@ map attributeColumns in umlRdbms {
     }
     map {
         where () {
-            a2c.kind := c.kind;
+            c.kind := a2c.kind;
         }
     }
 }
