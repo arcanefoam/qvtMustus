@@ -16,11 +16,7 @@ map packageToSchemaLM in umlRdbms {
     where () {
         realize p2s:PackageToSchema |
         p2s.umlPackage := p;
-    }
-    map {
-        where () {
-            p2s.name := p.name;
-        }
+        p2s.name := p.name;
     }
 }
 
@@ -49,11 +45,7 @@ map integerToNumberLM in umlRdbms {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
-    }
-    map {
-        where () {
-            p2n.name := prim.name + '2' + 'NUMBER';		-- What to do when a predicate in M uses L and R?
-        }
+        p2n.name := prim.name + '2' + 'NUMBER';		
     }
 }
 
@@ -68,7 +60,7 @@ map integerToNumberMR in umlRdbms {
     }
     map {
         where () {
-            p2n.name = 'Integer' + '2' + sqlType;		-- What to do when a predicate in M uses L and R?
+            p2n.name = 'Integer' + '2' + sqlType;		
         }
     }
 }
@@ -83,11 +75,7 @@ map booleanToBooleanLM in umlRdbms {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
-    }
-    map {
-        where () {
-            p2n.name := prim.name + '2' + 'BOOLEAN';		-- What to do when a predicate in M uses L and R?
-        }
+        p2n.name := prim.name + '2' + 'BOOLEAN';
     }
 }
 
@@ -102,7 +90,7 @@ map booleanToBooleanMR in umlRdbms {
     }
     map {
         where () {
-            p2n.name = 'Boolean' + '2' + sqlType;		-- What to do when a predicate in M uses L and R?
+            p2n.name = 'Boolean' + '2' + sqlType;		
         }
     }
 }
@@ -117,11 +105,7 @@ map stringToVarcharLM in umlRdbms {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
-    }
-    map {
-        where () {
-            p2n.name := prim.name + '2' + 'VARCHAR';		-- What to do when a predicate in M uses L and R?
-        }
+        p2n.name := prim.name + '2' + 'VARCHAR';
     }
 }
 
@@ -136,7 +120,7 @@ map stringToVarcharMR in umlRdbms {
     }
     map {
         where () {
-            p2n.name = 'String' + '2' + sqlType;		-- What to do when a predicate in M uses L and R?
+            p2n.name = 'String' + '2' + sqlType;		
         }
     }
 }
@@ -164,18 +148,7 @@ map classToTableLM in umlRdbms {
         realize c2t:ClassToTable |
         c2t.owner := p2s;
         c2t.umlClass := c;
-    }
-    map {
-        where () {
-            c2t.name := c.name;
-        }
-    }
-    map {
-        where () {
-            -- c2t.column := pc; // TODO Check this
-        }
-        map {
-        }
+        c2t.name := c.name;
     }
 }
 
@@ -239,10 +212,7 @@ map associationToForeignKeyLM in umlRdbms {
         a2f.referenced := dc2t;
         a2f.association := a;
         -- a2f.column := fc;	// TODO Check this
-    }
-    map {
-        where () {
-            a2f.name := if a.destination=dc and a.source=sc
+        a2f.name := if a.destination=dc and a.source=sc
                         then a.name
                         else if a.destination<>dc and a.source=sc
                         then dc.name+'_'+a.name
@@ -250,11 +220,6 @@ map associationToForeignKeyLM in umlRdbms {
                         then a.name+'_'+sc.name
                         else dc.name+'_'+a.name+'_'+sc.name
                         endif endif endif;
-        }
-    }
-    map {
-        where () {
-        }
     }
 }
 
@@ -276,7 +241,7 @@ map associationToForeignKeyMR in umlRdbms {
 	        p2s.schema = s;
 	        sc2t.table = st;
 	        dc2t.table = dt; ) {
-        a2f:AssociationToForeignKey|
+        a2f:AssociationToForeignKey |
         a2f.owner = sc2t;
         a2f.referenced = dc2t;
         a2f.foreignKey = fk;
@@ -309,21 +274,9 @@ map classPrimitiveAttributesLM in umlRdbms {
         atc.attribute := a;
         atc.owner := ctt;
         atc.type := p2n;
-    }
-    map {
-        where () {
-            atc.kind := a.kind;
-        }
-    }
-    map {
-        where () {
-            atc.name := a.name;
-        }
-    }
-    map {
-        where () {
-            atc.leafs := Set(AttributeToColumn) {atc};
-        }
+        atc.kind := a.kind;
+        atc.name := a.name;
+        atc.leafs := Set(AttributeToColumn) {atc};
     }
 }
 
@@ -339,27 +292,10 @@ map classComplexAttributesLM in umlRdbms {
         realize la:NonLeafAttribute |
         la.attribute := a;
         la.owner := ctt;
-    }
-    map {
-        where () {
-            la.kind := a.kind;
-        }
-    }
-    map {
-        where () {
-            la.name := a.name;
-        }
-    }
-    map {
-        where () {
-            la.kind := a.kind;
-        }
-    }
-    map {           
-    	where () {
-    		la.attribute = t;	-- TODO check the whole attribute rules
-            -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
-        }
+        la.kind := a.kind;
+        la.name := a.name;
+        la.attribute = t;	-- TODO check the whole attribute rules
+        -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
     }
 }
 
@@ -379,21 +315,9 @@ map complexAttributePrimitiveAttributesLM in umlRdbms {
         atc.attribute := a;
         atc.owner := nla;	
         atc.type := p2n;
-    }
-    map {
-        where () {
-            atc.kind := a.kind;
-        }
-    }
-    map {
-        where () {
-            atc.name := ca.name + '_' + a.name;
-        }
-    }
-    map {
-        where () {
-            atc.leafs := Set(AttributeToColumn) {atc};
-        }
+        atc.kind := a.kind;
+        atc.name := ca.name + '_' + a.name;
+        atc.leafs := Set(AttributeToColumn) {atc};
     }
 }
 
@@ -409,22 +333,10 @@ map complexAttributeComplexAttributesLM in umlRdbms {
     	realize la:NonLeafAttribute |
         la.attribute := a;
         la.owner := nla;	
-    }
-    map {
-        where () {
-            la.kind := a.kind;
-        }
-    }
-    map {
-        where () {
-            la.name := ca.name + '_' + a.name;
-        }
-    }
-    map {           
-    	where () {
-    		la.attribute = t;	-- TODO check the whole attribute rules
-            -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
-        }
+        la.kind := a.kind;
+        la.name := ca.name + '_' + a.name;
+        la.attribute = t;	-- TODO check the whole attribute rules
+        -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
     }
 }
 
