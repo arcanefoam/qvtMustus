@@ -17,6 +17,36 @@ map packageToSchemaLM in umlRdbms {
         p2s.umlPackage := p;
         p2s.name := p.name;
     }
+    -- A package has Classifiers and Associations, classifiers can be Classes or PrmitiveDataTypes
+    -- PrmitiveDataTypes
+    map integerToNumberLM {
+    	ns := p;
+    	prim := p.elements;		-- Filter by PrmitiveDataTypes type?
+    }
+    map booleanToBooleanLM {
+    	ns := p;
+    	prim := p.elements;
+    }
+    map stringToVarcharLM {
+    	ns := p;
+    	prim := p.elements;
+    }
+    -- Classes
+    map classToTableLM {
+    	ns := p;
+    	c := p.elements;		-- Filter by Class type? p.elements->select(e | e.oclIsTypeOf(SimpleUML::Class))
+    	owner := p2s;
+    }
+    -- Associations
+    map associationToForeignKeyLM {
+    	a := p.elements;
+    	ns := p; 
+    	sc := ??;
+    	dc := ??;
+    	p2s := ??;
+    	sc2t := ??;
+    	dc2t := ??;
+    }
 }
 
 map packageToSchemaMR in umlRdbms {
@@ -40,10 +70,10 @@ map packageToSchemaMR_1 in umlRdbms {
 }
 
 map integerToNumberLM in umlRdbms {
-    uml (p:Package, prim:PrimitiveDataType |
-    	prim.namespace = p;
+    uml (ns:Package, prim:PrimitiveDataType |
+    	prim.namespace = ns;
         prim.name = 'Integer';) {}
-    where (p2s:PackageToSchema | p2s.umlPackage=p;) {
+    where (p2s:PackageToSchema | p2s.umlPackage=ns;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
@@ -62,10 +92,10 @@ map integerToNumberMR in umlRdbms {
 }
 
 map booleanToBooleanLM in umlRdbms {
-     uml (p:Package, prim:PrimitiveDataType |
-        prim.namespace = p;
+     uml (ns:Package, prim:PrimitiveDataType |
+        prim.namespace = ns;
         prim.name = 'Boolean';) {}
-    where (p2s:PackageToSchema | p2s.umlPackage=p;) {
+    where (p2s:PackageToSchema | p2s.umlPackage=ns;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
@@ -84,10 +114,10 @@ map booleanToBooleanMR in umlRdbms {
 }
 
 map stringToVarcharLM in umlRdbms {
-     uml (p:Package, prim:PrimitiveDataType |
-        prim.namespace = p;
+     uml (ns:Package, prim:PrimitiveDataType |
+        prim.namespace = ns;
         prim.name = 'String';) { }
-    where (p2s:PackageToSchema | p2s.umlPackage=p;) {
+    where (p2s:PackageToSchema | p2s.umlPackage=ns;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
@@ -119,12 +149,12 @@ query umlRdbms::getAllForwards(cls :  SimpleUML::Class) : Set( SimpleUML::Associ
 
 
 map classToTableLM in umlRdbms {
-    uml (p:Package, c:Class |
+    uml (ns:Package, c:Class |
         c.kind = 'persistent';
-        c.namespace = p; ) { }
-    where (p2s:PackageToSchema | p2s.umlPackage=p;) {
+        c.namespace = ns; ) { }
+    where (owner:PackageToSchema | owner.umlPackage=ns;) {
         realize c2t:ClassToTable |
-        c2t.owner := p2s;
+        c2t.owner := owner;
         c2t.umlClass := c;
         c2t.name := c.name;
     }
@@ -210,8 +240,8 @@ map classToTableMR_3_2 in umlRdbms  {
 
 
 map associationToForeignKeyLM in umlRdbms {
-    uml (p:Package, sc:Class, dc:Class, a:Association |
-    	sc.namespace = p;
+    uml (ns:Package, sc:Class, dc:Class, a:Association |
+    	sc.namespace = ns;
         -- getAllForwards(sc)->includes(a);
         a.source = sc;
         -- getAllSupers(dc)->includes(a.destination);
@@ -219,7 +249,7 @@ map associationToForeignKeyLM in umlRdbms {
         a.namespace = p;) { }
     where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable |
 	        sc2t.owner = p2s;
-	        p2s.umlPackage = p;
+	        p2s.umlPackage = ns;
 	        sc2t.umlClass = sc;
 	        dc2t.umlClass = dc; ) {
         realize a2f:AssociationToForeignKey|
@@ -371,23 +401,24 @@ map complexAttributeComplexAttributesLM in umlRdbms {
 
 
 map attributeColumnsMR in umlRdbms {
-    enforce rdbms (t:Table, ct:String |) {
+    enforce rdbms (t:Table |) {
         realize c:Column |
         c.owner := t;
         c.key->size()=0;
         c.foreignKeys->size()=0;
     }
-    where (c2t:ClassToTable, p2n:PrimitiveToName, a2c:AttributeToColumn |
-    	c2t.table=t;
+    where (c2t:ClassToTable | c2t.table=t;) {
+        a2c:AttributeToColumn |
         c2t.fromAttributes.leafs->includes(a2c);
-        a2c.owner = c2t;) {}
+        a2c.owner = c2t;
+    }
     map attributeColumnsMR_1 {
     	a2c2 := a2c;
     	c2 := c;
     }
     map attributeColumnsMR_2 {
-    	ct2 := ct;			-- Where is ct?
-    	p2n2 := p2n;		-- Where is p2n?
+    	--ct2 := ct;			-- Where is ct?
+    	--p2n2 := p2n;		-- Where is p2n?
     	c2 := c;
     	a2c2 := a2c;
     }
