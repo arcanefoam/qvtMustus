@@ -10,8 +10,7 @@ transformation umlRdbms {
 }
 
 map packageToSchemaLM in umlRdbms {
-    uml () {
-        p:Package |
+    uml (p:Package |) {
     }
     where () {
         realize p2s:PackageToSchema |
@@ -24,24 +23,27 @@ map packageToSchemaMR in umlRdbms {
     enforce rdbms () {
         realize s:Schema |
     }
-    where () {
-        p2s:PackageToSchema |
+    where (p2s:PackageToSchema |) {
         p2s.schema := s;
     }
-    map {
-        where () {
-            s.name := p2s.name;
-        }
+    map packageToSchemaMR_1 {
+    	s2 := s;
+    	p2s2 := p2s;
+    }
+}
+
+map packageToSchemaMR_1 in umlRdbms {
+	rdbms (s2:Schema |) {}
+    where (p2s2:PackageToSchema |) {
+        s2.name := p2s2.name;
     }
 }
 
 map integerToNumberLM in umlRdbms {
-    uml (p:Package |) {
-    	prim:PrimitiveDataType |
-        prim.namespace = p;
-        prim.name = 'Integer';
-    }
-    where (p2s:PackageToSchema| p2s.umlPackage=p;) {
+    uml (p:Package, prim:PrimitiveDataType |
+    	prim.namespace = p;
+        prim.name = 'Integer';) {}
+    where (p2s:PackageToSchema | p2s.umlPackage=p;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
@@ -54,20 +56,16 @@ map integerToNumberMR in umlRdbms {
     	sqlType:String |
         sqlType := 'NUMBER';
     }
-    where (p2s:PackageToSchema| ) {
-        p2n:PrimitiveToName |
-        p2n.owner = p2s;
-        p2n.name = 'Integer' + '2' + 'NUMBER';		
-    }
+    where (p2s:PackageToSchema, p2n:PrimitiveToName |
+    	p2n.owner = p2s;
+        p2n.name = 'Integer' + '2' + 'NUMBER';) { }
 }
 
 map booleanToBooleanLM in umlRdbms {
-     uml (p:Package |) {
-    	prim:PrimitiveDataType |
+     uml (p:Package, prim:PrimitiveDataType |
         prim.namespace = p;
-        prim.name = 'Boolean';
-    }
-    where (p2s:PackageToSchema| p2s.umlPackage=p;) {
+        prim.name = 'Boolean';) {}
+    where (p2s:PackageToSchema | p2s.umlPackage=p;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
@@ -80,19 +78,15 @@ map booleanToBooleanMR in umlRdbms {
     	sqlType:String |
         sqlType := 'BOOLEAN';
     }
-    where (p2s:PackageToSchema | ) {
-        p2n:PrimitiveToName |
+    where (p2s:PackageToSchema, p2n:PrimitiveToName |
         p2n.owner = p2s;
-        p2n.name = 'Boolean' + '2' + 'BOOLEAN';
-    }
+        p2n.name = 'Boolean' + '2' + 'BOOLEAN';) { }
 }
 
 map stringToVarcharLM in umlRdbms {
-     uml (p:Package |) {
-    	prim:PrimitiveDataType |
+     uml (p:Package, prim:PrimitiveDataType |
         prim.namespace = p;
-        prim.name = 'String';
-    }
+        prim.name = 'String';) { }
     where (p2s:PackageToSchema | p2s.umlPackage=p;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
@@ -106,11 +100,9 @@ map stringToVarcharMR in umlRdbms {
     	sqlType:String |
         sqlType := 'VARCHAR';
     }
-    where (p2s:PackageToSchema | ) {
-        p2n:PrimitiveToName |
+    where (p2s:PackageToSchema, p2n:PrimitiveToName |
         p2n.owner = p2s;
-        p2n.name = 'String' + '2' + 'VARCHAR';
-    }
+        p2n.name = 'String' + '2' + 'VARCHAR';  ) { }
 }
 
 query umlRdbms::getAllSupers(cls : SimpleUML::Class) : Set(SimpleUML::Class) {
@@ -127,11 +119,9 @@ query umlRdbms::getAllForwards(cls :  SimpleUML::Class) : Set( SimpleUML::Associ
 
 
 map classToTableLM in umlRdbms {
-    uml (p:Package |) {
-        c:Class |
+    uml (p:Package, c:Class |
         c.kind = 'persistent';
-        c.namespace = p;
-    }
+        c.namespace = p; ) { }
     where (p2s:PackageToSchema | p2s.umlPackage=p;) {
         realize c2t:ClassToTable |
         c2t.owner := p2s;
@@ -151,53 +141,82 @@ map classToTableMR in umlRdbms {
         c2t:ClassToTable |
         c2t.owner = p2s;
     }
-    map {
-        where () {
-            c2t.table := t;
-        }
+   	map classToTableMR_1 {
+    	c2t2 := c2t;
+    	t2 := t;
     }
-    map {
-        where () {
-            t.name := c2t.name;
-        }
+    map classToTableMR_2 {
+        c2t2 := c2t;
+    	t2 := t;
     }
-    map {
-        enforce rdbms () {
-            realize pk:Key,
-            realize pc:Column |
-            pk.owner := t;
-            pk.kind := 'primary';
-            pc.owner := t;
-            pc.key->includes(pk);
-            pc.key := Set(Key){pk};
-            pc.type := 'NUMBER';
-        }
-        where () {
-            -- c2t.column := pc; // TODO Check this
-        }
-        map {
-        	where () {
-        		c2t.primaryKey := pk;
-        	}
-        }
-        map {
-            check enforce rdbms () {
-                pc.name := t.name+'_tid';
-                pk.name := t.name+'_pk';
-            }
-        }
+    map classToTableMR_3 {
+    	t3 := t;
+    	c2t3 := c2t;
     }
 }
 
+map classToTableMR_1  in umlRdbms {
+	rdbms (t2:Table |) {}
+    where (c2t2:ClassToTable |) {
+        c2t2.table := t2;
+    }
+}
+
+map classToTableMR_2 in umlRdbms  {
+	rdbms (t2:Table |) {}
+    where (c2t2:ClassToTable |) {
+        t2.name := c2t2.name;
+    }
+}
+
+map classToTableMR_3 in umlRdbms  {
+    enforce rdbms (t3:Table |) {
+        realize pk:Key,
+        realize pc:Column |
+        pk.owner := t3;
+        pk.kind := 'primary';
+        pc.owner := t3;
+        pc.key->includes(pk);
+        pc.key := Set(Key){pk};
+        pc.type := 'NUMBER';
+    }
+    where (c2t3:ClassToTable |) {
+        -- c2t.column := pc; // TODO Check this
+    }
+    map classToTableMR_3_1 {
+		c2t2 := c2t3;
+		pk2 := pk;
+    }
+    map classToTableMR_3_2 {
+    	t2 := t3;
+    	pk2 := pk;
+    	pc2 := pc;
+    }
+}
+
+map classToTableMR_3_1 in umlRdbms  {
+	rdbms (pk2:Key |) {}
+	where (c2t2:ClassToTable |) {
+		c2t2.primaryKey := pk2;
+	}
+}
+
+map classToTableMR_3_2 in umlRdbms  {
+    check enforce rdbms (t2:Table, pk2:Key, pc2:Column |) {
+        pc2.name := t2.name+'_tid';
+        pk2.name := t2.name+'_pk';
+    }
+}
+
+
 map associationToForeignKeyLM in umlRdbms {
-    uml (p:Package, sc:Class, dc:Class | sc.namespace = p;) {
-        a:Association |
+    uml (p:Package, sc:Class, dc:Class, a:Association |
+    	sc.namespace = p;
         -- getAllForwards(sc)->includes(a);
         a.source = sc;
         -- getAllSupers(dc)->includes(a.destination);
         a.destination = dc;
-        a.namespace = p;
-    }
+        a.namespace = p;) { }
     where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable |
 	        sc2t.owner = p2s;
 	        p2s.umlPackage = p;
@@ -243,18 +262,32 @@ map associationToForeignKeyMR in umlRdbms {
         a2f.referenced = dc2t;
         -- a2f.column := fc;	// TODO Check this
     }
-    map {
-    	where () {
-    		 a2f.foreignKey := fk;
-    	}
+    map associationToForeignKeyMR_1 {
+    	a2f2 := a2f;
+    	fk2 := fk;
     }
-    map {
-        where () {
-            fk.name := a2f.name;
-            fc.name := a2f.name +'_tid';
-        }
+    map associationToForeignKeyMR_2 {
+        fk2 := fk;
+        fc2 := fc.name;
+        a2f2 := a2f;
     }
 }
+
+map associationToForeignKeyMR_1 in umlRdbms  {
+	rdbms (fk2:ForeignKey |) {}
+	where (a2f2:AssociationToForeignKey |) {
+		 a2f2.foreignKey := fk2;
+	}
+}
+
+map associationToForeignKeyMR_2 in umlRdbms  {
+	rdbms (fk2:ForeignKey, fc2:Column |) {}
+    where (a2f2:AssociationToForeignKey |) {
+        fk2.name := a2f2.name;
+        fc2.name := a2f2.name +'_tid';
+    }
+}
+
 
 map classPrimitiveAttributesLM in umlRdbms {
 	uml (c:Class, t:PrimitiveDataType |) {
@@ -349,32 +382,53 @@ map attributeColumnsMR in umlRdbms {
         c2t.fromAttributes.leafs->includes(a2c);
         a2c.owner = c2t;
     }
-    map {
-    	where () {
-    		a2c.column := c;
-    	}
+    map attributeColumnsMR_1 {
+    	a2c2 := a2c;
+    	c2 := c;
     }
-    map {
-        enforce rdbms (ct:String |) {
-            c.type := ct;
-        }
-        where (p2n:PrimitiveToName |) {
-            a2c.type = p2n;
-        }
-        map {
-        	where () {
-        		p2n.typeName := ct;
-        	}
-        }
+    map attributeColumnsMR_2 {
+    	--ct2 := ct;			-- Where is ct?
+    	--p2n2 := p2n;		-- Where is p2n?
+    	c2 := c;
+    	a2c2 := a2c;
     }
-    map {
-        where () {
-            c.name := a2c.name;
-        }
+    map attributeColumnsMR_3 {
+       	a2c2 := a2c;
+    	c2 := c;
     }
-    map {
-        where () {
-            c.kind := a2c.kind;
-        }
+    map attributeColumnsMR_4 {
+        a2c2 := a2c;
+    	c2 := c;
+    }
+}
+
+map attributeColumnsMR_1 in umlRdbms  {
+	rdbms (c2:Column |) {}
+	where (a2c2:AttributeToColumn |) {
+		a2c2.column := c2;
+	}
+}
+
+map attributeColumnsMR_2 in umlRdbms  {
+    enforce rdbms (ct2:String, c2:Column |) {
+        c2.type := ct2;
+    }
+    where (p2n2:PrimitiveToName, a2c2:AttributeToColumn |
+    		a2c2.type = p2n2;) {
+    	p2n2.typeName := ct2;
+    }
+}
+
+map attributeColumnsMR_3 in umlRdbms  {
+	rdbms (c2:Column |) {}
+    where (a2c2:AttributeToColumn | ) {
+        c2.name := a2c2.name;
+    }
+}
+
+map attributeColumnsMR_4 in umlRdbms  {
+	rdbms (c2:Column |) {}
+    where (a2c2:AttributeToColumn |) {
+        c2.kind := a2c2.kind;
     }
 }
