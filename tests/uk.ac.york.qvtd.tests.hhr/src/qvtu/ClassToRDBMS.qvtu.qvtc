@@ -11,17 +11,7 @@ transformation umlRdbms {
     rdbms imports SimpleRDBMS;
     imports UMLtoRDBMS;
 }
-/*    -- Package and Schema mapping
-    class PackageToSchema {
-        composite classesToTables : Set(ClassToTable) opposites owner;
-        composite primitivesToNames : Set(PrimitiveToName) opposites owner;
-        name : String;
-        -- uml
-        umlPackage : Package;
-        -- rdbms
-        schema : Schema;
-    }
-*/
+
 map packageToSchema in umlRdbms {
     uml () {
         p:Package |
@@ -41,16 +31,7 @@ map packageToSchema in umlRdbms {
         }
     }
 }
-/*    -- Primitive data type marshaling
-    class PrimitiveToName {
-        owner : PackageToSchema opposites primitivesToNames;
-        name : String;
-        -- uml
-        primitive : PrimitiveDataType;
-        -- rdbms
-        typeName : String;
-    }
-*/
+
 map primitiveToName in umlRdbms {
     uml (p:Package |) {
         prim:PrimitiveDataType |
@@ -127,21 +108,7 @@ query umlRdbms::getAllForwards(cls :  SimpleUML::Class) : Set( SimpleUML::Associ
     getAllSupers(cls)->collect(c | true)
 }
 
- 
-/*  -- Class and Table mapping
-    class ClassToTable extends FromAttributeOwner, ToColumn {
-        owner : PackageToSchema opposites classesToTables;
-        composite associationToForeignKeys :
-            OrderedSet(AssociationToForeignKey) opposites owner;
-        name : String;
-        -- uml
-        umlClass : Class;
-        -- rdbms
-        table : Table;
-        primaryKey : Key;
-    }
-*/
-map classToTable in umlRdbms {
+ map classToTable in umlRdbms {
     uml (p:Package |) {
         c:Class |
         c.kind = 'persistent';
@@ -149,7 +116,6 @@ map classToTable in umlRdbms {
     }
     enforce rdbms (s:Schema |) {
         realize t:Table |
-        t.kind <> 'meta';
         t.kind := 'base';
         t.schema := s;
     }
@@ -172,7 +138,6 @@ map classToTable in umlRdbms {
             pk.owner := t;
             pk.kind := 'primary';
             pc.owner := t;
-            pc.key->includes(pk);
             pc.key := Set(Key){pk};
             pc.type := 'NUMBER';
         }
@@ -188,18 +153,6 @@ map classToTable in umlRdbms {
         }
     }
 }
-
-/*    -- Association and ForeignKey mapping
-    class AssociationToForeignKey extends ToColumn {
-        referenced : ClassToTable;
-        owner : ClassToTable opposites associationToForeignKeys;
-        name : String;
-        -- uml
-        association : Association;
-        -- rdbms
-        foreignKey : ForeignKey;
-    }
-*/
 
 map associationToForeignKey in umlRdbms refines flattening {
     uml (p:Package, sc:Class, dc:Class | sc.namespace = p;) {
@@ -219,7 +172,6 @@ map associationToForeignKey in umlRdbms refines flattening {
         fk.owner := st;
         fc.owner := st;
         fk.refersTo := rk;
-        fc.foreignKeys->includes(fk);
         fc.foreignKeys := Set(ForeignKey){fk};
     }
     where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable |
@@ -235,7 +187,7 @@ map associationToForeignKey in umlRdbms refines flattening {
         a2f.referenced := dc2t;
         a2f.association := a;
         a2f.foreignKey := fk;
-        -- a2f.column := fc;	// TODO Check this
+        a2f.column := fc;
     }
     map {
         where () {
@@ -257,30 +209,6 @@ map associationToForeignKey in umlRdbms refines flattening {
         }
     }
 }
-
-/*    -- attribute mapping
-    abstract class FromAttributeOwner {
-        composite fromAttributes : Set(FromAttribute) opposites owner;
-    }
-    abstract class FromAttribute {
-        name : String;
-        kind : String;
-        owner : FromAttributeOwner opposites fromAttributes;
-        leafs : Set(AttributeToColumn);
-        -- uml
-        attribute : Attribute to uml;
-    }
-    abstract class ToColumn {
-        -- rdbms
-        column : Column;
-    }
-    class NonLeafAttribute extends FromAttributeOwner, FromAttribute {
-        leafs := fromAttributes.leafs;
-    }
-    class AttributeToColumn extends FromAttribute, ToColumn {
-        type : PrimitiveToName;
-    }
-*/
 
 map attributes in umlRdbms refines flattening {
     uml (c:Class |) {
@@ -343,7 +271,7 @@ map complexAttribute in umlRdbms refines attributes {
     }
     map {           
     	where () {
-    		la.attribute = t;	-- TODO check the whole attribute rules
+    		la.attribute := t;	-- TODO check the whole attribute rules
             -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
         }
     }
@@ -354,13 +282,10 @@ map classComplexAttributes in umlRdbms refines classAttributes, complexAttribute
 map complexAttributePrimitiveAttributes in umlRdbms refines complexAttributeAttributes, primitiveAttribute {}
 map complexAttributeComplexAttributes in umlRdbms refines complexAttributeAttributes, complexAttribute {}
 
-    -- column mapping
 map attributeColumns in umlRdbms {
     enforce rdbms (t:Table |) {
         realize c:Column |
         c.owner := t;
-        c.key->size()=0;
-        c.foreignKeys->size()=0;
     }
     where (c2t:ClassToTable | c2t.table=t;) {
         realize a2c:AttributeToColumn |

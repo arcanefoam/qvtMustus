@@ -236,7 +236,7 @@ map associationToForeignKey in umlRdbms refines flattening {
         a2f.referenced := dc2t;
         a2f.association := a;
         a2f.foreignKey := fk;
-        -- a2f.column := fc;	// TODO Check this
+        a2f.column := fc;
     }
     map {
         where () {
@@ -351,7 +351,7 @@ map complexAttribute in umlRdbms refines attributes {
     }
     map {           
     	where () {
-    		la.attribute = t;	-- TODO check the whole attribute rules
+    		la.attribute := t;	-- TODO check the whole attribute rules
             -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
         }
     }
