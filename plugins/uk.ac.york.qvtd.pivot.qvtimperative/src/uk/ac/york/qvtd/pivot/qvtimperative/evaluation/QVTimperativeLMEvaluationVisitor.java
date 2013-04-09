@@ -144,7 +144,6 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
                 getEvaluationEnvironment().replace(var, binding);
                 finishMappingVisit(mapping);
             }
-            
         }
         return true;
     }
