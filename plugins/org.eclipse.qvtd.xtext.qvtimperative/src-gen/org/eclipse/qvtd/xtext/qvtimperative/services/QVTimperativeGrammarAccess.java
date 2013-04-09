@@ -365,11 +365,11 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 
 	//BottomPatternCS:
 	//
-	//	{BottomPatternCS} ((unrealizedVariables+=UnrealizedVariableCS | realizedVariables+=RealizedVariableCS) (","
+	//	"{" (unrealizedVariables+=UnrealizedVariableCS | realizedVariables+=RealizedVariableCS) (","
 	//
-	//	(unrealizedVariables+=UnrealizedVariableCS | realizedVariables+=RealizedVariableCS))* "|")?
+	//	(unrealizedVariables+=UnrealizedVariableCS | realizedVariables+=RealizedVariableCS))* "|" constraints+=AssignmentCS*
 	//
-	//	constraints+=AssignmentCS*;
+	//	"}" | {BottomPatternCS} "{" constraints+=AssignmentCS* "}";
 	public QVTcoreBaseGrammarAccess.BottomPatternCSElements getBottomPatternCSAccess() {
 		return gaQVTcoreBase.getBottomPatternCSAccess();
 	}
@@ -412,9 +412,9 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 	////EnforcementOperationCS: ('creation'|'deletion') ExpCS ';';
 	// GuardPatternCS:
 	//
-	//	{GuardPatternCS} (unrealizedVariables+=UnrealizedVariableCS ("," unrealizedVariables+=UnrealizedVariableCS)* "|")?
+	//	"(" unrealizedVariables+=UnrealizedVariableCS ("," unrealizedVariables+=UnrealizedVariableCS)* "|"
 	//
-	//	constraints+=AssignmentCS*;
+	//	constraints+=AssignmentCS* ")" | {GuardPatternCS} "(" constraints+=AssignmentCS* ")";
 	public QVTcoreBaseGrammarAccess.GuardPatternCSElements getGuardPatternCSAccess() {
 		return gaQVTcoreBase.getGuardPatternCSAccess();
 	}
@@ -449,9 +449,9 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 
 	//NamedDomainCS returns DomainCS:
 	//
-	//	check?="check"? enforce?="enforce"? direction=[qvtbase::TypedModel|UnrestrictedName] "(" guardPattern=GuardPatternCS?
+	//	check?="check"? enforce?="enforce"? direction=[qvtbase::TypedModel|UnrestrictedName] guardPattern=GuardPatternCS
 	//
-	//	")" "{" bottomPattern=BottomPatternCS? "}";
+	//	bottomPattern=BottomPatternCS;
 	public QVTcoreBaseGrammarAccess.NamedDomainCSElements getNamedDomainCSAccess() {
 		return gaQVTcoreBase.getNamedDomainCSAccess();
 	}
@@ -538,7 +538,7 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 
 	//UnnamedDomainCS returns DomainCS:
 	//
-	//	{DomainCS} "(" guardPattern=GuardPatternCS? ")" "{" bottomPattern=BottomPatternCS? "}";
+	//	{DomainCS} guardPattern=GuardPatternCS bottomPattern=BottomPatternCS;
 	public QVTcoreBaseGrammarAccess.UnnamedDomainCSElements getUnnamedDomainCSAccess() {
 		return gaQVTcoreBase.getUnnamedDomainCSAccess();
 	}
@@ -735,37 +735,37 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 		return getEssentialOCLReservedKeywordAccess().getRule();
 	}
 
-	//EssentialOCLPrefixOperator:
+	//EssentialOCLUnaryOperatorCS returns UnaryOperatorCS:
 	//
-	//	"-" | "not";
-	public EssentialOCLGrammarAccess.EssentialOCLPrefixOperatorElements getEssentialOCLPrefixOperatorAccess() {
-		return gaQVTcoreBase.getEssentialOCLPrefixOperatorAccess();
+	//	name=("-" | "not");
+	public EssentialOCLGrammarAccess.EssentialOCLUnaryOperatorCSElements getEssentialOCLUnaryOperatorCSAccess() {
+		return gaQVTcoreBase.getEssentialOCLUnaryOperatorCSAccess();
 	}
 	
-	public ParserRule getEssentialOCLPrefixOperatorRule() {
-		return getEssentialOCLPrefixOperatorAccess().getRule();
+	public ParserRule getEssentialOCLUnaryOperatorCSRule() {
+		return getEssentialOCLUnaryOperatorCSAccess().getRule();
 	}
 
-	//EssentialOCLInfixOperator:
+	//EssentialOCLInfixOperatorCS returns BinaryOperatorCS:
 	//
-	//	"*" | "/" | "+" | "-" | ">" | "<" | ">=" | "<=" | "=" | "<>" | "and" | "or" | "xor" | "implies";
-	public EssentialOCLGrammarAccess.EssentialOCLInfixOperatorElements getEssentialOCLInfixOperatorAccess() {
-		return gaQVTcoreBase.getEssentialOCLInfixOperatorAccess();
+	//	name=("*" | "/" | "+" | "-" | ">" | "<" | ">=" | "<=" | "=" | "<>" | "and" | "or" | "xor" | "implies");
+	public EssentialOCLGrammarAccess.EssentialOCLInfixOperatorCSElements getEssentialOCLInfixOperatorCSAccess() {
+		return gaQVTcoreBase.getEssentialOCLInfixOperatorCSAccess();
 	}
 	
-	public ParserRule getEssentialOCLInfixOperatorRule() {
-		return getEssentialOCLInfixOperatorAccess().getRule();
+	public ParserRule getEssentialOCLInfixOperatorCSRule() {
+		return getEssentialOCLInfixOperatorCSAccess().getRule();
 	}
 
-	//EssentialOCLNavigationOperator:
+	//EssentialOCLNavigationOperatorCS returns NavigationOperatorCS:
 	//
-	//	"." | "->";
-	public EssentialOCLGrammarAccess.EssentialOCLNavigationOperatorElements getEssentialOCLNavigationOperatorAccess() {
-		return gaQVTcoreBase.getEssentialOCLNavigationOperatorAccess();
+	//	name=("." | "->");
+	public EssentialOCLGrammarAccess.EssentialOCLNavigationOperatorCSElements getEssentialOCLNavigationOperatorCSAccess() {
+		return gaQVTcoreBase.getEssentialOCLNavigationOperatorCSAccess();
 	}
 	
-	public ParserRule getEssentialOCLNavigationOperatorRule() {
-		return getEssentialOCLNavigationOperatorAccess().getRule();
+	public ParserRule getEssentialOCLNavigationOperatorCSRule() {
+		return getEssentialOCLNavigationOperatorCSAccess().getRule();
 	}
 
 	//Identifier:
@@ -790,40 +790,51 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 		return getStringLiteralAccess().getRule();
 	}
 
-	//// Intended to be overridden
-	// PrefixOperator:
+	//BinaryOperatorCS:
 	//
-	//	EssentialOCLPrefixOperator;
-	public EssentialOCLGrammarAccess.PrefixOperatorElements getPrefixOperatorAccess() {
-		return gaQVTcoreBase.getPrefixOperatorAccess();
+	//	InfixOperatorCS | NavigationOperatorCS;
+	public EssentialOCLGrammarAccess.BinaryOperatorCSElements getBinaryOperatorCSAccess() {
+		return gaQVTcoreBase.getBinaryOperatorCSAccess();
 	}
 	
-	public ParserRule getPrefixOperatorRule() {
-		return getPrefixOperatorAccess().getRule();
+	public ParserRule getBinaryOperatorCSRule() {
+		return getBinaryOperatorCSAccess().getRule();
 	}
 
-	//// Intended to be overridden
-	// InfixOperator:
+	//// Intended to be overrideable
+	// InfixOperatorCS returns BinaryOperatorCS:
 	//
-	//	EssentialOCLInfixOperator;
-	public EssentialOCLGrammarAccess.InfixOperatorElements getInfixOperatorAccess() {
-		return gaQVTcoreBase.getInfixOperatorAccess();
+	//	EssentialOCLInfixOperatorCS;
+	public EssentialOCLGrammarAccess.InfixOperatorCSElements getInfixOperatorCSAccess() {
+		return gaQVTcoreBase.getInfixOperatorCSAccess();
 	}
 	
-	public ParserRule getInfixOperatorRule() {
-		return getInfixOperatorAccess().getRule();
+	public ParserRule getInfixOperatorCSRule() {
+		return getInfixOperatorCSAccess().getRule();
 	}
 
-	//// Intended to be overridden
-	// NavigationOperator:
+	//// Intended to be overrideable
+	// NavigationOperatorCS:
 	//
-	//	EssentialOCLNavigationOperator;
-	public EssentialOCLGrammarAccess.NavigationOperatorElements getNavigationOperatorAccess() {
-		return gaQVTcoreBase.getNavigationOperatorAccess();
+	//	EssentialOCLNavigationOperatorCS;
+	public EssentialOCLGrammarAccess.NavigationOperatorCSElements getNavigationOperatorCSAccess() {
+		return gaQVTcoreBase.getNavigationOperatorCSAccess();
 	}
 	
-	public ParserRule getNavigationOperatorRule() {
-		return getNavigationOperatorAccess().getRule();
+	public ParserRule getNavigationOperatorCSRule() {
+		return getNavigationOperatorCSAccess().getRule();
+	}
+
+	//// Intended to be overrideable
+	// UnaryOperatorCS:
+	//
+	//	EssentialOCLUnaryOperatorCS;
+	public EssentialOCLGrammarAccess.UnaryOperatorCSElements getUnaryOperatorCSAccess() {
+		return gaQVTcoreBase.getUnaryOperatorCSAccess();
+	}
+	
+	public ParserRule getUnaryOperatorCSRule() {
+		return getUnaryOperatorCSAccess().getRule();
 	}
 
 	////---------------------------------------------------------------------
@@ -1255,39 +1266,6 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 		return getExpCSAccess().getRule();
 	}
 
-	//BinaryOperatorCS:
-	//
-	//	InfixOperatorCS | NavigationOperatorCS;
-	public EssentialOCLGrammarAccess.BinaryOperatorCSElements getBinaryOperatorCSAccess() {
-		return gaQVTcoreBase.getBinaryOperatorCSAccess();
-	}
-	
-	public ParserRule getBinaryOperatorCSRule() {
-		return getBinaryOperatorCSAccess().getRule();
-	}
-
-	//InfixOperatorCS returns BinaryOperatorCS:
-	//
-	//	name=InfixOperator;
-	public EssentialOCLGrammarAccess.InfixOperatorCSElements getInfixOperatorCSAccess() {
-		return gaQVTcoreBase.getInfixOperatorCSAccess();
-	}
-	
-	public ParserRule getInfixOperatorCSRule() {
-		return getInfixOperatorCSAccess().getRule();
-	}
-
-	//NavigationOperatorCS:
-	//
-	//	name=NavigationOperator;
-	public EssentialOCLGrammarAccess.NavigationOperatorCSElements getNavigationOperatorCSAccess() {
-		return gaQVTcoreBase.getNavigationOperatorCSAccess();
-	}
-	
-	public ParserRule getNavigationOperatorCSRule() {
-		return getNavigationOperatorCSAccess().getRule();
-	}
-
 	//PrefixedExpCS returns ExpCS:
 	//
 	//	{PrefixExpCS} ownedOperator+=UnaryOperatorCS+ ownedExpression=PrimaryExpCS | PrimaryExpCS;
@@ -1297,17 +1275,6 @@ public class QVTimperativeGrammarAccess extends AbstractGrammarElementFinder {
 	
 	public ParserRule getPrefixedExpCSRule() {
 		return getPrefixedExpCSAccess().getRule();
-	}
-
-	//UnaryOperatorCS:
-	//
-	//	name=PrefixOperator;
-	public EssentialOCLGrammarAccess.UnaryOperatorCSElements getUnaryOperatorCSAccess() {
-		return gaQVTcoreBase.getUnaryOperatorCSAccess();
-	}
-	
-	public ParserRule getUnaryOperatorCSRule() {
-		return getUnaryOperatorCSAccess().getRule();
 	}
 
 	//PrimaryExpCS returns ExpCS:
