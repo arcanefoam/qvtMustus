@@ -20,7 +20,6 @@ map upper2lowerLM in CopyGraphMinimal {
 }
 
 map upper2lowerMR in CopyGraphMinimal {
-	-- check upperGraph() {}
     enforce lowerGraph() {
         realize g2:Graph |
     }

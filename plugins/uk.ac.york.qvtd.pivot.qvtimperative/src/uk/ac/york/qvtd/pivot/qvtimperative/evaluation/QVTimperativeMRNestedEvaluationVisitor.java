@@ -10,24 +10,22 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Element;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
-import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
+import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcorebase.EnforcementOperation;
+import org.eclipse.qvtd.pivot.qvtcorebase.GuardPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
@@ -36,7 +34,7 @@ import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 /**
  * QVTcoreMREvaluationVisitor is the class for ...
  */
-public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor
+public class QVTimperativeMRNestedEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor
         implements QVTimperativeVisitor<Object> {
 
     /**
@@ -46,7 +44,7 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
      * @param evalEnv the evaluation environment
      * @param modelManager the model manager
      */
-    public QVTimperativeMREvaluationVisitor(@NonNull Environment env,
+    public QVTimperativeMRNestedEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
@@ -58,7 +56,7 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
         Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
         EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
-        QVTimperativeMREvaluationVisitor ne = new QVTimperativeMREvaluationVisitor(environment, nestedEvalEnv, getModelManager());
+        QVTimperativeMRNestedEvaluationVisitor ne = new QVTimperativeMRNestedEvaluationVisitor(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
 
@@ -74,10 +72,9 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
             for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
                 rVar.accept(this);
             }
-            /*// There should be no assignments
             for (Assignment assigment : bottomPattern.getAssignment()) {
                 assigment.accept(this);
-            }*/
+            }
             /*// There should be no predicates
             for (Assignment assigment : bottomPattern.getAssignment()) {
                 assigment.accept(this);
@@ -139,7 +136,33 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
         /*// THERE SHULD BE NO GUARD PATTERN IN THE R CoreDomain
         coreDomain.getGuardPattern().accept(this);
         */
-        return coreDomain.getBottomPattern().accept(this);
+        boolean result = (Boolean) coreDomain.getGuardPattern().accept(this);
+        if (result) {
+        	coreDomain.getBottomPattern().accept(this);
+        }
+        return result;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitGuardPattern(
+     * org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
+     */
+    @Override
+    public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
+        
+        // The bindings are already defined, test the constraints
+        boolean result = true;
+        for (Predicate predicate : guardPattern.getPredicate()) {
+            // If the predicate is not true, the binding is not valid
+            result = (Boolean) predicate.accept(this);
+            if (!result) {
+            	break;
+            }
+        }
+        return result;        
     }
     
     
@@ -149,45 +172,19 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
     public @Nullable Object visitMapping(@NonNull Mapping mapping) {
         
         if (mapping.getDomain().size() > 1) {
-            MtoRMappingError(mapping, "Max supported number of domains is 1.");
+        	MtoRNetsedMappingError(mapping, "Max supported number of domains is 1.");
         }
-        if (mapping.getGuardPattern().getVariable().size() == 0) {
-            mapping.getBottomPattern().accept(this);
-            for (Domain domain : mapping.getDomain()) {
-                domain.accept(this);
+        boolean result = (Boolean) mapping.getGuardPattern().accept(this);
+        if (result) {
+        	for (Domain domain : mapping.getDomain()) {
+                result = (Boolean) domain.accept(this);
             }
-        } else {
-            Map<Variable, List<Object>> mappingBindings = (Map<Variable, List<Object>>) mapping.getGuardPattern().accept(this);
-            assert mappingBindings.size() <= 1 : "Unsupported " 
-                    + mapping.eClass().getName() + ". BottomGuardPattern provided more than 1 variable binding.";
-            
-            for (Map.Entry<Variable, List<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
-                Variable var = mappingBindingEntry.getKey();
-                for (Object binding : mappingBindingEntry.getValue()) {
-                    getEvaluationEnvironment().replace(var, binding);
-                    //finishMappingVisit(mapping);
+        	if (result) {
+        		mapping.getBottomPattern().accept(this);
+            	for (MappingCall mappingCall : mapping.getMappingCall()) {
+                	mappingCall.accept(this);
                 }
-            }
-        }
-        return true;
-    }
-
-
-    
-    
-    /* (non-Javadoc)
-     * @see uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeAbstractEvaluationVisitorImpl#visitMappingCall(org.eclipse.qvtd.pivot.qvtimperative.MappingCall)
-     */
-    @Override
-    public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
-        
-        if (isMtoRMapping(mappingCall.getReferredMapping())) {
-        	// TODO Check the variables bindings by existence, not by value
-            //finishMappingVisit(mappingCall.getReferredMapping());
-        } else if (isLtoMMapping(mappingCall.getReferredMapping())) {
-            QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
-                    getEnvironment(), getEvaluationEnvironment(), modelManager);
-            mappingCall.accept(LMVisitor);
+        	}
         }
         return null;
     }
@@ -195,13 +192,13 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
 
     
     /**
-     * Mto r mapping error.
+     * M to R Nested mapping error.
      *
      * @param node the node
      * @param cause the cause
      */
-    private void MtoRMappingError(Element node, String cause) {
+    private void MtoRNetsedMappingError(Element node, String cause) {
         throw new IllegalArgumentException("Unsupported " + node.eClass().getName()
-                + " specification in Middle to Right mapping. " + cause);
+                + " specification in Middle to Right nested mapping. " + cause);
     }
 }

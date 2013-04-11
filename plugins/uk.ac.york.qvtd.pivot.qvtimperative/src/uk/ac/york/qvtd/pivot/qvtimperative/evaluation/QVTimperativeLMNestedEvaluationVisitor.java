@@ -11,6 +11,7 @@
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -24,21 +25,26 @@ import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
+import org.eclipse.qvtd.pivot.qvtbase.Predicate;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcorebase.EnforcementOperation;
+import org.eclipse.qvtd.pivot.qvtcorebase.GuardPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
+import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
+
 // TODO: Auto-generated Javadoc
 /**
  * QVTimperativeLMEvaluationVisitor is the class for ...
  */
-public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor 
+public class QVTimperativeLMNestedEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor 
         implements QVTimperativeVisitor<Object> {
 
     /**
@@ -48,7 +54,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
      * @param evalEnv the evaluation environment
      * @param modelManager the model manager
      */
-    public QVTimperativeLMEvaluationVisitor(@NonNull Environment env,
+    public QVTimperativeLMNestedEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
@@ -59,7 +65,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
         Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
         EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
-        QVTimperativeLMEvaluationVisitor ne = new QVTimperativeLMEvaluationVisitor(environment, nestedEvalEnv, getModelManager());
+        QVTimperativeLMNestedEvaluationVisitor ne = new QVTimperativeLMNestedEvaluationVisitor(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
 
@@ -70,15 +76,11 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
     public @Nullable Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
         
         Area area = bottomPattern.getArea();
-        /* CoreDomain BottomPatterns should never be visited
+        /* L Core Domains should not have anything to visit
         if (area instanceof CoreDomain) {
             // The bottom pattern of an L CoreDomain should not have any variables or constraints
-        	if (bottomPattern.getVariable().size() != 0) {
-        		LtoMMappingError(bottomPattern, "BottomPattern of L CoreDomain defined 1 or more variables.");
-        	}
-        	if (bottomPattern.getPredicate().size() != 0) {
-        		LtoMMappingError(bottomPattern, "BottomPattern of L CoreDomain defined 1 or more predicates.");
-        	}
+            assert bottomPattern.getVariable().size() == 0 : "Error: BottomPattern of L Coredomain has variables.";
+            assert bottomPattern.getPredicate().size() == 0 : "Error: BottomPattern of L CoreDomain has constraints.";
         }
         // LtoM Mapping. The bottomPattern belongs to a Mapping and it is visited once per
         // binding of the L domain. The bottom pattern should have the realized variables of the
@@ -108,8 +110,8 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
      */
     public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
-        Map<Variable, List<Object>>  guardBindings =  new HashMap<Variable, List<Object>>();
-        guardBindings.putAll((Map<Variable, List<Object>>) coreDomain.getGuardPattern().accept(this));
+        /* Bindings are set by the caller, just test the predicates */
+    	return coreDomain.getGuardPattern().accept(this);
         /* THERE SHOULD BE NO VARIABLES OR PREDICATES IN THE BottomPattern
         for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
             Variable var = entry.getKey();
@@ -118,7 +120,28 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
                 coreDomain.getBottomPattern().accept(this); 
             }
         }*/
-        return guardBindings;
+    }
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.eclipse.qvtd.pivot.qvtcore.util.QVTcoreVisitor#visitGuardPattern(
+     * org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
+     */
+    @Override
+    public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
+        
+        // The bindings are already defined, test the constraints
+        boolean result = true;
+        for (Predicate predicate : guardPattern.getPredicate()) {
+            // If the predicate is not true, the binding is not valid
+            result = (Boolean) predicate.accept(this);
+            if (!result) {
+            	break;
+            }
+        }
+        return result;        
     }
     
     
@@ -128,34 +151,33 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
     public @Nullable Object visitMapping(@NonNull Mapping mapping) {
         
     	if (mapping.getDomain().size() > 1) {
-    		LtoMMappingError(mapping, "Max supported number of domains is 1.");
+    		LtoMNestedMappingError(mapping, "Max supported number of domains is 1.");
         }
-        Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
+    	boolean result = false;
         for (Domain domain : mapping.getDomain()) {
-            mappingBindings.putAll((Map<Variable, List<Object>>)domain.accept(this));
+            result = (Boolean) domain.accept(this);
         }
-        for (Map.Entry<Variable, List<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
-            Variable var = mappingBindingEntry.getKey();
-            for (Object binding : mappingBindingEntry.getValue()) {
-                getEvaluationEnvironment().replace(var, binding);
-                mapping.getBottomPattern().accept(this);
-                for (MappingCall mappingCall : mapping.getMappingCall()) {
+        if (result) {
+        	result = (Boolean) mapping.getGuardPattern().accept(this);
+            if (result) {
+            	mapping.getBottomPattern().accept(this);
+            	for (MappingCall mappingCall : mapping.getMappingCall()) {
                 	mappingCall.accept(this);
                 }
             }
         }
-        return true;
+        return null;
     }
     
     /**
-     * L to M Mapping error.
+     * Lto m mapping error.
      *
      * @param node the node
      * @param cause the cause
      */
-    private void LtoMMappingError(Element node, String cause) {
+    private void LtoMNestedMappingError(Element node, String cause) {
         throw new IllegalArgumentException("Unsupported " + node.eClass().getName()
-                + " specification in Left to Middle mapping. " + cause);
+                + " specification in Left to Middle nested mapping. " + cause);
     }
 
 }

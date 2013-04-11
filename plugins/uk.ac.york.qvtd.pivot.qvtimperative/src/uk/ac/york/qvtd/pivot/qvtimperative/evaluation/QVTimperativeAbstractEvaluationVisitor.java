@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
@@ -69,8 +70,27 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 		return visiting(object);
     }
 
-    public @Nullable Object visitMappingCall(@NonNull MappingCall object) {
-		return visiting(object);
+    public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
+    	// Copy the bindings to pass them to the recursive call
+    	EList<MappingCallBinding> bindings = mappingCall.getBinding();
+    	Iterator<MappingCallBinding> bindingIt = bindings.iterator();
+    	if (bindingIt.hasNext()) {
+    		MappingCallBinding binding = bindingIt.next();
+    		bindingIt.remove();
+    	    OCLExpression valueExpression = binding.getValue();
+            Object value = safeVisit(valueExpression);
+            // To cope with possible multiple collection bindings, do recursive call
+            if (value instanceof CollectionValue) {
+                for (Object resValue : ((CollectionValue)value).asCollection()) {
+                	getEvaluationEnvironment().replace(binding.getBoundVariable(), resValue);
+                	visitMappingCallRecursive(mappingCall, bindings);
+               }
+            } else {
+            	getEvaluationEnvironment().replace(binding.getBoundVariable(), value);
+            	visitMappingCallRecursive(mappingCall, bindings);
+            }
+        }
+    	return null;
     }
 
     public @Nullable Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
@@ -184,50 +204,42 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
         }
         return true;
     }
-    
-    /**
-     * Visit bound mapping. In a regular mapping bindings are created form the
-     * guard and bottom patterns of the domains. In a MappingCall, bindings are
-     * done before invocation. Either way, after bindings exist the visit is the
-     * same.
-     * 
-     * @param mapping the mapping
-     */
-    protected void finishMappingVisit(Mapping mapping) {
-        mapping.getBottomPattern().accept(this);
-        for (MappingCall mappingCall : mapping.getMappingCall()) {
-            List<List<Map<Variable, Object>>> bindingCartesian = new ArrayList<List<Map<Variable, Object>>>();
-            for (MappingCallBinding binding : ((MappingCall)mappingCall).getBinding()) {
-                OCLExpression value = binding.getValue();
-                Object result = safeVisit(value);
-                List<Map<Variable, Object>> bindingValues = new ArrayList<Map<Variable, Object>>();
-                if (result instanceof CollectionValue) {
-                    // Create a binding for each of the elements in the collection
-                    for (Object resValue : ((CollectionValue)result).asCollection()) {
-                        Map<Variable, Object> varValue = new HashMap<Variable, Object>();
-                        varValue.put(binding.getBoundVariable(), resValue);
-                        bindingValues.add(varValue);
-                   }
-                } else {
-                    Map<Variable, Object> varValue = new HashMap<Variable, Object>();
-                    varValue.put(binding.getBoundVariable(), result);
-                    bindingValues.add(varValue);
-                }
-                bindingCartesian.add(bindingValues);
+
+
+	private void visitMappingCallRecursive(MappingCall mappingCall,
+			EList<MappingCallBinding> bindings) {
+		
+		Iterator<MappingCallBinding> bindingIt = bindings.iterator();
+    	if (bindingIt.hasNext()) {
+    		MappingCallBinding binding = bindingIt.next();
+    		bindingIt.remove();
+    	    OCLExpression valueExpression = binding.getValue();
+            Object value = safeVisit(valueExpression);
+            // To cope with possible multiple collection bindings, do recursive call
+            if (value instanceof CollectionValue) {
+                for (Object resValue : ((CollectionValue)value).asCollection()) {
+                	getEvaluationEnvironment().replace(binding.getBoundVariable(), resValue);
+                	visitMappingCallRecursive(mappingCall, bindings);
+               }
+            } else {
+            	getEvaluationEnvironment().replace(binding.getBoundVariable(), value);
+            	visitMappingCallRecursive(mappingCall, bindings);
             }
-            // Calculate the Cartesian list of bindings
-            List<List<Map<Variable, Object>>> cartesian = cartesianBindings(bindingCartesian);
-            for (List<Map<Variable, Object>> bindings : cartesian) {
-                for (Map<Variable, Object> binding : bindings) {
-                    Iterator<Entry<Variable, Object>> it = binding.entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<Variable, Object> pairs = (Map.Entry<Variable, Object>)it.next();
-                        getEvaluationEnvironment().replace(pairs.getKey(), pairs.getValue());
-                    }
-                }
-                mappingCall.accept(this);
-            }
+        } else {
+        	Mapping referredMapping = mappingCall.getReferredMapping();
+        	QVTimperativeVisitor<Object> nv;
+    		if (isLtoMMapping(referredMapping)) {
+    			nv = new QVTimperativeLMNestedEvaluationVisitor(environment, getEvaluationEnvironment(), modelManager);
+    		}
+        	else if (isMtoRMapping(referredMapping)) {
+        		nv = new QVTimperativeMRNestedEvaluationVisitor(environment, getEvaluationEnvironment(), modelManager);
+        	}
+        	else {
+        		nv = new QVTimperativeMMEvaluationVisitor(environment, getEvaluationEnvironment(), modelManager);
+        	}
+    		referredMapping.accept(nv);
         }
-    }
+    	
+	}
 
 }

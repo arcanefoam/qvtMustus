@@ -57,7 +57,7 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
         implements QVTcoreBaseVisitor<Object> {
         
     /**
-     * Instantiates a new qV tcore evaluation visitor impl.
+     * Instantiates a new QVTCore evaluation visitor implementation.
      * 
      * @param env
      *            the env
@@ -121,11 +121,14 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
         
         Area area = guardPattern.getArea();
         Map<Variable, List<Object>> patternValidBindings = new HashMap<Variable, List<Object>>();
-        assert guardPattern.getVariable().size() > 0 : "Unsupported " + guardPattern.eClass().getName() + " defines no variables.";
         for (Variable var : guardPattern.getVariable()) {
             // Add the variable to the environment so we can assign it a value later
-            getEvaluationEnvironment().add(var, null);
-            TypedModel m;
+        	try {
+        		getEvaluationEnvironment().add(var, null);
+        	} catch (IllegalArgumentException ex){
+        		// The variable is already defined
+        	}
+        	TypedModel m;
             if (area instanceof CoreDomain) {
                  m = ((CoreDomain)area).getTypedModel();                // L to M
             } else {
@@ -195,9 +198,9 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
         }
         ((QVTcDomainManager)modelManager).addModelElement(tm, element);
         // Add the realize variable binding to the environment
-        if (getEvaluationEnvironment().getValueOf(realizedVariable) == null) {
+        try {
             getEvaluationEnvironment().add(realizedVariable, element);
-        } else {
+        } catch (IllegalArgumentException ex) {
             getEvaluationEnvironment().replace(realizedVariable, element);
         }
         return element;
@@ -224,11 +227,6 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
     }
 
     /* ========== HELPER METHODS ========== */
-    /* (non-Javadoc)
-     * @see org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl#createNestedEvaluator()
-     */
-    
-    
     
     /**
      * Cartesian bindings.

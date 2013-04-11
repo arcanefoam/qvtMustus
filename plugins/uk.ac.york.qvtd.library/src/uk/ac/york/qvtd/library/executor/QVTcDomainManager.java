@@ -22,6 +22,8 @@ import org.eclipse.emf.common.util.BasicEList;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -146,18 +148,21 @@ public class QVTcDomainManager implements DomainModelManager {
                     elements.add(root);
                 }
                 for (TreeIterator<EObject> contents = root.eAllContents(); contents.hasNext();) {
-                    EObject object = contents.next();
-                    if (type.getETarget().eClass().isInstance(object.eClass())) {
-                        elements.add(object);
+                    EObject element = contents.next();
+                    if (((EClass) type.getETarget()).getName().equals(element.eClass().getName())) {
+                        elements.add(element);
                     }
                 }
             }
         }
         else {
             for (TreeIterator<EObject> contents = modelResourceMap.get(model).getAllContents(); contents.hasNext();) {
-                EObject object = contents.next();
-                if (type.getETarget().eClass().isInstance(object.eClass())) {
-                    elements.add(object);
+                EObject element = contents.next();
+                //System.out.println(type.getETarget());
+                //System.out.println(((EClassifier) type.getETarget()).getName());
+                //System.out.println(object.eClass().getName());
+                if (((EClass) type.getETarget()).getName().equals(element.eClass().getName())) {
+                    elements.add(element);
                 }
             }
         }
