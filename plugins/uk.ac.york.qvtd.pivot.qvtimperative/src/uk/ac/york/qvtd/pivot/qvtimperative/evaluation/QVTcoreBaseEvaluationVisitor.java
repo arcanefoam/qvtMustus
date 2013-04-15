@@ -118,47 +118,17 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
      * org.eclipse.qvtd.pivot.qvtcore.GuardPattern)
      */
     public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
-        
-        Area area = guardPattern.getArea();
-        Map<Variable, List<Object>> patternValidBindings = new HashMap<Variable, List<Object>>();
-        for (Variable var : guardPattern.getVariable()) {
-            // Add the variable to the environment so we can assign it a value later
-        	try {
-        		getEvaluationEnvironment().add(var, null);
-        	} catch (IllegalArgumentException ex){
-        		// The variable is already defined
-        	}
-        	TypedModel m;
-            if (area instanceof CoreDomain) {
-                 m = ((CoreDomain)area).getTypedModel();                // L to M
-            } else {
-                m = QVTcDomainManager.MIDDLE_MODEL;    					// M to R
-            }
-            List<Object> bindingValuesSet = ((QVTcDomainManager) modelManager).getElementsByType(m, var.getType());
-            patternValidBindings.put(var, bindingValuesSet);
-        }
-        // For each binding visit the constraints, remove bindings that do not meet any
-        // of the constraints
-        for (Map.Entry<Variable, List<Object>> entry : patternValidBindings.entrySet()) {
-            Iterator<Object> bindingIt = entry.getValue().iterator();
-            while (bindingIt.hasNext()) {
-                Variable var = entry.getKey();
-                if (var != null) {
-                    getEvaluationEnvironment().replace(var, bindingIt.next());
-                    for (Predicate predicate : guardPattern.getPredicate()) {
-                        // If the predicate is not true, the binding is not valid
-                        boolean result = (Boolean) predicate.accept(this);
-                        if (!result) {
-                            // If the predicates fails, the binding is not valid
-                            bindingIt.remove();
-                            break;
-                        }
-                    }
-                }
+    	
+    	// The bindings are already defined, test the constraints
+        boolean result = true;
+        for (Predicate predicate : guardPattern.getPredicate()) {
+            // If the predicate is not true, the binding is not valid
+            result = (Boolean) predicate.accept(this);
+            if (!result) {
+            	break;
             }
         }
-        return patternValidBindings;
-        
+        return result;
     }
 
 	public @Nullable Object visitPattern(@NonNull Pattern object) {

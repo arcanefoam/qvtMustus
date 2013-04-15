@@ -108,8 +108,8 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
      */
     public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
-        Map<Variable, List<Object>>  guardBindings =  new HashMap<Variable, List<Object>>();
-        guardBindings.putAll((Map<Variable, List<Object>>) coreDomain.getGuardPattern().accept(this));
+    	/* Bindings are set by the caller, just test the predicates */
+    	return coreDomain.getGuardPattern().accept(this);
         /* THERE SHOULD BE NO VARIABLES OR PREDICATES IN THE BottomPattern
         for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
             Variable var = entry.getKey();
@@ -118,7 +118,6 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
                 coreDomain.getBottomPattern().accept(this); 
             }
         }*/
-        return guardBindings;
     }
     
     
@@ -130,21 +129,20 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
     	if (mapping.getDomain().size() > 1) {
     		LtoMMappingError(mapping, "Max supported number of domains is 1.");
         }
-        Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
+    	boolean result = false;
         for (Domain domain : mapping.getDomain()) {
-            mappingBindings.putAll((Map<Variable, List<Object>>)domain.accept(this));
+            result = (Boolean) domain.accept(this);
         }
-        for (Map.Entry<Variable, List<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
-            Variable var = mappingBindingEntry.getKey();
-            for (Object binding : mappingBindingEntry.getValue()) {
-                getEvaluationEnvironment().replace(var, binding);
-                mapping.getBottomPattern().accept(this);
-                for (MappingCall mappingCall : mapping.getMappingCall()) {
+        if (result) {
+        	result = (Boolean) mapping.getGuardPattern().accept(this);
+            if (result) {
+            	mapping.getBottomPattern().accept(this);
+            	for (MappingCall mappingCall : mapping.getMappingCall()) {
                 	mappingCall.accept(this);
                 }
             }
         }
-        return true;
+        return null;
     }
     
     /**
@@ -154,6 +152,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
      * @param cause the cause
      */
     private void LtoMMappingError(Element node, String cause) {
+    	// TODO add logger
         throw new IllegalArgumentException("Unsupported " + node.eClass().getName()
                 + " specification in Left to Middle mapping. " + cause);
     }

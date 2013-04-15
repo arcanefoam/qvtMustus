@@ -74,6 +74,9 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
             for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
                 rVar.accept(this);
             }
+            for (Assignment assigment : bottomPattern.getAssignment()) {
+                assigment.accept(this);
+            }
             /*// There should be no assignments
             for (Assignment assigment : bottomPattern.getAssignment()) {
                 assigment.accept(this);
@@ -136,10 +139,14 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
      */
     public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
-        /*// THERE SHULD BE NO GUARD PATTERN IN THE R CoreDomain
+    	/*// THERE SHULD BE NO GUARD PATTERN IN THE R CoreDomain
         coreDomain.getGuardPattern().accept(this);
         */
-        return coreDomain.getBottomPattern().accept(this);
+        boolean result = (Boolean) coreDomain.getGuardPattern().accept(this);
+        if (result) {
+        	coreDomain.getBottomPattern().accept(this);
+        }
+        return result;
     }
     
     
@@ -148,46 +155,20 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
      */
     public @Nullable Object visitMapping(@NonNull Mapping mapping) {
         
-        if (mapping.getDomain().size() > 1) {
-            MtoRMappingError(mapping, "Max supported number of domains is 1.");
+    	if (mapping.getDomain().size() > 1) {
+        	MtoRMappingError(mapping, "Max supported number of domains is 1.");
         }
-        if (mapping.getGuardPattern().getVariable().size() == 0) {
-            mapping.getBottomPattern().accept(this);
-            for (Domain domain : mapping.getDomain()) {
-                domain.accept(this);
+        boolean result = (Boolean) mapping.getGuardPattern().accept(this);
+        if (result) {
+        	for (Domain domain : mapping.getDomain()) {
+                result = (Boolean) domain.accept(this);
             }
-        } else {
-            Map<Variable, List<Object>> mappingBindings = (Map<Variable, List<Object>>) mapping.getGuardPattern().accept(this);
-            assert mappingBindings.size() <= 1 : "Unsupported " 
-                    + mapping.eClass().getName() + ". BottomGuardPattern provided more than 1 variable binding.";
-            
-            for (Map.Entry<Variable, List<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
-                Variable var = mappingBindingEntry.getKey();
-                for (Object binding : mappingBindingEntry.getValue()) {
-                    getEvaluationEnvironment().replace(var, binding);
-                    //finishMappingVisit(mapping);
+        	if (result) {
+        		mapping.getBottomPattern().accept(this);
+            	for (MappingCall mappingCall : mapping.getMappingCall()) {
+                	mappingCall.accept(this);
                 }
-            }
-        }
-        return true;
-    }
-
-
-    
-    
-    /* (non-Javadoc)
-     * @see uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeAbstractEvaluationVisitorImpl#visitMappingCall(org.eclipse.qvtd.pivot.qvtimperative.MappingCall)
-     */
-    @Override
-    public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
-        
-        if (isMtoRMapping(mappingCall.getReferredMapping())) {
-        	// TODO Check the variables bindings by existence, not by value
-            //finishMappingVisit(mappingCall.getReferredMapping());
-        } else if (isLtoMMapping(mappingCall.getReferredMapping())) {
-            QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
-                    getEnvironment(), getEvaluationEnvironment(), modelManager);
-            mappingCall.accept(LMVisitor);
+        	}
         }
         return null;
     }
@@ -195,7 +176,7 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
 
     
     /**
-     * Mto r mapping error.
+     * MtoR mapping error.
      *
      * @param node the node
      * @param cause the cause

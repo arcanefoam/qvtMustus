@@ -11,23 +11,18 @@
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
-import org.eclipse.ocl.examples.domain.values.CollectionValue;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.Property;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
@@ -66,15 +61,78 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 		return visiting(object);
     }
     
+    public abstract @NonNull EvaluationVisitor createNestedEvaluator();
+
+    /*
+     * Perform the recursion for the BoundVariable that loops over the Iterables at deoth in the
+     * loopedVariables and loopedValues. The recursion proceeds to greater depths and once all
+     * depthas are exhausted invokes the mapping. 
+     */
+    private void doMappingCallRecursion(@NonNull QVTimperativeAbstractEvaluationVisitor nestedEvaluator, @NonNull Mapping mapping,
+    		@NonNull List<Variable> loopedVariables, @NonNull List<Iterable<?>> loopedValues, int depth) {
+		assert depth < loopedVariables.size();
+		EvaluationEnvironment nestedEvaluationEnvironment = nestedEvaluator.getEvaluationEnvironment();
+		Variable boundVariable = loopedVariables.get(depth);
+		int nestedDepth = depth+1;
+		Mapping invokeMapping = nestedDepth >= loopedVariables.size() ? mapping : null;
+//		Map.Entry<DomainTypedElement, Object> entry = nestedEvaluationEnvironment.getEntry(boundVariable);
+		for (Object value : loopedValues.get(depth)) {
+//			entry.setValue(value);
+			nestedEvaluationEnvironment.replace(boundVariable, value);
+			if (invokeMapping != null) {
+				nestedEvaluator.safeVisit(invokeMapping);
+			}
+			else {
+				doMappingCallRecursion(nestedEvaluator, mapping, loopedVariables, loopedValues, nestedDepth);				
+			}
+		}
+	}
+    
     public @Nullable Object visitMapping(@NonNull Mapping object) {
 		return visiting(object);
     }
 
     public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
-    	// Copy the bindings to pass them to the recursive call
-    	EList<MappingCallBinding> bindings = mappingCall.getBinding();
-    	Iterator<MappingCallBinding> bindingIt = bindings.iterator();
-    	if (bindingIt.hasNext()) {
+    	QVTimperativeAbstractEvaluationVisitor nestedEvaluator = (QVTimperativeAbstractEvaluationVisitor) createNestedEvaluator();
+		EvaluationEnvironment nestedEvaluationEnvironment = nestedEvaluator.getEvaluationEnvironment();
+    	// FIXME ?? clear nested evaluation environment
+		//
+		//	Initialize nested environment directly with the bound values for non-looped bindings,
+		//	and build matching lists of boundVariables and boundIterables for looped bindings. 
+		//
+		List<Variable> loopedVariables = null;
+		List<Iterable<?>> loopedValues = null;
+		for (MappingCallBinding binding : mappingCall.getBinding()) {
+			Variable boundVariable = binding.getBoundVariable();
+			Object valueOrValues = safeVisit(binding.getValue());
+			if (!binding.isIsLoop()) {
+				nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
+			}
+			else if (valueOrValues instanceof Iterable<?>) {
+				if (loopedVariables == null) {
+					loopedVariables = new ArrayList<Variable>();
+					loopedValues = new ArrayList<Iterable<?>>();
+				}
+				loopedVariables.add(boundVariable);
+				loopedValues.add((Iterable<?>)valueOrValues);
+				nestedEvaluationEnvironment.add(boundVariable, null);
+			}
+			else {
+				// FIXME Error message;
+			}		
+    	}
+		//
+		//	In the absence of and looped bindings invoke the nested mapping directly,
+		//	otherwise recurse over the boundVariables that need to loop.
+		//
+		Mapping calledMapping = mappingCall.getReferredMapping();
+		if (loopedVariables == null) {
+			nestedEvaluator.safeVisit(calledMapping);
+		}
+		else {
+			doMappingCallRecursion(nestedEvaluator, calledMapping, loopedVariables, loopedValues, 0);
+		}
+/*    	if (bindingIt.hasNext()) {
     		MappingCallBinding binding = bindingIt.next();
     		bindingIt.remove();
     	    OCLExpression valueExpression = binding.getValue();
@@ -89,11 +147,11 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
             	getEvaluationEnvironment().replace(binding.getBoundVariable(), value);
             	visitMappingCallRecursive(mappingCall, bindings);
             }
-        }
+        } */
     	return null;
     }
 
-    public @Nullable Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
+	public @Nullable Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
 		return visiting(object);
     }
     
@@ -206,7 +264,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
     }
 
 
-	private void visitMappingCallRecursive(MappingCall mappingCall,
+/*	private void visitMappingCallRecursive(MappingCall mappingCall,
 			EList<MappingCallBinding> bindings) {
 		
 		Iterator<MappingCallBinding> bindingIt = bindings.iterator();
@@ -240,6 +298,6 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
     		referredMapping.accept(nv);
         }
     	
-	}
+	} */
 
 }

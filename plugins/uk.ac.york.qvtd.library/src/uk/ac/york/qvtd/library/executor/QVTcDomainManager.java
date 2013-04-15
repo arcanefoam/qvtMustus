@@ -25,6 +25,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.xmi.XMLResource;
@@ -32,7 +33,11 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.elements.DomainType;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
+import org.eclipse.ocl.examples.domain.utilities.DomainUtil;
+import org.eclipse.ocl.examples.pivot.ParserException;
+import org.eclipse.ocl.examples.pivot.PivotPackage;
 import org.eclipse.ocl.examples.pivot.Type;
+import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 
 /**
@@ -47,6 +52,7 @@ public class QVTcDomainManager implements DomainModelManager {
     /** The Constant MIDDLE_MODEL. */
     public static final TypedModel MIDDLE_MODEL = null;
     
+	protected final @NonNull MetaModelManager metaModelManager;
 	// TODO how to manage aliases?
 	/** Map a typed model to its resource (model). */
 	private Map<TypedModel, Resource> modelResourceMap = new HashMap<TypedModel, Resource>();
@@ -58,8 +64,8 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * instances of the middle model and the middle model EFactory.
 	 *
 	 */
-	public QVTcDomainManager() {
-	    
+	public QVTcDomainManager(@NonNull MetaModelManager metaModelManager) {
+	    this.metaModelManager = metaModelManager;
 	}
 	
 	
@@ -149,7 +155,8 @@ public class QVTcDomainManager implements DomainModelManager {
                 }
                 for (TreeIterator<EObject> contents = root.eAllContents(); contents.hasNext();) {
                     EObject element = contents.next();
-                    if (((EClass) type.getETarget()).getName().equals(element.eClass().getName())) {
+                    if (isInstance(type, element)) {
+//                    if (((EClass) type.getETarget()).getName().equals(element.eClass().getName())) {
                         elements.add(element);
                     }
                 }
@@ -161,7 +168,8 @@ public class QVTcDomainManager implements DomainModelManager {
                 //System.out.println(type.getETarget());
                 //System.out.println(((EClassifier) type.getETarget()).getName());
                 //System.out.println(object.eClass().getName());
-                if (((EClass) type.getETarget()).getName().equals(element.eClass().getName())) {
+                if (isInstance(type, element)) {
+//                if (((EClass) type.getETarget()).getName().equals(element.eClass().getName())) {
                     elements.add(element);
                 }
             }
@@ -244,9 +252,25 @@ public class QVTcDomainManager implements DomainModelManager {
 	 * @return <code>true</code> if this element is an instance of the given
 	 * class; <code>false</code> otherwise
 	 */
-	protected boolean isInstance(@NonNull DomainType type, @NonNull EObject element) {
-	    
-		return false;
+	protected boolean isInstance(@NonNull DomainType requiredType, @NonNull EObject eObject) {
+		EClass eClass = eObject.eClass();
+		EPackage ePackage = eClass.getEPackage();
+		Type objectType = null;
+		if (ePackage == PivotPackage.eINSTANCE) {
+			String name = DomainUtil.nonNullEMF(eClass.getName());
+			objectType = metaModelManager.getPivotType(name);
+		}
+		else {
+			try {
+				objectType = metaModelManager.getPivotOf(Type.class,  eClass);
+			} catch (ParserException e) {
+// FIXME				if (!generatedErrorMessage) {
+//					generatedErrorMessage = true;
+//					logger.error("Failed to load an '" + eClass.getName() + "'", e);
+//				}
+			}
+		}
+	    return (objectType != null) && objectType.conformsTo(metaModelManager, requiredType);
 	}
 
 

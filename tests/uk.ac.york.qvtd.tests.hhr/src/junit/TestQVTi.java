@@ -187,7 +187,7 @@ public class TestQVTi extends LoadTestCase {
             PivotEnvironment env = envFactory.createEnvironment();
             PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
             
-            QVTcDomainManager modelManager = new QVTcDomainManager();
+            QVTcDomainManager modelManager = new QVTcDomainManager(metaModelManager);
             Transformation transformation = ((Transformation)imperativeModel.getNestedPackage().get(0));
             TypedModel typedModel;
             /* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
