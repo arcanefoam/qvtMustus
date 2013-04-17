@@ -150,7 +150,8 @@ public class QVTcDomainManager implements DomainModelManager {
         // Is the TypedModel the middle or output, hence we have elements in the elementsMap
         if (modelElementsMap.containsKey(model)) {
             for (EObject root :  modelElementsMap.get(model)) {
-                if (root.eClass().getName().equals(type.getName())) {
+                //if (root.eClass().getName().equals(type.getName())) {
+                if (isInstance(type, root)) {	
                     elements.add(root);
                 }
                 for (TreeIterator<EObject> contents = root.eAllContents(); contents.hasNext();) {

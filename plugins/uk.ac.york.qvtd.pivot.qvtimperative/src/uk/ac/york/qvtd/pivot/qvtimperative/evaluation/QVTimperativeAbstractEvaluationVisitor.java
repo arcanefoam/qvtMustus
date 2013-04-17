@@ -13,9 +13,12 @@ package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
+import org.eclipse.ocl.examples.domain.values.CollectionValue;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
@@ -122,8 +125,8 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 		for (MappingCallBinding binding : mappingCall.getBinding()) {
 			Variable boundVariable = binding.getBoundVariable();
 			Object valueOrValues = safeVisit(binding.getValue());
-			System.out.println(binding.isIsLoop());
-			if (!binding.isIsLoop()) {
+			// TODO return to isIsLoop() when properly implemented
+			/*if (!binding.isIsLoop()) {
 				nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
 			}
 			else if (valueOrValues instanceof Iterable<?>) {
@@ -134,10 +137,21 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 				loopedVariables.add(boundVariable);
 				loopedValues.add((Iterable<?>)valueOrValues);
 				nestedEvaluationEnvironment.add(boundVariable, null);
-			}
-			else {
+			} else {
 				// FIXME Error message;
-			}		
+			}
+			*/
+			if (valueOrValues instanceof Iterable<?>) {
+				if (loopedVariables == null) {
+					loopedVariables = new ArrayList<Variable>();
+					loopedValues = new ArrayList<Iterable<?>>();
+				}
+				loopedVariables.add(boundVariable);
+				loopedValues.add((Iterable<?>)valueOrValues);
+				nestedEvaluationEnvironment.add(boundVariable, null);
+			} else  {
+				nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
+			}
     	}
 		//
 		//	In the absence of and looped bindings invoke the nested mapping directly,

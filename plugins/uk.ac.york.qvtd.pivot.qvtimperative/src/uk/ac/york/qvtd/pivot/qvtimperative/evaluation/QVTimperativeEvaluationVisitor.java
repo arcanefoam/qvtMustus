@@ -99,7 +99,7 @@ public class QVTimperativeEvaluationVisitor extends QVTimperativeAbstractEvaluat
                 	rule.accept(LMVisitor);
                 }
     		}
-    		break;		// FIXME ?? multiple rules
+    		break;		// FTIXME ?? multiple rules
     	}
         return true;
     }
