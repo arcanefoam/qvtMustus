@@ -10,13 +10,13 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.Variable;
@@ -27,6 +27,7 @@ import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
+import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
@@ -48,15 +49,14 @@ public class QVTimperativeEvaluationVisitor extends QVTimperativeAbstractEvaluat
      */
     public QVTimperativeEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
-            @NonNull DomainModelManager modelManager) {
+            @NonNull QVTcDomainManager modelManager) {
         super(env, evalEnv, modelManager);
     }
 
     @Override
     public @NonNull QVTimperativeEvaluationVisitor createNestedEvaluator() {
-        Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
-        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
+        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(evaluationEnvironment);
         QVTimperativeEvaluationVisitor ne = new QVTimperativeEvaluationVisitor(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
@@ -68,6 +68,10 @@ public class QVTimperativeEvaluationVisitor extends QVTimperativeAbstractEvaluat
     	}
         return true;
     }
+    
+    public @Nullable Object visitMapping(@NonNull Mapping object) {
+		return visiting(object);
+    }
 
     @Override
     public @Nullable Object visitPackage(@NonNull org.eclipse.ocl.examples.pivot.Package pkge) {
@@ -76,31 +80,45 @@ public class QVTimperativeEvaluationVisitor extends QVTimperativeAbstractEvaluat
 
     @Override
     public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
-        QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
-                getEnvironment(), getEvaluationEnvironment(), modelManager);
+        QVTcDomainManager modelManager = getModelManager();
+		QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
+                environment, evaluationEnvironment, modelManager);
     	for (Rule rule : transformation.getRule()) {
     		// Find bindings before invoking the mapping so all visitors are equal
     		Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
+    		List<Variable> rootVariables = new ArrayList<Variable>();
+    		List<List<Object>> rootBindings = new ArrayList<List<Object>>();
     		for (Domain domain : rule.getDomain()) {
-                for (Variable var : ((CoreDomain)domain).getGuardPattern().getVariable()) {
-                	getEvaluationEnvironment().add(var, null);
-                    TypedModel m;
-                    m = ((CoreDomain)domain).getTypedModel();
-                    List<Object> bindingValuesSet = ((QVTcDomainManager) modelManager).getElementsByType(m, var.getType());
+                CoreDomain coreDomain = (CoreDomain)domain;
+                TypedModel m = coreDomain.getTypedModel();
+				for (Variable var : coreDomain.getGuardPattern().getVariable()) {
+                	evaluationEnvironment.add(var, null);
+                	rootVariables.add(var);
+                    List<Object> bindingValuesSet = modelManager.getElementsByType(m, var.getType());
+                	rootBindings.add(bindingValuesSet);
                     mappingBindings.put(var, bindingValuesSet);
                 }
             }
-    		// FIXME This does not work if the root mapping has two or more variables
-    		for (Map.Entry<Variable, List<Object>> mappingBindingEntry : mappingBindings.entrySet()) {
-    			Variable var = mappingBindingEntry.getKey();
-                for (Object binding : mappingBindingEntry.getValue()) {
-                	getEvaluationEnvironment().replace(var, binding);
-                	// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
-                	rule.accept(LMVisitor);
-                }
-    		}
-    		break;		// FTIXME ?? multiple rules
+    		doMappingCallRecursion(rule, LMVisitor, rootVariables, rootBindings, 0);
+    		break;		// FIXME ?? multiple rules
     	}
         return true;
     }
+
+	private void doMappingCallRecursion(@NonNull Rule rule, @NonNull QVTimperativeLMEvaluationVisitor visitor,
+			@NonNull List<Variable> rootVariables, @NonNull List<List<Object>> rootBindings, int depth) {
+		int nextDepth = depth+1;
+		int maxDepth = rootVariables.size();
+		Variable var = rootVariables.get(depth);
+        for (Object binding : rootBindings.get(depth)) {
+        	evaluationEnvironment.replace(var, binding);
+        	if (nextDepth < maxDepth) {
+        		doMappingCallRecursion(rule, visitor, rootVariables, rootBindings, nextDepth);
+        	}
+        	else {
+        		// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
+            	rule.accept(visitor);
+        	}
+        }
+	}
 }

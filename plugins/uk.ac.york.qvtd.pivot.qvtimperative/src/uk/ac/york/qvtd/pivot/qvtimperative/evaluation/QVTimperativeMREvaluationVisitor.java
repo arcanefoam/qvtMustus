@@ -10,16 +10,11 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Element;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
-import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
@@ -32,6 +27,8 @@ import org.eclipse.qvtd.pivot.qvtcorebase.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
+
+import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
 /**
  * QVTcoreMREvaluationVisitor is the class for ...
@@ -47,17 +44,14 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
      * @param modelManager the model manager
      */
     public QVTimperativeMREvaluationVisitor(@NonNull Environment env,
-            @NonNull EvaluationEnvironment evalEnv,
-            @NonNull DomainModelManager modelManager) {
+            @NonNull EvaluationEnvironment evalEnv, @NonNull QVTcDomainManager modelManager) {
         super(env, evalEnv, modelManager);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
     public @NonNull EvaluationVisitor createNestedEvaluator() {
-        Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
-        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
+        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(evaluationEnvironment);
         QVTimperativeMREvaluationVisitor ne = new QVTimperativeMREvaluationVisitor(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
@@ -107,7 +101,7 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvalu
                 while (bindingIt.hasNext()) {
                     Variable var = pairs.getKey();
                     if (var != null) {
-                        getEvaluationEnvironment().replace(var, bindingIt.next());
+                        evaluationEnvironment.replace(var, bindingIt.next());
                         for (Predicate predicate : bottomPattern.getPredicate()) {
                             // If the predicate is not true, the binding is not valid
                             Boolean result = (Boolean) predicate.accept(this);

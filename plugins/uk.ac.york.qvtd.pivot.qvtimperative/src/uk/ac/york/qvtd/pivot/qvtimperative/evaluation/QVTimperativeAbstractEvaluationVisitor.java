@@ -13,12 +13,8 @@ package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
-import org.eclipse.ocl.examples.domain.values.CollectionValue;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
@@ -37,6 +33,8 @@ import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
+
+import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
 /**
  * QVTimperativeAbstractEvaluationVisitor is the class for ...
@@ -57,7 +55,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
      */
     public QVTimperativeAbstractEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
-            @NonNull DomainModelManager modelManager) {
+            @NonNull QVTcDomainManager modelManager) {
         super(env, evalEnv, modelManager);
         // TODO Auto-generated constructor stub
     }
@@ -69,9 +67,9 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
     public abstract @NonNull EvaluationVisitor createNestedEvaluator();
 
     /*
-     * Perform the recursion for the BoundVariable that loops over the Iterables at deoth in the
+     * Perform the recursion for the BoundVariable that loops over the Iterables at depth in the
      * loopedVariables and loopedValues. The recursion proceeds to greater depths and once all
-     * depthas are exhausted invokes the mapping. 
+     * depths are exhausted invokes the mapping. 
      */
     private void doMappingCallRecursion(@NonNull EvaluationVisitorImpl nestedEvaluator, @NonNull Mapping mapping,
     		@NonNull List<Variable> loopedVariables, @NonNull List<Iterable<?>> loopedValues, int depth) {
@@ -92,17 +90,17 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 			}
 		}
 	}
-    
-    public @Nullable Object visitMapping(@NonNull Mapping object) {
-		return visiting(object);
-    }
 
-    public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
+    @Override
+	public @NonNull QVTcDomainManager getModelManager() {
+		return (QVTcDomainManager) modelManager;
+	}
+
+	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
     	
     	Mapping calledMapping = mappingCall.getReferredMapping();
-    	Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
-        EvaluationEnvironment nestedEvaluationEnvironment = factory.createEvaluationEnvironment(getEvaluationEnvironment()); 
+        EvaluationEnvironment nestedEvaluationEnvironment = factory.createEvaluationEnvironment(evaluationEnvironment); 
     	// FIXME ?? clear nested evaluation environment
         EvaluationVisitorImpl nv = null;
 		if (isLtoMMapping(calledMapping)) {
@@ -125,8 +123,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 		for (MappingCallBinding binding : mappingCall.getBinding()) {
 			Variable boundVariable = binding.getBoundVariable();
 			Object valueOrValues = safeVisit(binding.getValue());
-			// TODO return to isIsLoop() when properly implemented
-			/*if (!binding.isIsLoop()) {
+			if (!binding.isIsLoop()) {
 				nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
 			}
 			else if (valueOrValues instanceof Iterable<?>) {
@@ -140,21 +137,9 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 			} else {
 				// FIXME Error message;
 			}
-			*/
-			if (valueOrValues instanceof Iterable<?>) {
-				if (loopedVariables == null) {
-					loopedVariables = new ArrayList<Variable>();
-					loopedValues = new ArrayList<Iterable<?>>();
-				}
-				loopedVariables.add(boundVariable);
-				loopedValues.add((Iterable<?>)valueOrValues);
-				nestedEvaluationEnvironment.add(boundVariable, null);
-			} else  {
-				nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
-			}
     	}
 		//
-		//	In the absence of and looped bindings invoke the nested mapping directly,
+		//	In the absence of any looped bindings invoke the nested mapping directly,
 		//	otherwise recurse over the boundVariables that need to loop.
 		//
 		if (loopedVariables == null) {
@@ -167,7 +152,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
     }
 
 	public @Nullable Object visitMappingCallBinding(@NonNull MappingCallBinding object) {
-		return visiting(object);
+		return visiting(object);	// MappingCallBinding is serviced by the parent MappingCall
     }
     
     @Override
@@ -184,7 +169,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
             if (slotExp instanceof VariableExp ) {      // What other type of expressions are there?
                 Variable slotVar = (Variable) ((VariableExp)slotExp).getReferredVariable();
                 if(slotVar != null) {
-                    Object slotBinding = getEvaluationEnvironment().getValueOf(slotVar);
+                    Object slotBinding = evaluationEnvironment.getValueOf(slotVar);
                     if(slotBinding != null) {
                         Object value = safeVisit(propertyAssignment.getValue());
                         Property p = propertyAssignment.getTargetProperty();
@@ -213,7 +198,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
      * must have enforce domains
      *
      * @param mapping the mapping
-     * @return true, if is mto r mapping
+     * @return true, if is m to r mapping
      */
     protected boolean isMtoRMapping(Mapping mapping) {
         if (mapping.getDomain().size() == 0) {
@@ -239,7 +224,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
      * can not have enforce domains
      *
      * @param mapping the mapping
-     * @return true, if is lto m mapping
+     * @return true, if is l to m mapping
      */
     protected boolean isLtoMMapping(Mapping mapping) {
         if (mapping.getDomain().size() == 0) {
@@ -252,42 +237,4 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
         }
         return true;
     }
-
-
-/*	private void visitMappingCallRecursive(MappingCall mappingCall,
-			EList<MappingCallBinding> bindings) {
-		
-		Iterator<MappingCallBinding> bindingIt = bindings.iterator();
-    	if (bindingIt.hasNext()) {
-    		MappingCallBinding binding = bindingIt.next();
-    		bindingIt.remove();
-    	    OCLExpression valueExpression = binding.getValue();
-            Object value = safeVisit(valueExpression);
-            // To cope with possible multiple collection bindings, do recursive call
-            if (value instanceof CollectionValue) {
-                for (Object resValue : ((CollectionValue)value).asCollection()) {
-                	getEvaluationEnvironment().replace(binding.getBoundVariable(), resValue);
-                	visitMappingCallRecursive(mappingCall, bindings);
-               }
-            } else {
-            	getEvaluationEnvironment().replace(binding.getBoundVariable(), value);
-            	visitMappingCallRecursive(mappingCall, bindings);
-            }
-        } else {
-        	Mapping referredMapping = mappingCall.getReferredMapping();
-        	QVTimperativeVisitor<Object> nv;
-    		if (isLtoMMapping(referredMapping)) {
-    			nv = new QVTimperativeLMNestedEvaluationVisitor(environment, getEvaluationEnvironment(), modelManager);
-    		}
-        	else if (isMtoRMapping(referredMapping)) {
-        		nv = new QVTimperativeMRNestedEvaluationVisitor(environment, getEvaluationEnvironment(), modelManager);
-        	}
-        	else {
-        		nv = new QVTimperativeMMEvaluationVisitor(environment, getEvaluationEnvironment(), modelManager);
-        	}
-    		referredMapping.accept(nv);
-        }
-    	
-	} */
-
 }

@@ -11,8 +11,6 @@
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -169,9 +167,9 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
         ((QVTcDomainManager)modelManager).addModelElement(tm, element);
         // Add the realize variable binding to the environment
         try {
-            getEvaluationEnvironment().add(realizedVariable, element);
+            evaluationEnvironment.add(realizedVariable, element);
         } catch (IllegalArgumentException ex) {
-            getEvaluationEnvironment().replace(realizedVariable, element);
+            evaluationEnvironment.replace(realizedVariable, element);
         }
         return element;
     }

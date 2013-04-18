@@ -10,17 +10,11 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Element;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
-import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
@@ -34,7 +28,8 @@ import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
-// TODO: Auto-generated Javadoc
+import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
+
 /**
  * QVTimperativeLMEvaluationVisitor is the class for ...
  */
@@ -49,16 +44,14 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
      * @param modelManager the model manager
      */
     public QVTimperativeLMEvaluationVisitor(@NonNull Environment env,
-            @NonNull EvaluationEnvironment evalEnv,
-            @NonNull DomainModelManager modelManager) {
+            @NonNull EvaluationEnvironment evalEnv, @NonNull QVTcDomainManager modelManager) {
         super(env, evalEnv, modelManager);
     }
 
     @Override
     public @NonNull EvaluationVisitor createNestedEvaluator() {
-        Environment environment = getEnvironment();
         EnvironmentFactory factory = environment.getFactory();
-        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(getEvaluationEnvironment());
+        EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(evaluationEnvironment);
         QVTimperativeLMEvaluationVisitor ne = new QVTimperativeLMEvaluationVisitor(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
@@ -114,7 +107,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
         for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
             Variable var = entry.getKey();
             for (Object e : entry.getValue()) {
-                getEvaluationEnvironment().replace(var, e);
+                evaluationEnvironment.replace(var, e);
                 coreDomain.getBottomPattern().accept(this); 
             }
         }*/
