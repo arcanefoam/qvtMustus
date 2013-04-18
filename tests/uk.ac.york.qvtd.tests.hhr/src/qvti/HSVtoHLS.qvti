@@ -1,5 +1,5 @@
 -- modeltype HSVTree: '../../model/HSVTree.ecore'; -- modeltype instead of import to match QVTo
-import '../../model/HSVTree.ecore'::HLSTree; -- modeltype instead of import to match QVTo
+import '../../model/HSVTree.ecore'::HSVTree; -- modeltype instead of import to match QVTo
 import '../../model/HLSTree.ecore'::HLSTree;  -- No name because we defined the package
 import HSV2HLS : '../../model/HSV2HLS.ecore'::HSV2HLS; -- A name is useful to define an alias for the same metamodel
 
@@ -28,7 +28,7 @@ map HSV2MiddleRoot in ColorChanger {	-- Mapping root nodes L to M
 		--middleRoot.rgb := hsv2rgb(hsvRoot.hsv);
 	}
 	map HSV2MiddleRecursion {		-- recursive call to visit children
-		hsvNode := hsvRoot.children;
+		hsvNode <= hsvRoot.children;
 		middleParent := middleRoot;
 	}
 	map Middle2HLSRoot {		-- invoke middle to output mapping
@@ -46,7 +46,7 @@ map HSV2MiddleRecursion in ColorChanger { -- Mapping child nodes L to M
 		--middleNode.rgb := hsv2rgb(hsvNode.hsv);
 	}
 	map HSV2MiddleRecursion {		-- recursive call to visit children
-		hsvNode := hsvNode.children;
+		hsvNode <= hsvNode.children;
 		middleParent := middleNode;
 	}
 }
@@ -62,7 +62,7 @@ map Middle2HLSRoot in ColorChanger { -- Mapping root nodes M to R
 		--hlsNode.hls := rgb2hls(middleNode.rgb);
 	}
 	map Middle2HLSRecursion {		-- recursive call to visit children
-		middleNode := middleNode.children;
+		middleNode <= middleNode.children;
 	}
 }
 
@@ -77,6 +77,6 @@ map Middle2HLSRecursion in ColorChanger { -- Mapping child nodes M to R
 		--hlsNode.hls := rgb2hls(middleNode.rgb);
 	}
 	map Middle2HLSRecursion {		-- recursive call to visit children
-		middleNode := middleNode.children;
+		middleNode <= middleNode.children;
 	}
 }
