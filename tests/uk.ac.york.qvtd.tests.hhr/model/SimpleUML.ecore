@@ -3,23 +3,26 @@
     xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" name="simpleuml" nsURI="http://http://www.eclipse.org/qvt/examples/0.1/simpleUML"
     nsPrefix="simpleuml">
   <eClassifiers xsi:type="ecore:EClass" name="Class" eSuperTypes="#//Classifier">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="attribute" upperBound="-1"
-        eType="#//Attribute"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="general" upperBound="-1"
         eType="#//Class"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="forward" upperBound="-1"
+        eType="#//Association" eOpposite="#//Association/source"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="attributes" upperBound="-1"
+        eType="#//Attribute" containment="true" eOpposite="#//Attribute/owner"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Package" eSuperTypes="#//UMLModelElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="elements" upperBound="-1"
-        eType="#//PackageElement"/>
+        eType="#//PackageElement" containment="true" eOpposite="#//PackageElement/namespace"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Attribute" eSuperTypes="#//UMLModelElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="type" lowerBound="1" eType="#//Classifier"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" lowerBound="1" eType="#//Class"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" lowerBound="1" eType="#//Class"
+        eOpposite="#//Class/attributes"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PrimitiveDataType" eSuperTypes="#//Classifier"/>
   <eClassifiers xsi:type="ecore:EClass" name="Association" eSuperTypes="#//PackageElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="source" lowerBound="1"
-        eType="#//Class"/>
+        eType="#//Class" eOpposite="#//Class/forward"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="destination" lowerBound="1"
         eType="#//Class"/>
   </eClassifiers>
@@ -31,8 +34,8 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="typeOpposite" upperBound="-1"
         eType="#//Attribute"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="PackageElement" eSuperTypes="#//UMLModelElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="namespace" lowerBound="1"
-        eType="#//Package"/>
+  <eClassifiers xsi:type="ecore:EClass" name="PackageElement" abstract="true" eSuperTypes="#//UMLModelElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="namespace" eType="#//Package"
+        eOpposite="#//Package/elements"/>
   </eClassifiers>
 </ecore:EPackage>

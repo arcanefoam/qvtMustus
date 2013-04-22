@@ -8,14 +8,15 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Table" eSuperTypes="#//RModelElement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="theKey" upperBound="-1"
-        eType="#//Key"/>
+        eType="#//Key" eOpposite="#//Key/owner"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="schema" lowerBound="1"
         eType="#//Schema"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="column" upperBound="-1"
         eType="#//Column"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="Key" eSuperTypes="#//RModelElement">
-    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" lowerBound="1" eType="#//Table"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="owner" lowerBound="1" eType="#//Table"
+        eOpposite="#//Table/theKey"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="column" upperBound="-1"
         eType="#//Column"/>
   </eClassifiers>

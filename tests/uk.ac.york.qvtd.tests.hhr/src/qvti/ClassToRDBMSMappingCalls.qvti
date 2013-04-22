@@ -137,7 +137,7 @@ map classToTableMR in umlRdbms {
     }
     where (p2s:PackageToSchema, c2t:ClassToTable |
         c2t.owner = p2s;
-        p2s.schema=s;) { }
+        p2s.schema=s; ) { }
     map classToTableMR_1 {
     	c2t_1 := c2t;
     	t_1 := t;
@@ -303,7 +303,7 @@ map complexAttributePrimitiveAttributesLM in umlRdbms {
     	a.owner = c;
         --getAllAttributes(c)->includes(a);
         a.type = t;
-		ca.type=c;) { }
+		ca.type = c;) { }
     where (nla:NonLeafAttribute, p2n:PrimitiveToName |
     		nla.attribute=ca;
     		p2n.primitive=t ;) {
