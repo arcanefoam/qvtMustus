@@ -44,11 +44,13 @@ map packageToSchemaLM in umlRdbms {
     -- Associations
     map associationToForeignKeyLM {
     	p := p;
-    	a := p.elements;
+    	a <= p.elements->select(a | a.oclIsTypeOf(simpleuml::Association));
     	p2s := p2s;
+    	sc <= a->collect(source);
+    	dc <= a->collect(destination);
+    	sc2t <= p2s->collect(classesToTables);
+    	dc2t <= p2s->collect(classesToTables);
     }
-    
-    
 }
 
 map packageToSchemaMR in umlRdbms {
@@ -75,7 +77,7 @@ map integerToNumberLM in umlRdbms {
     uml (p:Package, prim:PrimitiveDataType |
         prim.namespace = p;
         prim.name = 'Integer';) { }
-    where (p2s:PackageToSchema| p2s.umlPackage=p;) {
+    where (p2s:PackageToSchema | p2s.umlPackage=p;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
@@ -230,74 +232,19 @@ map classToTableMR_2_2 in umlRdbms {
 }
 
 map associationToForeignKeyLM in umlRdbms {
-	uml (p:Package, a:Association |
+    uml (p:Package, sc:Class, dc:Class, a:Association |
         -- getAllForwards(sc)->includes(a);
-        -- a.source = sc;
+        a.source = sc;
         -- getAllSupers(dc)->includes(a.destination);
-        -- a.destination = dc;
+        a.destination = dc;
         a.namespace = p;
-        -- sc.namespace = p;
-        ) { }
-    where (p2s:PackageToSchema |
-	        --sc2t.owner = p2s;
+        sc.namespace = p;) { }
+    where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable |
+	        sc2t.owner = p2s;
 	        p2s.umlPackage = p;
-	        --sc2t.umlClass = sc;
-	        --dc2t.umlClass = dc; 
-	        ) {
-        realize a2f:AssociationToForeignKey |
-    }
-    map associationToForeignKeyLM_1 {
-    	p := p;
-    	a := a;
-    	p2s := p2s;
-    	sc := simpleuml::Class.allInstances()->select(sc | a.source = sc and sc.namespace = p);
-    	dc := simpleuml::Class.allInstances()->select(dc | a.destination = dc);
-    }
-}
-
-map associationToForeignKeyLM_1 in umlRdbms {
-    uml (p:Package, sc:Class, dc:Class, a:Association |
-        -- getAllForwards(sc)->includes(a);
-        -- getAllSupers(dc)->includes(a.destination);
-        ) { }
-    where (p2s:PackageToSchema |
-	        --sc2t.owner = p2s;
-	        p2s.umlPackage = p;
-	        --sc2t.umlClass = sc;
-	        --dc2t.umlClass = dc; 
-	        ) {
-	    realize a2f:AssociationToForeignKey |
-        --a2f.owner := sc2t;
-        --a2f.referenced := dc2t;
-        a2f.association := a;
-        a2f.name := if a.destination=dc and a.source=sc
-                        then a.name
-                        else if a.destination<>dc and a.source=sc
-                        then dc.name+'_'+a.name
-                        else if a.destination=dc and a.source<>sc
-                        then a.name+'_'+sc.name
-                        else dc.name+'_'+a.name+'_'+sc.name
-                        endif endif endif;
-    }
-    map associationToForeignKeyLM_2 {
-    	p := p;
-    	a := a;
-    	p2s := p2s;
-    	sc := sc;
-    	dc := dc;
-    	a2f := a2f;
-    	sc2t := umltordbms::ClassToTable.allInstances()->select(sc2t | sc2t.owner = p2s and sc2t.umlClass = sc);
-    	dc2t := umltordbms::ClassToTable.allInstances()->select(dc2t | dc2t.umlClass = dc);
-    }
-}
-
-map associationToForeignKeyLM_2 in umlRdbms {
-    uml (p:Package, sc:Class, dc:Class, a:Association |
-        -- getAllForwards(sc)->includes(a);
-        -- getAllSupers(dc)->includes(a.destination);
-        ) { }
-    where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable, a2f:AssociationToForeignKey |
-	        ) {
+	        sc2t.umlClass = sc;
+	        dc2t.umlClass = dc; ) {
+        realize a2f:AssociationToForeignKey|
         a2f.owner := sc2t;
         a2f.referenced := dc2t;
         a2f.association := a;
@@ -311,8 +258,6 @@ map associationToForeignKeyLM_2 in umlRdbms {
                         endif endif endif;
     }
 }
-
-
 
 map associationToForeignKeyMR in umlRdbms {
     enforce rdbms (s:Schema, st:Table, dt:Table, rk:Key |
