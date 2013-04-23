@@ -39,7 +39,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="NonLeafAttribute" eSuperTypes="#//FromAttributeOwner #//FromAttribute"/>
   <eClassifiers xsi:type="ecore:EClass" name="PackageToSchema">
     <eStructuralFeatures xsi:type="ecore:EReference" name="classesToTables" ordered="false"
-        eType="#//ClassToTable" containment="true" eOpposite="#//ClassToTable/owner"/>
+        upperBound="-1" eType="#//ClassToTable" containment="true" eOpposite="#//ClassToTable/owner"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="primitivesToNames" ordered="false"
         upperBound="-1" eType="#//PrimitiveToName" containment="true" eOpposite="#//PrimitiveToName/owner"/>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>

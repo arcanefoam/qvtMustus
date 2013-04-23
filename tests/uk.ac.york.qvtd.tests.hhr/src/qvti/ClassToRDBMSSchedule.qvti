@@ -86,16 +86,6 @@ map packageToSchemaMR in umlRdbms {
         c2t <= p2s.classesToTables;
         s := s;
     }
-    map associationToForeignKeyMR {
-        p2s := p2s;
-        a2f <= p2s.classesToTables.associationsToForeignKeys;
-        
-        
-        s := s;
-        st := s.tables;
-        --dt := 
-            
-    }
 }
 
 map packageToSchemaMR_1 in umlRdbms {
@@ -237,13 +227,20 @@ map classToTableMR in umlRdbms {
     	t_2 := t;
     	c2t_2 := c2t;
     }
+    map associationToForeignKeyMR {
+        a2f <= c2t.associationsToForeignKeys;
+        p2s := p2s;
+        sc2t := c2t;
+        dc2t <= c2t.associationsToForeignKeys.referenced;
+        s := s;
+        st := t;
+    }
     -- A Class has attributes
     map attributeColumnsMR {
         c2t := c2t;
         a2c := c2t.fromAttributes;
         p2n := p2s.primitivesToNames;
         t := t;
-        ct ?? -- has no references
     } 
     
 }
@@ -334,21 +331,24 @@ map associationToForeignKeyMR in umlRdbms {
         realize fc:Column |
         fk.owner := st;
         fc.owner := st;
-        fk.refersTo := rk;
-        fc.foreignKeys := Set(ForeignKey){fk};
-        fc.type := rk.column->first().type;
     }
     where (p2s:PackageToSchema, sc2t:ClassToTable, dc2t:ClassToTable,  a2f:AssociationToForeignKey |
             a2f.owner = sc2t;
             a2f.referenced = dc2t;
             sc2t.owner = p2s;
-            p2s.schema = s;
-            sc2t.table = st;
-            dc2t.table = dt; ) {
+            --p2s.schema = s;
+            --sc2t.table = st;
+            --dc2t.table = dt; 
+            ) {
         fk.name := a2f.name;
         fc.name := a2f.name +'_tid';
     }
     map associationToForeignKeyMR_1 {
+        fk := fk;
+        fc := fc;
+        dt := a2f.referenced.table;
+    }
+    map associationToForeignKeyMR_2 {
         a2f_1 := a2f;
         fk_1 := fk;
         fc_1 := fc;
@@ -356,6 +356,15 @@ map associationToForeignKeyMR in umlRdbms {
 }
 
 map associationToForeignKeyMR_1 in umlRdbms {
+    enforce rdbms (fk:ForeignKey, fc:Column, dt:Table, rk:Key |) {
+        fk.refersTo := rk;
+        fc.foreignKeys := Set(ForeignKey){fk};
+        fc.type := rk.column->first().type;
+    }
+    where () { }
+}
+
+map associationToForeignKeyMR_2 in umlRdbms {
 	enforce rdbms (fk_1:ForeignKey, fc_1:Column |) {}	
 	where (a2f_1:AssociationToForeignKey |) {
 		a2f_1.foreignKey := fk_1;
@@ -397,7 +406,6 @@ map classComplexAttributesLM in umlRdbms {
         -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
     }
 }
-
 
 map complexAttributePrimitiveAttributesLM in umlRdbms {
 	uml (c:Class, ca:Attribute, t:PrimitiveDataType, a:Attribute |
@@ -445,15 +453,17 @@ map attributeColumnsMR in umlRdbms {
     where (c2t:ClassToTable, a2c:AttributeToColumn, p2n:PrimitiveToName |
         c2t.fromAttributes.leafs->includes(a2c);
         a2c.owner = c2t;
-        c2t.table=t;) { }
+        c2t.table = t;) {
+            ct := p2n.typeName;
+        }
     map attributeColumnsMR_1 {
     	a2c_1 := a2c;
     	c_1 := c;
     }
     map attributeColumnsMR_2 {
-    	ct_2 := ct;
     	c_2 := c;
         p2n_2 := p2n;
+        ct_2 := ct;
     }
     map attributeColumnsMR_3 {
     	c_3 := c;
