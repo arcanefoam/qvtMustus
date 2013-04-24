@@ -20,30 +20,17 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
-import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.ocl.examples.domain.utilities.DomainUtil;
 import org.eclipse.ocl.examples.domain.utilities.ProjectMap;
-import org.eclipse.ocl.examples.pivot.evaluation.PivotEvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManagerResourceSetAdapter;
-import org.eclipse.ocl.examples.pivot.utilities.PivotEnvironment;
-import org.eclipse.ocl.examples.pivot.utilities.PivotEnvironmentFactory;
-import org.eclipse.ocl.examples.pivot.utilities.PivotResource;
-import org.eclipse.ocl.examples.xtext.base.utilities.BaseCSResource;
-import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.ocl.examples.xtext.essentialocl.services.EssentialOCLLinkingService;
-import org.eclipse.qvtd.pivot.qvtbase.Transformation;
-import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
-import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
-import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 import org.eclipse.qvtd.xtext.qvtbase.tests.LoadTestCase;
 import org.eclipse.qvtd.xtext.qvtimperative.QVTimperativeStandaloneSetup;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
-import uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeEvaluationVisitor;
+import uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeEvaluator;
 
 /**
  * Test001 is a set if simple tests on the QVTc API.
@@ -52,8 +39,7 @@ import uk.ac.york.qvtd.pivot.qvtimperative.evaluation.QVTimperativeEvaluationVis
  */
 public class TestQVTi extends LoadTestCase {
 	
-	private static ProjectMap projectMap = null;
-	private static ResourceSet resourceSet = new ResourceSetImpl();
+	
 	private Map<String, Resource> typeModelResourceMap = new HashMap<String, Resource>();
 	private Map<String, Resource> typeModelValidationResourceMap = new HashMap<String, Resource>();
 	
@@ -63,9 +49,7 @@ public class TestQVTi extends LoadTestCase {
 		EssentialOCLLinkingService.DEBUG_RETRY = true;
 		super.setUp();
 		QVTimperativeStandaloneSetup.doSetup();
-		
-        getProjectMap().initializeResourceSet(resourceSet);
-        metaModelManager = new MetaModelManager();
+		metaModelManager = new MetaModelManager();
         MetaModelManagerResourceSetAdapter.getAdapter(resourceSet, metaModelManager);
     }
  
@@ -80,23 +64,20 @@ public class TestQVTi extends LoadTestCase {
     @Test
     public void testMinimalQVTi() {
         
-        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti";
-        // Load the TypeModel resources
-        typeModelResourceMap.clear();
-        // This is maps reflects how in the future the user input can be passed to the engine
-        Map<String, String> typeModelFileMap = new HashMap<String, String>();
-        typeModelFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi");
-        typeModelFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphMinimal.xmi");
-        Map<String, Boolean> typeModelModeMap = new HashMap<String, Boolean>();     // Load or create, true = create
-        typeModelModeMap.put("upperGraph", Boolean.FALSE);
-        typeModelModeMap.put("lowerGraph", Boolean.TRUE);
+    	
+        QVTimperativeEvaluator minimalEvaluator = new QVTimperativeEvaluator(metaModelManager,
+        		"platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphMinimal.qvti");
+        minimalEvaluator.addModel("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi",
+        		QVTimperativeEvaluator.INPUT_MODE);
+        minimalEvaluator.addModel("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphMinimal.xmi",
+        		QVTimperativeEvaluator.OUTPUT_MODE);
         // Validation TypeModel resources 
         typeModelValidationResourceMap.clear();
         Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
         typeModelValidationFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphValidate.xmi");
         typeModelValidationFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphMinimalValidate.xmi");
-        loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
-        doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
+        loadValidationResources(typeModelValidationFileMap);
+        doTest(minimalEvaluator, typeModelValidationResourceMap);
     }
 
     /*
@@ -104,45 +85,35 @@ public class TestQVTi extends LoadTestCase {
      */
     @Test
     public void testHierarchicalN2N() {
-        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphHierarchical.qvti";
-        // Load the TypeModel resources
-        typeModelResourceMap.clear();
-        // This is map reflects how in the future the user input can be passed to the engine
-        Map<String,String> typeModelFileMap = new HashMap<String,String>();
-        typeModelFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi");
-        typeModelFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphHierarchical.xmi");
-        Map<String, Boolean> typeModelModeMap = new HashMap<String, Boolean>();     // Load or create, true = create
-        typeModelModeMap.put("upperGraph", Boolean.FALSE);
-        typeModelModeMap.put("lowerGraph", Boolean.TRUE);
-        // validation TypeModel resources 
+    	QVTimperativeEvaluator minimalEvaluator = new QVTimperativeEvaluator(metaModelManager,
+    			 "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/Graph2GraphHierarchical.qvti");
+    	minimalEvaluator.addModel("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraph.xmi",
+         		QVTimperativeEvaluator.INPUT_MODE);
+        minimalEvaluator.addModel("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/Graph2GraphHierarchical.xmi",
+         		QVTimperativeEvaluator.OUTPUT_MODE);
+    	// validation TypeModel resources 
         typeModelValidationResourceMap.clear();
         Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
         typeModelValidationFileMap.put("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleGraphValidate.xmi");
         typeModelValidationFileMap.put("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/Graph2GraphHierarchicalValidate.xmi");
-        loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
-        doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
+        loadValidationResources(typeModelValidationFileMap);
+        doTest(minimalEvaluator, typeModelValidationResourceMap);
     }
     
     @Test
     public void testRecursiveN2N() {
-        final String transformationURI = "platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/HSVtoHLS.qvti";
-        // Load the TypeModel resources
-        typeModelResourceMap.clear();
-        // This is map reflects how in the future the user input can be passed to the engine
-        Map<String,String> typeModelFileMap = new HashMap<String,String>();
-        typeModelFileMap.put("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNode.xmi");
-        typeModelFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/HLSNode.xmi");
-        Map<String, Boolean> typeModelModeMap = new HashMap<String, Boolean>();     // Load or create, true = create
-        typeModelModeMap.put("hsv", Boolean.FALSE);
-        typeModelModeMap.put("hls", Boolean.TRUE);
-        // validation TypeModel resources
+    	QVTimperativeEvaluator minimalEvaluator = new QVTimperativeEvaluator(metaModelManager,
+    			"platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/HSVtoHLS.qvti");
+    	minimalEvaluator.addModel("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNode.xmi",
+         		QVTimperativeEvaluator.INPUT_MODE);
+        minimalEvaluator.addModel("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/HLSNode.xmi",
+         		QVTimperativeEvaluator.OUTPUT_MODE);
         typeModelValidationResourceMap.clear();
         Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
         typeModelValidationFileMap.put("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNodeValidate.xmi");
         typeModelValidationFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HLSNodeValidate.xmi");
-        loadResources(typeModelFileMap, typeModelModeMap, typeModelValidationFileMap);
-        doTest(typeModelResourceMap, transformationURI, typeModelValidationResourceMap);
-        
+        loadValidationResources(typeModelValidationFileMap);
+        doTest(minimalEvaluator, typeModelValidationResourceMap);
     }
     
     
@@ -158,54 +129,29 @@ public class TestQVTi extends LoadTestCase {
      * @param transformationURI the transformation uri
      * @param typeModelValidationResourceMap the TypeModel validation Resource map
      */
-    private void doTest(Map<String, Resource> typeModelResourceMap,
-            String transformationURI,
+    private void doTest(QVTimperativeEvaluator evaluator,
             Map<String, Resource> typeModelValidationResourceMap) {
         
-        ResourceSet resourceSet = new ResourceSetImpl();
-        getProjectMap().initializeResourceSet(resourceSet);
-        metaModelManager = new MetaModelManager();
-        MetaModelManagerResourceSetAdapter.getAdapter(resourceSet, metaModelManager);
-        
-        // Load the transformation resource
-        BaseCSResource xtextResource = null;
-        PivotResource qvtResource = null;
+    	boolean result = false;
         try {
-            xtextResource = (BaseCSResource) resourceSet.getResource(URI.createURI(transformationURI), true);
-            if (xtextResource != null) {
-                qvtResource = createPivotFromXtext(metaModelManager, xtextResource);
-            } else {
-                fail("There was an error loading the QVTc file");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail("There was an error loading the QVTc file");
+        	result = evaluator.loadTransformation();
+        } catch (IOException ex) {
+        	fail(ex.getMessage());
         }
-        if (qvtResource != null) {
-            ImperativeModel imperativeModel = (ImperativeModel) qvtResource.getContents().get(0);
-            PivotEnvironmentFactory envFactory = new PivotEnvironmentFactory(null, metaModelManager);
-            PivotEnvironment env = envFactory.createEnvironment();
-            PivotEvaluationEnvironment evalEnv = new PivotEvaluationEnvironment(metaModelManager);
-            
-            QVTcDomainManager modelManager = new QVTcDomainManager(metaModelManager);
-            Transformation transformation = ((Transformation)imperativeModel.getNestedPackage().get(0));
-            TypedModel typedModel;
-            /* MODELS ARE NOW ADDED AS TypeModels, so we need to get them from the ast */
-            Iterator<Entry<String, Resource>> it = typeModelResourceMap.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, Resource> pairs = (Map.Entry<String, Resource>)it.next();
-                typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
-                modelManager.addModel(typedModel, pairs.getValue());
-            }
-            QVTimperativeVisitor<Object> visitor = new QVTimperativeEvaluationVisitor(env, evalEnv, modelManager);
-            Object sucess = imperativeModel.accept(visitor);
-            assertNotNull("QVTcoreEVNodeTypeImpl should not return null.", sucess);
-            modelManager.saveModels();
-            modelManager.saveTrace(imperativeModel.getNestedPackage().get(0).getName(), resourceSet, "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/");
-            System.out.println("Result of the transformation was " + (Boolean)sucess);
+        if (result) {
+        	try {
+				evaluator.loadModels();
+			} catch (IOException ex1) {
+				fail(ex1.getMessage());
+			}
+            result = evaluator.execute();
+            assertTrue("QVTcoreEVNodeTypeImpl should not return null.", result);
+            evaluator.saveModels("platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/");
+            System.out.println("Result of the transformation was " + (Boolean)result);
             
             // Validate against reference models
-            it = typeModelResourceMap.entrySet().iterator();
+            typeModelResourceMap = evaluator.getModels();
+            Iterator<Entry<String, Resource>> it = typeModelResourceMap.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<String, Resource> pairs = (Map.Entry<String, Resource>)it.next();
                 //Comparison comparison = compare(typeModelValidationResourceMap.get(pairs.getKey()), pairs.getValue());
@@ -221,31 +167,20 @@ public class TestQVTi extends LoadTestCase {
                     e.printStackTrace();
                 }
             }
-            modelManager.dispose();
+            evaluator.dispose();
+            
         }
     }
     
     /* ================== NON - TEST ========================= */
     
-    private void loadResources(Map<String, String> typeModelFileMap,
-            Map<String, Boolean> typeModelModeMap, Map<String, String> typeModelValidationFileMap) {
-        
-        Iterator<Entry<String, String>> it = typeModelFileMap.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, String> pairs = (Map.Entry<String, String>)it.next();
-            // TODO Check if the output resource needs the second parameter in false
-            Resource resource = null;
-            if(typeModelModeMap.get(pairs.getKey())) {
-                resource = resourceSet.createResource(URI.createURI(pairs.getValue()));
-            } else {
-                resource = resourceSet.getResource(URI.createURI(pairs.getValue()), true);
-            }
-            if (resource == null) {
-                fail("Unable to load the resource for " + pairs.getKey() + " TypeModel.");
-            }
-            typeModelResourceMap.put(pairs.getKey(), resource);
-        }
-        // Validation Models
+    private void loadValidationResources(Map<String, String> typeModelValidationFileMap) {
+    	
+    	ResourceSet resourceSet = new ResourceSetImpl();
+    	ProjectMap projectMap = new ProjectMap();
+    	projectMap.initializeResourceSet(resourceSet);
+        metaModelManager = new MetaModelManager();
+        MetaModelManagerResourceSetAdapter.getAdapter(resourceSet, metaModelManager);
         Iterator<Entry<String, String>> itV = typeModelValidationFileMap.entrySet().iterator();
         while (itV.hasNext()) {
             Map.Entry<String, String> pairs = (Map.Entry<String, String>)itV.next();
@@ -254,38 +189,8 @@ public class TestQVTi extends LoadTestCase {
         }
         
     }
-    
-    private static ProjectMap getProjectMap() {
-		if (projectMap == null) {
-			projectMap = new ProjectMap();
-		}
-		return projectMap;
-	}
 	
 	
-	private BaseCSResource createXtextFromURI(MetaModelManager metaModelManager, URI xtextURI) throws IOException {
-		ResourceSet resourceSet2 = metaModelManager.getExternalResourceSet();
-		ProjectMap.initializeURIResourceMap(resourceSet2);
-		ProjectMap.initializeURIResourceMap(null);
-		BaseCSResource xtextResource = (BaseCSResource) resourceSet2.getResource(xtextURI, true);
-		//assertNoResourceErrors("Load failed", xtextResource);
-		return xtextResource;
-	}
-	
-	
-	private PivotResource createPivotFromXtext(MetaModelManager metaModelManager, @NonNull BaseCSResource xtextResource) throws IOException {
-		CS2PivotResourceAdapter adapter = null;
-		try {
-			adapter = CS2PivotResourceAdapter.getAdapter(xtextResource, null);
-			PivotResource pivotResource = (PivotResource)adapter.getPivotResource(xtextResource);
-			return pivotResource;
-		}
-		finally {
-			if (adapter != null) {
-				adapter.dispose();
-			}
-		}
-	}
 	
 	/*private Comparison compare(Resource modelA, Resource modelB) {
 	    // Load the two input models

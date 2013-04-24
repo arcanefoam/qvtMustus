@@ -7,7 +7,8 @@ Bundle-Version: 0.2.0.qualifier
 Bundle-Localization: plugin
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.qvtd.pivot.qvtimperative;visibility:=reexport,
- uk.ac.york.qvtd.library;visibility:=reexport
+ uk.ac.york.qvtd.library;visibility:=reexport,
+ org.eclipse.ocl.examples.xtext.base;bundle-version="3.3.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: J2SE-1.5
 Export-Package: uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
