@@ -104,9 +104,9 @@ public class TestQVTi extends LoadTestCase {
     public void testRecursiveN2N() {
     	QVTimperativeEvaluator minimalEvaluator = new QVTimperativeEvaluator(metaModelManager,
     			"platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/HSVtoHLS.qvti");
-    	minimalEvaluator.addModel("upperGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNode.xmi",
+    	minimalEvaluator.addModel("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNode.xmi",
          		QVTimperativeEvaluator.INPUT_MODE);
-        minimalEvaluator.addModel("lowerGraph", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/HLSNode.xmi",
+        minimalEvaluator.addModel("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/HLSNode.xmi",
          		QVTimperativeEvaluator.OUTPUT_MODE);
         typeModelValidationResourceMap.clear();
         Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
