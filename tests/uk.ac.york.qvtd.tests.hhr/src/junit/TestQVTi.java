@@ -119,9 +119,19 @@ public class TestQVTi extends LoadTestCase {
     
     @Test
     public void testN2LessNGuarded() {
-        
+    	QVTimperativeEvaluator minimalEvaluator = new QVTimperativeEvaluator(metaModelManager,
+    			"platform:/plugin/uk.ac.york.qvtd.tests.hhr/src/qvti/ClassToRDBMSSchedule.qvti");
+    	minimalEvaluator.addModel("uml", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/SimpleUMLPeople.xmi",
+         		QVTimperativeEvaluator.INPUT_MODE);
+        minimalEvaluator.addModel("rdbms", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/SimpleRDBMSPeople.xmi",
+         		QVTimperativeEvaluator.OUTPUT_MODE);
+        typeModelValidationResourceMap.clear();
+        Map<String,String> typeModelValidationFileMap = new HashMap<String,String>();
+        //typeModelValidationFileMap.put("hsv", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HSVNodeValidate.xmi");
+        //typeModelValidationFileMap.put("hls", "platform:/plugin/uk.ac.york.qvtd.tests.hhr/model/HLSNodeValidate.xmi");
+        loadValidationResources(typeModelValidationFileMap);
+        doTest(minimalEvaluator, typeModelValidationResourceMap);
     }
-    
     /**
      * Do test.
      *

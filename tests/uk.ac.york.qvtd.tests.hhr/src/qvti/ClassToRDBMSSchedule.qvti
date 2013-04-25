@@ -186,24 +186,24 @@ map classToTableLM in umlRdbms {
     -- A Class has attributes
     map classPrimitiveAttributesLM {
         c := c;
-        a := c.attributes;
+        a <= c.attributes;
         ctt := c2t;
     }
     map classComplexAttributesLM {
         c := c;
-        a := c.attributes;
+        a <= c.attributes;
         ctt := c2t;
     }
     
     map complexAttributePrimitiveAttributesLM {
         c := c;
-        a := c.attributes;
+        a <= c.attributes;
         ca := c.typeOpposite;
    }
     
     map complexAttributeComplexAttributesLM {
         c := c;
-        a := c.attributes;
+        a <= c.attributes;
         ca := c.typeOpposite;
     }
     
@@ -238,8 +238,8 @@ map classToTableMR in umlRdbms {
     -- A Class has attributes
     map attributeColumnsMR {
         c2t := c2t;
-        a2c := c2t.fromAttributes;
-        p2n := p2s.primitivesToNames;
+        a2c <= c2t.fromAttributes;
+        p2n <= p2s.primitivesToNames;
         t := t;
     } 
     
