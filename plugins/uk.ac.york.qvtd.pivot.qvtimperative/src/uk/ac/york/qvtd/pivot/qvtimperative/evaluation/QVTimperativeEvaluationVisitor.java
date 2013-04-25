@@ -17,10 +17,13 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.domain.elements.DomainType;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
+import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
+import org.eclipse.ocl.examples.pivot.manager.PivotIdResolver;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
@@ -110,15 +113,20 @@ public class QVTimperativeEvaluationVisitor extends QVTimperativeAbstractEvaluat
 		int nextDepth = depth+1;
 		int maxDepth = rootVariables.size();
 		Variable var = rootVariables.get(depth);
+		Type guardType = var.getType();
+		PivotIdResolver idResolver = metaModelManager.getIdResolver();
         for (Object binding : rootBindings.get(depth)) {
-        	evaluationEnvironment.replace(var, binding);
-        	if (nextDepth < maxDepth) {
-        		doMappingCallRecursion(rule, visitor, rootVariables, rootBindings, nextDepth);
-        	}
-        	else {
-        		// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
-            	rule.accept(visitor);
-        	}
+			DomainType valueType = idResolver.getDynamicTypeOf(binding);
+			if (valueType.conformsTo(metaModelManager, guardType)) {
+	        	evaluationEnvironment.replace(var, binding);
+	        	if (nextDepth < maxDepth) {
+	        		doMappingCallRecursion(rule, visitor, rootVariables, rootBindings, nextDepth);
+	        	}
+	        	else {
+	        		// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
+	            	rule.accept(visitor);
+	        	}
+			}
         }
 	}
 }

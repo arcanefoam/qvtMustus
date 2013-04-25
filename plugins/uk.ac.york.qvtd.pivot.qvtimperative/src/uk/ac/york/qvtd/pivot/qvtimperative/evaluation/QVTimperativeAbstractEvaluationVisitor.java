@@ -15,15 +15,18 @@ import java.util.List;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.domain.elements.DomainType;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.Property;
+import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.VariableExp;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
+import org.eclipse.ocl.examples.pivot.manager.PivotIdResolver;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
@@ -76,17 +79,22 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 		assert depth < loopedVariables.size();
 		EvaluationEnvironment nestedEvaluationEnvironment = ((EvaluationVisitor) nestedEvaluator).getEvaluationEnvironment();
 		Variable boundVariable = loopedVariables.get(depth);
+		Type guardType = boundVariable.getType();
+		PivotIdResolver idResolver = metaModelManager.getIdResolver();
 		int nestedDepth = depth+1;
 		Mapping invokeMapping = nestedDepth >= loopedVariables.size() ? mapping : null;
 //		Map.Entry<DomainTypedElement, Object> entry = nestedEvaluationEnvironment.getEntry(boundVariable);
 		for (Object value : loopedValues.get(depth)) {
 //			entry.setValue(value);
-			nestedEvaluationEnvironment.replace(boundVariable, value);
-			if (invokeMapping != null) {
-				nestedEvaluator.safeVisit(invokeMapping);
-			}
-			else {
-				doMappingCallRecursion(nestedEvaluator, mapping, loopedVariables, loopedValues, nestedDepth);				
+			DomainType valueType = idResolver.getDynamicTypeOf(value);
+			if (valueType.conformsTo(metaModelManager, guardType)) {
+				nestedEvaluationEnvironment.replace(boundVariable, value);
+				if (invokeMapping != null) {
+					nestedEvaluator.safeVisit(invokeMapping);
+				}
+				else {
+					doMappingCallRecursion(nestedEvaluator, mapping, loopedVariables, loopedValues, nestedDepth);				
+				}
 			}
 		}
 	}
@@ -124,7 +132,13 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 			Variable boundVariable = binding.getBoundVariable();
 			Object valueOrValues = safeVisit(binding.getValue());
 			if (!binding.isIsLoop()) {
-				nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
+				DomainType valueType = metaModelManager.getIdResolver().getDynamicTypeOf(valueOrValues);
+				if (valueType.conformsTo(metaModelManager, boundVariable.getType())) {
+					nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
+				}
+				else {
+					return null;		
+				}
 			}
 			else if (valueOrValues instanceof Iterable<?>) {
 				if (loopedVariables == null) {
