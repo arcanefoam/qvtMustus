@@ -27,24 +27,26 @@ import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.manager.PivotIdResolver;
+import org.eclipse.ocl.examples.pivot.util.Visitable;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
+import org.eclipse.qvtd.pivot.qvtcorebase.util.QVTcoreBaseVisitor;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
-import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
 /**
  * QVTimperativeAbstractEvaluationVisitor is the class for ...
  */
-public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBaseEvaluationVisitor
-        implements QVTimperativeVisitor<Object> {
+public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBaseAbstractEvaluationVisitor
+        implements QVTimperativeEvaluationVisitor<Object> {
 
+	protected QVTcoreBaseVisitor<Object> undecoratedVisitor;
         
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
@@ -206,6 +208,21 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
         }
         return true;
     }
+    
+    /**
+     * Sets the visitor on which I perform nested
+     * {@link Visitable#accept(org.eclipse.ocl.utilities.Visitor)} calls.
+     * 
+     * @param visitor my delegate visitor
+     * 
+     * @see #getUndecoratedVisitor()
+     */
+	public void setUndecoratedVisitor(
+			QVTimperativeEvaluationVisitor<Object> evaluationVisitor) {
+		this.undecoratedVisitor = evaluationVisitor;
+		
+	}
+
     
     /**
      * Checks if the mapping is a middle to right mapping. Middle to Right mappings

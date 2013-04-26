@@ -138,7 +138,7 @@ public class QVTimperativeEvaluator {
             typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
             modelManager.addModel(typedModel, pairs.getValue());
         }
-        QVTimperativeVisitor<Object> visitor = new QVTimperativeEvaluationVisitor(env, evalEnv, modelManager);
+        QVTimperativeVisitor<Object> visitor = new QVTimperativeEvaluationVisitorImpl(env, evalEnv, modelManager);
         return (Boolean) imperativeModel.accept(visitor);
 	}
 	

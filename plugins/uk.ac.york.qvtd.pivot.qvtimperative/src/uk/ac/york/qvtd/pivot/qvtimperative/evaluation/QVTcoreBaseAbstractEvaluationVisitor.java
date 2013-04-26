@@ -10,16 +10,11 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
-import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
@@ -51,9 +46,9 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
-public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
+public abstract class QVTcoreBaseAbstractEvaluationVisitor extends EvaluationVisitorImpl
         implements QVTcoreBaseVisitor<Object> {
-        
+	
     /**
      * Instantiates a new QVTCore evaluation visitor implementation.
      * 
@@ -64,7 +59,7 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
      * @param modelManager
      *            the model manager
      */
-    public QVTcoreBaseEvaluationVisitor(@NonNull Environment env,
+    public QVTcoreBaseAbstractEvaluationVisitor(@NonNull Environment env,
             @NonNull EvaluationEnvironment evalEnv,
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
@@ -193,33 +188,7 @@ public abstract class QVTcoreBaseEvaluationVisitor extends EvaluationVisitorImpl
     public @Nullable Object visitVariableAssignment(@NonNull VariableAssignment object) {
 		return visiting(object);
     }
-
-    /* ========== HELPER METHODS ========== */
     
-    /**
-     * Cartesian bindings.
-     *
-     * @param lists the lists
-     * @return the list
-     */
-    protected List<List<Map<Variable, Object>>> cartesianBindings(List<List<Map<Variable, Object>>> lists) {
-        List<List<Map<Variable, Object>>> resultLists = new ArrayList<List<Map<Variable, Object>>>();
-        if (lists.size() == 0) {
-          resultLists.add(new ArrayList<Map<Variable, Object>>());
-          return resultLists;
-        } else {
-            List<Map<Variable, Object>> firstList = lists.get(0);
-            List<List<Map<Variable, Object>>> remainingLists = cartesianBindings(lists.subList(1, lists.size()));
-            for (Map<Variable, Object> condition : firstList) {
-                for (List<Map<Variable, Object>> remainingList : remainingLists) {
-                    List<Map<Variable, Object>> resultList = new ArrayList<Map<Variable, Object>>();
-                    resultList.add(condition);
-                    resultList.addAll(remainingList);
-                    resultLists.add(resultList);
-            }
-          }
-        }
-        return resultLists;
-      }
+    
 
 }
