@@ -7,6 +7,11 @@
     xsi:schemaLocation="http://http://www.eclipse.org/qvt/examples/0.1/HLSTree HLSTree.ecore"
     name="n1">
   <children
+      name="n1.1">
+    <children
+        name="n1.1.1"/>
+  </children>
+  <children
       name="n1.2">
     <children
         name="n1.2.1"/>
@@ -20,10 +25,5 @@
       <children
           name="n1.3.1.1"/>
     </children>
-  </children>
-  <children
-      name="n1.1">
-    <children
-        name="n1.1.1"/>
   </children>
 </pfx:HLSNode>

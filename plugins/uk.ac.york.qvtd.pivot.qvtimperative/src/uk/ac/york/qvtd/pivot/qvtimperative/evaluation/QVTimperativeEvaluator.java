@@ -14,6 +14,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.domain.utilities.DomainUtil;
 import org.eclipse.ocl.examples.domain.utilities.ProjectMap;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotEvaluationEnvironment;
+import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManagerResourceSetAdapter;
 import org.eclipse.ocl.examples.pivot.utilities.PivotEnvironment;
@@ -44,6 +45,7 @@ public class QVTimperativeEvaluator {
     public static boolean INPUT_MODE = false;
     public static boolean OUTPUT_MODE = true;
     
+    private boolean traceEvaluation;
     
     public QVTimperativeEvaluator(MetaModelManager metaModelManager) {
     	
@@ -138,7 +140,11 @@ public class QVTimperativeEvaluator {
             typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
             modelManager.addModel(typedModel, pairs.getValue());
         }
-        QVTimperativeVisitor<Object> visitor = new QVTimperativeEvaluationVisitorImpl(env, evalEnv, modelManager);
+        QVTimperativeEvaluationVisitor<Object> visitor = new QVTimperativeEvaluationVisitorImpl(env, evalEnv, modelManager);
+        if (isEvaluationTracingEnabled()) {
+            // decorate the evaluation visitor with tracing support
+        	visitor = new QVTimperativeTracingEvaluationVisitor(visitor);
+        }
         return (Boolean) imperativeModel.accept(visitor);
 	}
 	
@@ -187,5 +193,39 @@ public class QVTimperativeEvaluator {
 		
 		return typeModelResourceMap;
 	}
+	
+	 /**
+     * Queries whether tracing of evaluation is enabled.  Tracing
+     * logs the progress of evaluation to the console, which may
+     * be of use in diagnosing problems.
+     * <p>
+     * In an Eclipse environment, tracing is also enabled by turning on the
+     * <tt>org.eclipse.ocl/debug/evaluation</tt> debug option. 
+     * </p>
+     * 
+     * @return whether evaluation tracing is enabled
+     * 
+     * @see #setEvaluationTracingEnabled(boolean)
+     */
+    protected boolean isEvaluationTracingEnabled() {
+        return traceEvaluation;
+    }
+    
+    /**
+     * Sets whether tracing of evaluation is enabled.  Tracing logs
+     * the progress of parsing to the console, which may be of use in diagnosing
+     * problems.
+     * <p>
+     * In an Eclipse environment, tracing is also enabled by turning on the
+     * <tt>org.eclipse.ocl/debug/evaluation</tt> debug option. 
+     * </p>
+     * 
+     * param b whether evaluation tracing is enabled
+     * 
+     * @see #isEvaluationTracingEnabled()
+     */
+    public void setEvaluationTracingEnabled(boolean b) {
+        traceEvaluation = b;
+    }
 
 }

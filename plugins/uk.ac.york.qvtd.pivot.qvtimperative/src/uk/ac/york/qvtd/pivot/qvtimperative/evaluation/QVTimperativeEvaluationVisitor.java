@@ -16,6 +16,7 @@ import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.evaluation.AbstractEvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
@@ -57,5 +58,13 @@ public interface QVTimperativeEvaluationVisitor<R> extends QVTimperativeVisitor<
      * @param decorator the decorator that is not decorated/
      */
 	void setUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor);
+	
+	EvaluationVisitorImpl createNestedLMVisitor();
+	
+	EvaluationVisitorImpl createNestedMMVisitor();
+	
+	EvaluationVisitorImpl createNestedMRVisitor();
+	
+	
 
 }

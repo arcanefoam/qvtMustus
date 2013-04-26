@@ -10,6 +10,23 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.pivot.Variable;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
+import org.eclipse.qvtd.pivot.qvtbase.Domain;
+import org.eclipse.qvtd.pivot.qvtbase.Rule;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
+import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
+
+import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
+
 
 public class QVTimperativeTracingEvaluationVisitor extends
 		QVTimperativeEvaluationVisitorDecorator {
@@ -19,5 +36,31 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		super(decorated);
 
 	}
+	
+	@Override
+    public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
+		EvaluationVisitorImpl LMVisitor = getDelegate().createNestedLMVisitor();
+		QVTimperativeTracingEvaluationVisitor nt = new QVTimperativeTracingEvaluationVisitor((QVTimperativeEvaluationVisitor<Object>) LMVisitor);
+    	for (Rule rule : transformation.getRule()) {
+    		// Find bindings before invoking the mapping so all visitors are equal
+    		Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
+    		List<Variable> rootVariables = new ArrayList<Variable>();
+    		List<List<Object>> rootBindings = new ArrayList<List<Object>>();
+    		for (Domain domain : rule.getDomain()) {
+                CoreDomain coreDomain = (CoreDomain)domain;
+                TypedModel m = coreDomain.getTypedModel();
+				for (Variable var : coreDomain.getGuardPattern().getVariable()) {
+                	evaluationEnvironment.add(var, null);
+                	rootVariables.add(var);
+                    List<Object> bindingValuesSet = ((QVTcDomainManager)modelManager).getElementsByType(m, var.getType());
+                	rootBindings.add(bindingValuesSet);
+                    mappingBindings.put(var, bindingValuesSet);
+                }
+            }
+    		doMappingCallRecursion(rule, LMVisitor, rootVariables, rootBindings, 0);
+    		break;		// FIXME ?? multiple rules
+    	}
+        return true;
+    }
 
 }

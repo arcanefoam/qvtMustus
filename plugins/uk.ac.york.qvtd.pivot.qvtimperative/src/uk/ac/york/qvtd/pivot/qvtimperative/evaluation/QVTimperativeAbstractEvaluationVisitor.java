@@ -109,18 +109,15 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
     	
     	Mapping calledMapping = mappingCall.getReferredMapping();
-        EnvironmentFactory factory = environment.getFactory();
-        EvaluationEnvironment nestedEvaluationEnvironment = factory.createEvaluationEnvironment(evaluationEnvironment); 
-    	// FIXME ?? clear nested evaluation environment
         EvaluationVisitorImpl nv = null;
 		if (isLtoMMapping(calledMapping)) {
-			nv = new QVTimperativeLMEvaluationVisitor(environment, nestedEvaluationEnvironment, getModelManager());
+			nv = createNestedLMVisitor();
 		}
     	else if (isMtoRMapping(calledMapping)) {
-    		nv = new QVTimperativeMREvaluationVisitor(environment, nestedEvaluationEnvironment, getModelManager());
+    		nv = createNestedLMVisitor();
     	}
     	else if (isMtoMMapping(calledMapping)) {
-    		nv = new QVTimperativeMMEvaluationVisitor(environment, nestedEvaluationEnvironment, getModelManager());
+    		nv = createNestedLMVisitor();
     	} else {
     		// FIXME Error
     	}
@@ -136,7 +133,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 			if (!binding.isIsLoop()) {
 				DomainType valueType = metaModelManager.getIdResolver().getDynamicTypeOf(valueOrValues);
 				if (valueType.conformsTo(metaModelManager, boundVariable.getType())) {
-					nestedEvaluationEnvironment.add(boundVariable, valueOrValues);
+					nv.getEvaluationEnvironment().add(boundVariable, valueOrValues);
 				}
 				else {
 					return null;		
@@ -149,7 +146,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 				}
 				loopedVariables.add(boundVariable);
 				loopedValues.add((Iterable<?>)valueOrValues);
-				nestedEvaluationEnvironment.add(boundVariable, null);
+				nv.getEvaluationEnvironment().add(boundVariable, null);
 			} else {
 				// FIXME Error message;
 			}
@@ -267,5 +264,27 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
             }
         }
         return true;
+    }
+    
+    
+    public EvaluationVisitorImpl createNestedLMVisitor() {
+    	
+        EnvironmentFactory factory = environment.getFactory();
+        EvaluationEnvironment nestedEvaluationEnvironment = factory.createEvaluationEnvironment(evaluationEnvironment); 
+    	return new QVTimperativeLMEvaluationVisitor(environment, nestedEvaluationEnvironment, getModelManager());
+    }
+    
+    public EvaluationVisitorImpl createNestedMMVisitor() {
+    	
+    	EnvironmentFactory factory = environment.getFactory();
+        EvaluationEnvironment nestedEvaluationEnvironment = factory.createEvaluationEnvironment(evaluationEnvironment); 
+    	return new QVTimperativeMMEvaluationVisitor(environment, nestedEvaluationEnvironment, getModelManager());
+    }
+    
+    public EvaluationVisitorImpl createNestedMRVisitor() {
+    	
+    	EnvironmentFactory factory = environment.getFactory();
+        EvaluationEnvironment nestedEvaluationEnvironment = factory.createEvaluationEnvironment(evaluationEnvironment); 
+    	return new QVTimperativeMREvaluationVisitor(environment, nestedEvaluationEnvironment, getModelManager());
     }
 }

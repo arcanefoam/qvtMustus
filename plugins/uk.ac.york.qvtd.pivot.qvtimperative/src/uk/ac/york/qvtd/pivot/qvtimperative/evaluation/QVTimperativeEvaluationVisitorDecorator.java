@@ -16,6 +16,7 @@ import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.util.AbstractExtendingVisitor;
 import org.eclipse.ocl.examples.pivot.util.Visitable;
 import org.eclipse.qvtd.pivot.qvtbase.BaseModel;
@@ -272,6 +273,18 @@ public abstract class QVTimperativeEvaluationVisitorDecorator extends AbstractEx
      */
     public @Nullable Object visiting(Visitable visitable) {
     	return getDelegate().visiting(visitable);
+	}
+
+	public EvaluationVisitorImpl createNestedLMVisitor() {
+		return getDelegate().createNestedLMVisitor();
+	}
+
+	public EvaluationVisitorImpl createNestedMMVisitor() {
+		return getDelegate().createNestedMMVisitor();
+	}
+
+	public EvaluationVisitorImpl createNestedMRVisitor() {
+		return getDelegate().createNestedMRVisitor();
 	}
 
 }

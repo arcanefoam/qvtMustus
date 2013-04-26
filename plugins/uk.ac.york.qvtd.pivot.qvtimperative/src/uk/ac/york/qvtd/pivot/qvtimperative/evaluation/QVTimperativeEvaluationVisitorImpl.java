@@ -24,12 +24,12 @@ import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.manager.PivotIdResolver;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
-import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
@@ -85,9 +85,7 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
 
     @Override
     public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
-        QVTcDomainManager modelManager = getModelManager();
-		QVTimperativeLMEvaluationVisitor LMVisitor = new QVTimperativeLMEvaluationVisitor(
-                environment, evaluationEnvironment, modelManager);
+		EvaluationVisitorImpl LMVisitor = createNestedLMVisitor();
     	for (Rule rule : transformation.getRule()) {
     		// Find bindings before invoking the mapping so all visitors are equal
     		Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
@@ -99,7 +97,7 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
 				for (Variable var : coreDomain.getGuardPattern().getVariable()) {
                 	evaluationEnvironment.add(var, null);
                 	rootVariables.add(var);
-                    List<Object> bindingValuesSet = modelManager.getElementsByType(m, var.getType());
+                    List<Object> bindingValuesSet = ((QVTcDomainManager)modelManager).getElementsByType(m, var.getType());
                 	rootBindings.add(bindingValuesSet);
                     mappingBindings.put(var, bindingValuesSet);
                 }
@@ -110,7 +108,7 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
         return true;
     }
 
-	private void doMappingCallRecursion(@NonNull Rule rule, @NonNull QVTimperativeLMEvaluationVisitor visitor,
+	private void doMappingCallRecursion(@NonNull Rule rule, @NonNull EvaluationVisitorImpl visitor,
 			@NonNull List<Variable> rootVariables, @NonNull List<List<Object>> rootBindings, int depth) {
 		int nextDepth = depth+1;
 		int maxDepth = rootVariables.size();
@@ -130,10 +128,5 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
 	        	}
 			}
         }
-	}
-
-	public void setUndecoratedVisitor(QVTbaseVisitor<Object> evaluationVisitor) {
-		// TODO Auto-generated method stub
-		
 	}
 }
