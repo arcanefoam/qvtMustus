@@ -114,10 +114,10 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 			nv = createNestedLMVisitor();
 		}
     	else if (isMtoRMapping(calledMapping)) {
-    		nv = createNestedLMVisitor();
+    		nv = createNestedMRVisitor();
     	}
     	else if (isMtoMMapping(calledMapping)) {
-    		nv = createNestedLMVisitor();
+    		nv = createNestedMMVisitor();
     	} else {
     		// FIXME Error
     	}

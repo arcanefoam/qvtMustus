@@ -29,7 +29,6 @@ import org.eclipse.qvtd.pivot.qvtbase.Rule;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtbase.Unit;
-import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
@@ -176,7 +175,7 @@ public abstract class QVTimperativeEvaluationVisitorDecorator extends AbstractEx
     public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
     	return getDelegate().visitGuardPattern(guardPattern);
     }
-
+    
     /**
      * Delegates to my decorated visitor.
      */

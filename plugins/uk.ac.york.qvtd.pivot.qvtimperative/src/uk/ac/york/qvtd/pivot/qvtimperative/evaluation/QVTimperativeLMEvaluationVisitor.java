@@ -27,6 +27,7 @@ import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcorebase.EnforcementOperation;
 import org.eclipse.qvtd.pivot.qvtcorebase.RealizedVariable;
 import org.eclipse.qvtd.pivot.qvtcorebase.util.QVTcoreBaseVisitor;
+import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
@@ -36,7 +37,7 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTimperativeLMEvaluationVisitor is the class for ...
  */
-public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor 
+public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVisitorImpl 
         implements QVTimperativeVisitor<Object> {
 
     /**
@@ -58,6 +59,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
         QVTimperativeLMEvaluationVisitor ne = new QVTimperativeLMEvaluationVisitor(environment, nestedEvalEnv, getModelManager());
         return ne;
     }
+    
 
     /* (non-Javadoc)
      * @see uk.ac.york.qvtd.pivot.qvtcorebase.evaluation.QVTcoreBaseEvaluationVisitorImpl#visitBottomPattern(org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern)
