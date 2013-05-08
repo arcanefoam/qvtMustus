@@ -24,7 +24,6 @@ import org.eclipse.ocl.examples.pivot.Type;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
-import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.manager.PivotIdResolver;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Rule;
@@ -86,7 +85,7 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
 
     @Override
     public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
-		EvaluationVisitorImpl LMVisitor = createNestedLMVisitor();
+		
     	for (Rule rule : transformation.getRule()) {
     		// Find bindings before invoking the mapping so all visitors are equal
     		Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
@@ -103,14 +102,14 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
                     mappingBindings.put(var, bindingValuesSet);
                 }
             }
-    		doMappingCallRecursion(rule, LMVisitor, rootVariables, rootBindings, 0);
+    		doMappingCallRecursion(rule, rootVariables, rootBindings, 0);
     		break;		// FIXME ?? multiple rules
     	}
         return true;
     }
 
-	private void doMappingCallRecursion(@NonNull Rule rule, @NonNull EvaluationVisitorImpl visitor,
-			@NonNull List<Variable> rootVariables, @NonNull List<List<Object>> rootBindings, int depth) {
+	private void doMappingCallRecursion(@NonNull Rule rule, @NonNull List<Variable> rootVariables,
+			@NonNull List<List<Object>> rootBindings, int depth) {
 		int nextDepth = depth+1;
 		int maxDepth = rootVariables.size();
 		Variable var = rootVariables.get(depth);
@@ -121,11 +120,11 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
 			if (valueType.conformsTo(metaModelManager, guardType)) {
 	        	evaluationEnvironment.replace(var, binding);
 	        	if (nextDepth < maxDepth) {
-	        		doMappingCallRecursion(rule, visitor, rootVariables, rootBindings, nextDepth);
+	        		doMappingCallRecursion(rule, rootVariables, rootBindings, nextDepth);
 	        	}
 	        	else {
 	        		// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
-	            	rule.accept(visitor);
+	            	rule.accept(this);
 	        	}
 			}
         }

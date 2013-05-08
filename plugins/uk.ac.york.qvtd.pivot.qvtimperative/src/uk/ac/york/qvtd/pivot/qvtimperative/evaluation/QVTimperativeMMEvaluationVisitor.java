@@ -29,7 +29,7 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTcoreMMEvaluationVisitorImpl is the class for ...
  */
-public class QVTimperativeMMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor
+public class QVTimperativeMMEvaluationVisitor extends QVTimperativeEvaluationVisitorImpl
         implements QVTimperativeVisitor<Object> {
 
     /**
