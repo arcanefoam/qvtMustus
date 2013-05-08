@@ -39,28 +39,12 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	
 	@Override
     public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
-		EvaluationVisitorImpl LMVisitor = getDelegate().createNestedLMVisitor();
-		QVTimperativeTracingEvaluationVisitor nt = new QVTimperativeTracingEvaluationVisitor((QVTimperativeEvaluationVisitor<Object>) LMVisitor);
-    	for (Rule rule : transformation.getRule()) {
-    		// Find bindings before invoking the mapping so all visitors are equal
-    		Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
-    		List<Variable> rootVariables = new ArrayList<Variable>();
-    		List<List<Object>> rootBindings = new ArrayList<List<Object>>();
-    		for (Domain domain : rule.getDomain()) {
-                CoreDomain coreDomain = (CoreDomain)domain;
-                TypedModel m = coreDomain.getTypedModel();
-				for (Variable var : coreDomain.getGuardPattern().getVariable()) {
-                	evaluationEnvironment.add(var, null);
-                	rootVariables.add(var);
-                    List<Object> bindingValuesSet = ((QVTcDomainManager)modelManager).getElementsByType(m, var.getType());
-                	rootBindings.add(bindingValuesSet);
-                    mappingBindings.put(var, bindingValuesSet);
-                }
-            }
-    		doMappingCallRecursion(rule, LMVisitor, rootVariables, rootBindings, 0);
-    		break;		// FIXME ?? multiple rules
-    	}
-        return true;
+		System.out.println("Transformation: " + transformation.getName());
+		Object result = getDelegate().visitTransformation(transformation);
+		System.out.println("Result of the transformation was " + (Boolean)result);
+		return result;
+        
     }
+
 
 }

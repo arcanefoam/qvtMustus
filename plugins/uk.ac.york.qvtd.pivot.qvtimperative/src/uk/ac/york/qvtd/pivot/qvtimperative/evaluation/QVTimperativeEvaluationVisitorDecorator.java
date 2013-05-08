@@ -16,6 +16,7 @@ import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorDecorator;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.util.AbstractExtendingVisitor;
 import org.eclipse.ocl.examples.pivot.util.Visitable;
@@ -48,19 +49,13 @@ import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
 /**
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
-public abstract class QVTimperativeEvaluationVisitorDecorator extends AbstractExtendingVisitor<Object, Object>
+public abstract class QVTimperativeEvaluationVisitorDecorator extends EvaluationVisitorDecorator
         implements QVTimperativeEvaluationVisitor<Object> {
         
-	private final QVTimperativeEvaluationVisitor<Object> delegate;
 	
-	public QVTimperativeEvaluationVisitorDecorator(@NonNull QVTimperativeEvaluationVisitor<Object> decorated) {
-		super(Object.class);
-		assert decorated != null : "cannot decorate a null visitor"; //$NON-NLS-1$
-
-        this.delegate = decorated;
-        
-        decorated.setUndecoratedVisitor(this);
-    }
+	public QVTimperativeEvaluationVisitorDecorator(@NonNull EvaluationVisitor decorated) {
+		super(decorated);
+	}
 	
 	/**
      * Delegates to my decorated visitor.
@@ -102,8 +97,8 @@ public abstract class QVTimperativeEvaluationVisitorDecorator extends AbstractEx
     /**
      * Delegates to my decorated visitor.
      */
-	public void setUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor) {
-        getDelegate().setUndecoratedVisitor(evaluationVisitor);
+	public void setQVTUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor) {
+        getDelegate().setQVTUndecoratedVisitor(evaluationVisitor);
 	}
 	
     

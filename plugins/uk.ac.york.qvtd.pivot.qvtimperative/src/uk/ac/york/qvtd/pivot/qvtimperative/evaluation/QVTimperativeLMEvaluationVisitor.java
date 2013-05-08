@@ -82,14 +82,14 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
         else*/
         if (area instanceof Mapping) {
             for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
-                rVar.accept(this);
+                rVar.accept(getUndecoratedVisitor());
             }
             for (Assignment assigment : bottomPattern.getAssignment()) {
-                assigment.accept(this);
+                assigment.accept(getUndecoratedVisitor());
             }
             for (EnforcementOperation enforceOp : bottomPattern
                     .getEnforcementOperation()) {
-                enforceOp.accept(this);
+                enforceOp.accept(getUndecoratedVisitor());
             }
         }
         return null;
@@ -105,7 +105,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
     public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
     	/* Bindings are set by the caller, just test the predicates */
-    	return coreDomain.getGuardPattern().accept(this);
+    	return coreDomain.getGuardPattern().accept(getUndecoratedVisitor());
         /* THERE SHOULD BE NO VARIABLES OR PREDICATES IN THE BottomPattern
         for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
             Variable var = entry.getKey();
@@ -127,12 +127,12 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvalu
         }
     	boolean result = false;
         for (Domain domain : mapping.getDomain()) {
-            result = (Boolean) domain.accept(this);
+            result = (Boolean) domain.accept(getUndecoratedVisitor());
         }
         if (result) {
-        	result = (Boolean) mapping.getGuardPattern().accept(this);
+        	result = (Boolean) mapping.getGuardPattern().accept(getUndecoratedVisitor());
             if (result) {
-            	mapping.getBottomPattern().accept(this);
+            	mapping.getBottomPattern().accept(getUndecoratedVisitor());
             	for (MappingCall mappingCall : mapping.getMappingCall()) {
                 	mappingCall.accept(this);
                 }

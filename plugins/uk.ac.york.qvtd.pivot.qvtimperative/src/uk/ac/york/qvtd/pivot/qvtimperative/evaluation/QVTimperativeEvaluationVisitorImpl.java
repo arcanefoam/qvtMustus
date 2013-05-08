@@ -39,6 +39,7 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTimperativeEvaluationVisitor is the class for ...
  */
+@Deprecated
 public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEvaluationVisitor {
 
         

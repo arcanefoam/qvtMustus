@@ -11,7 +11,9 @@
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -29,10 +31,13 @@ import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.manager.PivotIdResolver;
 import org.eclipse.ocl.examples.pivot.util.Visitable;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
+import org.eclipse.qvtd.pivot.qvtbase.Rule;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
-import org.eclipse.qvtd.pivot.qvtcorebase.util.QVTcoreBaseVisitor;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
@@ -45,8 +50,9 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
  */
 public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBaseAbstractEvaluationVisitor
         implements QVTimperativeEvaluationVisitor<Object> {
-
-	protected QVTcoreBaseVisitor<Object> undecoratedVisitor;
+	
+	
+	private QVTimperativeEvaluationVisitor<Object> undecoratedVisitor;
         
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
@@ -65,18 +71,35 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
         // TODO Auto-generated constructor stub
     }
 
-    public @Nullable Object visitImperativeModel(@NonNull ImperativeModel object) {
-		return visiting(object);
+    public abstract @NonNull EvaluationVisitor createNestedEvaluator();
+    
+    @Override
+	public @NonNull QVTcDomainManager getModelManager() {
+		return (QVTcDomainManager) modelManager;
+	}
+    
+    /**
+     * Obtains the visitor on which I perform nested
+     * {@link Visitable#accept(org.eclipse.ocl.utilities.Visitor)} calls.  This
+     * handles the case in which I am decorated by another visitor that must
+     * intercept every <tt>visitXxx()</tt> method.  If I internally just
+     * recursively visit myself, then this decorator is cut out of the picture.
+     * 
+     * @return my delegate visitor, which may be my own self or some other
+     */
+    @SuppressWarnings("null")
+	public @NonNull QVTimperativeEvaluationVisitor<Object> getQVTUndecoratedVisitor() {
+        return (QVTimperativeEvaluationVisitor<Object>) this.undecoratedVisitor;
     }
     
-    public abstract @NonNull EvaluationVisitor createNestedEvaluator();
-
+    
+    
     /*
      * Perform the recursion for the BoundVariable that loops over the Iterables at depth in the
      * loopedVariables and loopedValues. The recursion proceeds to greater depths and once all
      * depths are exhausted invokes the mapping. 
      */
-    private void doMappingCallRecursion(@NonNull EvaluationVisitorImpl nestedEvaluator, @NonNull Mapping mapping,
+    private void doMappingCallRecursion(@NonNull Mapping mapping, @NonNull EvaluationVisitorImpl nestedEvaluator, 
     		@NonNull List<Variable> loopedVariables, @NonNull List<Iterable<?>> loopedValues, int depth) {
 		assert depth < loopedVariables.size();
 		EvaluationEnvironment nestedEvaluationEnvironment = ((EvaluationVisitor) nestedEvaluator).getEvaluationEnvironment();
@@ -95,16 +118,40 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 					nestedEvaluator.safeVisit(invokeMapping);
 				}
 				else {
-					doMappingCallRecursion(nestedEvaluator, mapping, loopedVariables, loopedValues, nestedDepth);				
+					doMappingCallRecursion(mapping, nestedEvaluator, loopedVariables, loopedValues, nestedDepth);				
 				}
 			}
 		}
 	}
-
-    @Override
-	public @NonNull QVTcDomainManager getModelManager() {
-		return (QVTcDomainManager) modelManager;
+    
+    private void doMappingCallRecursion(@NonNull Rule rule, @NonNull List<Variable> rootVariables,
+    		@NonNull List<List<Object>> rootBindings, int depth) {
+		int nextDepth = depth+1;
+		int maxDepth = rootVariables.size();
+		Variable var = rootVariables.get(depth);
+		Type guardType = var.getType();
+		PivotIdResolver idResolver = metaModelManager.getIdResolver();
+        for (Object binding : rootBindings.get(depth)) {
+			DomainType valueType = idResolver.getDynamicTypeOf(binding);
+			if (valueType.conformsTo(metaModelManager, guardType)) {
+	        	evaluationEnvironment.replace(var, binding);
+	        	if (nextDepth < maxDepth) {
+	        		doMappingCallRecursion(rule, rootVariables, rootBindings, nextDepth);
+	        	}
+	        	else {
+	        		// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
+	            	rule.accept(getQVTUndecoratedVisitor());
+	        	}
+			}
+        }
 	}
+
+    public @Nullable Object visitImperativeModel(@NonNull ImperativeModel imperativeModel) {
+    	for (org.eclipse.ocl.examples.pivot.Package pkge : imperativeModel.getNestedPackage()) {
+    		pkge.accept(getQVTUndecoratedVisitor());
+    	}
+        return true;
+    }
 
 	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
     	
@@ -114,10 +161,10 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 			nv = createNestedLMVisitor();
 		}
     	else if (isMtoRMapping(calledMapping)) {
-    		nv = createNestedLMVisitor();
+    		nv = createNestedMRVisitor();
     	}
     	else if (isMtoMMapping(calledMapping)) {
-    		nv = createNestedLMVisitor();
+    		nv = createNestedMMVisitor();
     	} else {
     		// FIXME Error
     	}
@@ -159,7 +206,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 			nv.safeVisit(calledMapping);
 		}
 		else {
-			doMappingCallRecursion(nv, calledMapping, loopedVariables, loopedValues, 0);
+			doMappingCallRecursion(calledMapping, nv, loopedVariables, loopedValues, 0);
 		}
     	return null;
     }
@@ -206,17 +253,42 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
         return true;
     }
     
+    @Override
+    public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
+		for (Rule rule : transformation.getRule()) {
+    		// Find bindings before invoking the mapping so all visitors are equal
+    		Map<Variable, List<Object>>  mappingBindings = new HashMap<Variable, List<Object>>();
+    		List<Variable> rootVariables = new ArrayList<Variable>();
+    		List<List<Object>> rootBindings = new ArrayList<List<Object>>();
+    		for (Domain domain : rule.getDomain()) {
+                CoreDomain coreDomain = (CoreDomain)domain;
+                TypedModel m = coreDomain.getTypedModel();
+				for (Variable var : coreDomain.getGuardPattern().getVariable()) {
+                	evaluationEnvironment.add(var, null);
+                	rootVariables.add(var);
+                    List<Object> bindingValuesSet = ((QVTcDomainManager)modelManager).getElementsByType(m, var.getType());
+                	rootBindings.add(bindingValuesSet);
+                    mappingBindings.put(var, bindingValuesSet);
+                }
+            }
+    		doMappingCallRecursion(rule, rootVariables, rootBindings, 0);
+    		break;		// FIXME ?? multiple rules
+    	}
+        return true;
+    }
+    
     /**
      * Sets the visitor on which I perform nested
      * {@link Visitable#accept(org.eclipse.ocl.utilities.Visitor)} calls.
      * 
      * @param visitor my delegate visitor
      * 
-     * @see #getUndecoratedVisitor()
+     * @see #getQVTUndecoratedVisitor()
      */
-	public void setUndecoratedVisitor(
+	public void setQVTUndecoratedVisitor(
 			QVTimperativeEvaluationVisitor<Object> evaluationVisitor) {
 		this.undecoratedVisitor = evaluationVisitor;
+		super.setUndecoratedVisitor((EvaluationVisitor) evaluationVisitor);
 		
 	}
 

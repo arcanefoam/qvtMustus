@@ -57,7 +57,7 @@ public interface QVTimperativeEvaluationVisitor<R> extends QVTimperativeVisitor<
      * 
      * @param decorator the decorator that is not decorated/
      */
-	void setUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor);
+	void setQVTUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor);
 	
 	EvaluationVisitorImpl createNestedLMVisitor();
 	
@@ -66,5 +66,4 @@ public interface QVTimperativeEvaluationVisitor<R> extends QVTimperativeVisitor<
 	EvaluationVisitorImpl createNestedMRVisitor();
 	
 	
-
 }

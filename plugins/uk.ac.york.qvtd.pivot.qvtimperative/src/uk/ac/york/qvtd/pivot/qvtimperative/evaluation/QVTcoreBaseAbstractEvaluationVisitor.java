@@ -64,6 +64,7 @@ public abstract class QVTcoreBaseAbstractEvaluationVisitor extends EvaluationVis
             @NonNull DomainModelManager modelManager) {
         super(env, evalEnv, modelManager);
     }
+    
 	
     public abstract @NonNull EvaluationVisitor createNestedEvaluator();
 
@@ -116,7 +117,7 @@ public abstract class QVTcoreBaseAbstractEvaluationVisitor extends EvaluationVis
         boolean result = true;
         for (Predicate predicate : guardPattern.getPredicate()) {
             // If the predicate is not true, the binding is not valid
-            result = (Boolean) predicate.accept(this);
+            result = (Boolean) predicate.accept(getUndecoratedVisitor());
             if (!result) {
             	break;
             }
@@ -133,7 +134,7 @@ public abstract class QVTcoreBaseAbstractEvaluationVisitor extends EvaluationVis
         // Each predicate has a conditionExpression that is an OCLExpression
         OCLExpression exp = predicate.getConditionExpression();
         // The predicated is visited with a nested environment
-        Object expResult = exp.accept(this);
+        Object expResult = exp.accept(getUndecoratedVisitor());
         return expResult;
 	}
 
@@ -189,6 +190,4 @@ public abstract class QVTcoreBaseAbstractEvaluationVisitor extends EvaluationVis
 		return visiting(object);
     }
     
-    
-
 }
