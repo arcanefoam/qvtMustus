@@ -49,11 +49,8 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
  * QVTimperativeAbstractEvaluationVisitor is the class for ...
  */
 public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBaseAbstractEvaluationVisitor
-        implements QVTimperativeEvaluationVisitor<Object> {
+        implements QVTimperativeEvaluationVisitor {
 	
-	
-	private QVTimperativeEvaluationVisitor<Object> undecoratedVisitor;
-        
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
      * 
@@ -86,11 +83,11 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
      * recursively visit myself, then this decorator is cut out of the picture.
      * 
      * @return my delegate visitor, which may be my own self or some other
-     */
+     *
     @SuppressWarnings("null")
-	public @NonNull QVTimperativeEvaluationVisitor<Object> getQVTUndecoratedVisitor() {
-        return (QVTimperativeEvaluationVisitor<Object>) this.undecoratedVisitor;
-    }
+	public @NonNull QVTimperativeEvaluationVisitor getQVTUndecoratedVisitor() {
+        return (QVTimperativeEvaluationVisitor) this.undecoratedVisitor;
+    } */
     
     
     
@@ -140,7 +137,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 	        	}
 	        	else {
 	        		// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
-	            	rule.accept(getQVTUndecoratedVisitor());
+	            	rule.accept(getUndecoratedVisitor());
 	        	}
 			}
         }
@@ -148,7 +145,7 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 
     public @Nullable Object visitImperativeModel(@NonNull ImperativeModel imperativeModel) {
     	for (org.eclipse.ocl.examples.pivot.Package pkge : imperativeModel.getNestedPackage()) {
-    		pkge.accept(getQVTUndecoratedVisitor());
+    		pkge.accept(getUndecoratedVisitor());
     	}
         return true;
     }
@@ -276,21 +273,6 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
     	}
         return true;
     }
-    
-    /**
-     * Sets the visitor on which I perform nested
-     * {@link Visitable#accept(org.eclipse.ocl.utilities.Visitor)} calls.
-     * 
-     * @param visitor my delegate visitor
-     * 
-     * @see #getQVTUndecoratedVisitor()
-     */
-	public void setQVTUndecoratedVisitor(
-			QVTimperativeEvaluationVisitor<Object> evaluationVisitor) {
-		this.undecoratedVisitor = evaluationVisitor;
-		super.setUndecoratedVisitor((EvaluationVisitor) evaluationVisitor);
-		
-	}
 
     
     /**

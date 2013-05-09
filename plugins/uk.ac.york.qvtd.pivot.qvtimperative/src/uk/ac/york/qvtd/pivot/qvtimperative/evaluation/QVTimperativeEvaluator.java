@@ -14,7 +14,6 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.ocl.examples.domain.utilities.DomainUtil;
 import org.eclipse.ocl.examples.domain.utilities.ProjectMap;
 import org.eclipse.ocl.examples.pivot.evaluation.PivotEvaluationEnvironment;
-import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
 import org.eclipse.ocl.examples.pivot.manager.MetaModelManagerResourceSetAdapter;
 import org.eclipse.ocl.examples.pivot.utilities.PivotEnvironment;
@@ -25,7 +24,6 @@ import org.eclipse.ocl.examples.xtext.base.utilities.CS2PivotResourceAdapter;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtbase.TypedModel;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
-import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
 import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 
@@ -140,7 +138,7 @@ public class QVTimperativeEvaluator {
             typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
             modelManager.addModel(typedModel, pairs.getValue());
         }
-        QVTimperativeEvaluationVisitor<Object> visitor = new QVTimperativeLMEvaluationVisitor(env, evalEnv, modelManager);
+        QVTimperativeEvaluationVisitor visitor = new QVTimperativeLMEvaluationVisitor(env, evalEnv, modelManager);
         if (isEvaluationTracingEnabled()) {
             // decorate the evaluation visitor with tracing support
         	visitor = new QVTimperativeTracingEvaluationVisitor(visitor);

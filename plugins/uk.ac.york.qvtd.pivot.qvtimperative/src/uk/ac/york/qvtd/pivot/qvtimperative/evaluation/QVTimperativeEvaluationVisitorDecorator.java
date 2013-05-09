@@ -12,13 +12,8 @@ package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
-import org.eclipse.ocl.examples.pivot.Environment;
-import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
-import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorDecorator;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
-import org.eclipse.ocl.examples.pivot.util.AbstractExtendingVisitor;
 import org.eclipse.ocl.examples.pivot.util.Visitable;
 import org.eclipse.qvtd.pivot.qvtbase.BaseModel;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
@@ -49,55 +44,20 @@ import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
  * QVTcoreEvaluationVisitorImpl is the class for ...
  */
 public abstract class QVTimperativeEvaluationVisitorDecorator extends EvaluationVisitorDecorator
-        implements QVTimperativeEvaluationVisitor<Object> {
-        
+	implements QVTimperativeEvaluationVisitor {
+
+	protected final @NonNull QVTimperativeAbstractEvaluationVisitor delegate;	// FIXME replace with inherited value
 	
-	public QVTimperativeEvaluationVisitorDecorator(@NonNull EvaluationVisitor decorated) {
+	public QVTimperativeEvaluationVisitorDecorator(@NonNull QVTimperativeAbstractEvaluationVisitor decorated) {
 		super(decorated);
+		this.delegate = decorated;
 	}
-	
-	/**
-     * Delegates to my decorated visitor.
-     */
-	public @NonNull EvaluationVisitor createNestedEvaluator() {
-        return getDelegate().createNestedEvaluator();
-	}
-  
-    /**
-     * Obtains the visitor that I decorate.
-     * 
-     * @return my decorated visitor
-     */
-	protected final @NonNull QVTimperativeEvaluationVisitor<Object> getDelegate() {
-        return delegate;
-    }
-    
-    /**
-     * Obtains my delegate's environment.
-     */
-    public Environment getEnvironment() {
-        return getDelegate().getEnvironment();
-    }
-
-    /**
-     * Obtains my delegate's evaluation environment.
-     */
-    public @NonNull EvaluationEnvironment getEvaluationEnvironment() {
-        return getDelegate().getEvaluationEnvironment();
-    }
-
-    /**
-     * Obtains my delegate's extent map.
-     */
-    public @NonNull DomainModelManager getModelManager() {
-        return getDelegate().getModelManager();
-    }
 
     /**
      * Delegates to my decorated visitor.
      */
-	public void setQVTUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor) {
-        getDelegate().setQVTUndecoratedVisitor(evaluationVisitor);
+	public void setQVTUndecoratedVisitor(QVTimperativeEvaluationVisitor evaluationVisitor) {
+        delegate.setUndecoratedVisitor(evaluationVisitor);
 	}
 	
     
@@ -105,180 +65,180 @@ public abstract class QVTimperativeEvaluationVisitorDecorator extends Evaluation
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitAssignment(@NonNull Assignment assignment) {
-		return getDelegate().visitAssignment(assignment);
+		return delegate.visitAssignment(assignment);
     }
 	
     /**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitBaseModel(@NonNull BaseModel baseModel) {
-		return getDelegate().visitBaseModel(baseModel);
+		return delegate.visitBaseModel(baseModel);
 	}
 	
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
-    	return getDelegate().visitBottomPattern(bottomPattern);
+    	return delegate.visitBottomPattern(bottomPattern);
     }
     
     /**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
-    	return getDelegate().visitCoreDomain(coreDomain);
+    	return delegate.visitCoreDomain(coreDomain);
     }
 
     /**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitDomain(@NonNull Domain domain) {
-		return getDelegate().visitDomain(domain);
+		return delegate.visitDomain(domain);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitCorePattern(@NonNull CorePattern corePattern) {
-    	return getDelegate().visitCorePattern(corePattern);
+    	return delegate.visitCorePattern(corePattern);
     }
 
     /**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitEnforcementOperation(@NonNull EnforcementOperation enforcementOperation) {
-    	return getDelegate().visitEnforcementOperation(enforcementOperation);
+    	return delegate.visitEnforcementOperation(enforcementOperation);
     }
 
     /**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitFunction(@NonNull Function function) {
-		return getDelegate().visitFunction(function);
+		return delegate.visitFunction(function);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitFunctionParameter(@NonNull FunctionParameter functionParameter) {
-		return getDelegate().visitFunctionParameter(functionParameter);
+		return delegate.visitFunctionParameter(functionParameter);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
-    	return getDelegate().visitGuardPattern(guardPattern);
+    	return delegate.visitGuardPattern(guardPattern);
     }
     
     /**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitPattern(@NonNull Pattern pattern) {
-		return getDelegate().visitPattern(pattern);
+		return delegate.visitPattern(pattern);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitPredicate(@NonNull Predicate predicate) {
-		return getDelegate().visitPredicate(predicate);
+		return delegate.visitPredicate(predicate);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
-    	return getDelegate().visitPropertyAssignment(propertyAssignment);
+    	return delegate.visitPropertyAssignment(propertyAssignment);
     }
 
     /**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitRealizedVariable(@NonNull RealizedVariable realizedVariable) {
-    	return getDelegate().visitRealizedVariable(realizedVariable);
+    	return delegate.visitRealizedVariable(realizedVariable);
     }
 
     /**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitRule(@NonNull Rule rule) {
-		return getDelegate().visitRule(rule);
+		return delegate.visitRule(rule);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
-		return getDelegate().visitTransformation(transformation);
+		return delegate.visitTransformation(transformation);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitTypedModel(@NonNull TypedModel typedModel) {
-		return getDelegate().visitTypedModel(typedModel);
+		return delegate.visitTypedModel(typedModel);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
 	public @Nullable Object visitUnit(@NonNull Unit unit) {
-		return getDelegate().visitUnit(unit);
+		return delegate.visitUnit(unit);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitVariableAssignment(@NonNull VariableAssignment variableAssignment) {
-    	return getDelegate().visitVariableAssignment(variableAssignment);
+    	return delegate.visitVariableAssignment(variableAssignment);
     }
 
     /**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitImperativeModel(ImperativeModel imperativeModel) {
-    	return getDelegate().visitImperativeModel(imperativeModel);
+    	return delegate.visitImperativeModel(imperativeModel);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitMapping(Mapping mapping) {
-    	return getDelegate().visitMapping(mapping);
+    	return delegate.visitMapping(mapping);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitMappingCall(MappingCall mappingCall) {
-    	return getDelegate().visitMappingCall(mappingCall);
+    	return delegate.visitMappingCall(mappingCall);
 	}
 
 	/**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visitMappingCallBinding(MappingCallBinding mappingCallBinding) {
-    	return getDelegate().visitMappingCallBinding(mappingCallBinding);
+    	return delegate.visitMappingCallBinding(mappingCallBinding);
 	}
 
     /**
      * Delegates to my decorated visitor.
      */
     public @Nullable Object visiting(Visitable visitable) {
-    	return getDelegate().visiting(visitable);
+    	return delegate.visiting(visitable);
 	}
 
 	public EvaluationVisitorImpl createNestedLMVisitor() {
-		return getDelegate().createNestedLMVisitor();
+		return delegate.createNestedLMVisitor();
 	}
 
 	public EvaluationVisitorImpl createNestedMMVisitor() {
-		return getDelegate().createNestedMMVisitor();
+		return delegate.createNestedMMVisitor();
 	}
 
 	public EvaluationVisitorImpl createNestedMRVisitor() {
-		return getDelegate().createNestedMRVisitor();
+		return delegate.createNestedMRVisitor();
 	}
 
 }
