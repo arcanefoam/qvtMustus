@@ -10,13 +10,25 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.domain.elements.DomainExpression;
+import org.eclipse.ocl.examples.domain.elements.DomainStandardLibrary;
+import org.eclipse.ocl.examples.domain.elements.DomainType;
+import org.eclipse.ocl.examples.domain.evaluation.DomainLogger;
+import org.eclipse.ocl.examples.domain.types.IdResolver;
+import org.eclipse.ocl.examples.pivot.ExpressionInOCL;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.manager.MetaModelManager;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+
 
 
 public class QVTimperativeTracingEvaluationVisitor extends
 		QVTimperativeEvaluationVisitorDecorator {
 
 	public QVTimperativeTracingEvaluationVisitor(
-			QVTimperativeEvaluationVisitor<Object> decorated) {
+			QVTimperativeEvaluationVisitor decorated) {
 		super(decorated);
 
 	}
@@ -24,9 +36,10 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	@Override
     public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
 		System.out.println("Transformation: " + transformation.getName());
-		Object result = getDelegate().visitTransformation(transformation);
+		Object result = ((QVTimperativeTracingEvaluationVisitor) getDelegate()).visitTransformation(transformation);
 		System.out.println("Result of the transformation was " + (Boolean)result);
 		return result;
         
     }
+
 }

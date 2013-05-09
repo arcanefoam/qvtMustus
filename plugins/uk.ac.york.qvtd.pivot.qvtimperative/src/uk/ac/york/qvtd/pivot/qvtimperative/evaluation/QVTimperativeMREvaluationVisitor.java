@@ -12,11 +12,15 @@ package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.domain.elements.DomainExpression;
+import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Element;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
+import org.eclipse.ocl.examples.pivot.ExpressionInOCL;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.util.Visitable;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
@@ -33,22 +37,21 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTcoreMREvaluationVisitor is the class for ...
  */
-public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVisitorImpl
-        implements QVTimperativeVisitor<Object> {
+public class QVTimperativeMREvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor
+		implements QVTimperativeVisitor<Object> {
 
     /**
      * Instantiates a new qV tcore mr evaluation visitor.
      *
      * @param env the environment
      * @param evalEnv the evaluation environment
-     * @param modelManager the model manager
+     * @param domainModelManager the model manager
      */
     public QVTimperativeMREvaluationVisitor(@NonNull Environment env,
-            @NonNull EvaluationEnvironment evalEnv, @NonNull QVTcDomainManager modelManager) {
-        super(env, evalEnv, modelManager);
+            @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager domainModelManager) {
+        super(env, evalEnv, domainModelManager);
     }
 
-    @Override
     public @NonNull EvaluationVisitor createNestedEvaluator() {
         EnvironmentFactory factory = environment.getFactory();
         EvaluationEnvironment nestedEvalEnv = factory.createEvaluationEnvironment(evaluationEnvironment);
@@ -179,4 +182,33 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
         throw new IllegalArgumentException("Unsupported " + node.eClass().getName()
                 + " specification in Middle to Right mapping. " + cause);
     }
+
+	@Nullable
+	public
+	Object visiting(Visitable visitable) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Nullable
+	public
+	Object evaluate(@NonNull DomainExpression body) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Nullable
+	public
+	Object evaluate(@NonNull ExpressionInOCL expressionInOCL) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@NonNull
+	public
+	EvaluationVisitor getEvaluator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

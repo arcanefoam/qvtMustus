@@ -12,6 +12,7 @@ package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Element;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
@@ -37,7 +38,7 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 /**
  * QVTimperativeLMEvaluationVisitor is the class for ...
  */
-public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVisitorImpl 
+public class QVTimperativeLMEvaluationVisitor extends QVTimperativeAbstractEvaluationVisitor 
         implements QVTimperativeVisitor<Object> {
 
     /**
@@ -45,11 +46,11 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
      *
      * @param env the environment
      * @param evalEnv the evaluation environment
-     * @param modelManager the model manager
+     * @param domainModelManager the model manager
      */
     public QVTimperativeLMEvaluationVisitor(@NonNull Environment env,
-            @NonNull EvaluationEnvironment evalEnv, @NonNull QVTcDomainManager modelManager) {
-        super(env, evalEnv, modelManager);
+            @NonNull EvaluationEnvironment evalEnv, @NonNull DomainModelManager domainModelManager) {
+        super(env, evalEnv, domainModelManager);
     }
 
     @Override

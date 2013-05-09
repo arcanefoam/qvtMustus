@@ -140,7 +140,7 @@ public class QVTimperativeEvaluator {
             typedModel = DomainUtil.getNamedElement(transformation.getModelParameter(), pairs.getKey());
             modelManager.addModel(typedModel, pairs.getValue());
         }
-        QVTimperativeEvaluationVisitor<Object> visitor = new QVTimperativeLMEvaluationVisitor(env, evalEnv, modelManager);
+        QVTimperativeEvaluationVisitor visitor = new QVTimperativeLMEvaluationVisitor(env, evalEnv, modelManager);
         if (isEvaluationTracingEnabled()) {
             // decorate the evaluation visitor with tracing support
         	visitor = new QVTimperativeTracingEvaluationVisitor(visitor);
