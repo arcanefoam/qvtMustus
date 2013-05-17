@@ -66,23 +66,23 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
         Area area = bottomPattern.getArea();
         if (area instanceof CoreDomain) {
             for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
-                rVar.accept(this);
+                rVar.accept(getUndecoratedVisitor());
             }
             for (Assignment assigment : bottomPattern.getAssignment()) {
-                assigment.accept(this);
+                assigment.accept(getUndecoratedVisitor());
             }
             /*// There should be no assignments
             for (Assignment assigment : bottomPattern.getAssignment()) {
-                assigment.accept(this);
+                assigment.accept(getUndecoratedVisitor());
             }*/
             /*// There should be no predicates
             for (Assignment assigment : bottomPattern.getAssignment()) {
-                assigment.accept(this);
+                assigment.accept(getUndecoratedVisitor());
             }*/
             /* // Probably enforcement operations must be called too
             for (EnforcementOperation enforceOp : bottomPattern
                     .getEnforcementOperation()) {
-                enforceOp.accept(this);
+                enforceOp.accept(getUndecoratedVisitor());
             }*/
         }
         else if (area instanceof Mapping) {
@@ -104,7 +104,7 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
                         evaluationEnvironment.replace(var, bindingIt.next());
                         for (Predicate predicate : bottomPattern.getPredicate()) {
                             // If the predicate is not true, the binding is not valid
-                            Boolean result = (Boolean) predicate.accept(this);
+                            Boolean result = (Boolean) predicate.accept(getUndecoratedVisitor());
                             if (result != null && !result) {
                                 it.remove();
                             }
@@ -113,11 +113,11 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
                 }
             }*/
             for (Assignment assigment : bottomPattern.getAssignment()) {
-                assigment.accept(this);
+                assigment.accept(getUndecoratedVisitor());
             }
             for (EnforcementOperation enforceOp : bottomPattern
                     .getEnforcementOperation()) {
-                enforceOp.accept(this);
+                enforceOp.accept(getUndecoratedVisitor());
             }
         }
         //return patternValidBindings;
@@ -134,11 +134,11 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
     public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
     	/*// THERE SHULD BE NO GUARD PATTERN IN THE R CoreDomain
-        coreDomain.getGuardPattern().accept(this);
+        coreDomain.getGuardPattern().accept(getUndecoratedVisitor());
         */
-        boolean result = (Boolean) coreDomain.getGuardPattern().accept(this);
+        boolean result = (Boolean) coreDomain.getGuardPattern().accept(getUndecoratedVisitor());
         if (result) {
-        	coreDomain.getBottomPattern().accept(this);
+        	coreDomain.getBottomPattern().accept(getUndecoratedVisitor());
         }
         return result;
     }
@@ -152,15 +152,15 @@ public class QVTimperativeMREvaluationVisitor extends QVTimperativeEvaluationVis
     	if (mapping.getDomain().size() > 1) {
         	MtoRMappingError(mapping, "Max supported number of domains is 1.");
         }
-        boolean result = (Boolean) mapping.getGuardPattern().accept(this);
+        boolean result = (Boolean) mapping.getGuardPattern().accept(getUndecoratedVisitor());
         if (result) {
         	for (Domain domain : mapping.getDomain()) {
-                result = (Boolean) domain.accept(this);
+                result = (Boolean) domain.accept(getUndecoratedVisitor());
             }
         	if (result) {
-        		mapping.getBottomPattern().accept(this);
+        		mapping.getBottomPattern().accept(getUndecoratedVisitor());
             	for (MappingCall mappingCall : mapping.getMappingCall()) {
-                	mappingCall.accept(this);
+                	mappingCall.accept(getUndecoratedVisitor());
                 }
         	}
         }

@@ -68,7 +68,7 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
     @Override
     public @Nullable Object visitImperativeModel(@NonNull ImperativeModel imperativeModel) {
     	for (org.eclipse.ocl.examples.pivot.Package pkge : imperativeModel.getNestedPackage()) {
-    		pkge.accept(this);
+    		pkge.accept(getUndecoratedVisitor());
     	}
         return true;
     }
@@ -123,7 +123,7 @@ public class QVTimperativeEvaluationVisitorImpl extends QVTimperativeAbstractEva
 	        	}
 	        	else {
 	        		// The MiddleGuardPattern should be empty in the root mapping, i.e. no need to find bindings
-	            	rule.accept(this);
+	            	rule.accept(getUndecoratedVisitor());
 	        	}
 			}
         }

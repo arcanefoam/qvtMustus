@@ -143,6 +143,7 @@ public class TestQVTi extends LoadTestCase {
             Map<String, Resource> typeModelValidationResourceMap) {
         
     	boolean result = false;
+    	evaluator.setEvaluationTracingEnabled(true);
         try {
         	result = evaluator.loadTransformation();
         } catch (IOException ex) {
@@ -157,7 +158,7 @@ public class TestQVTi extends LoadTestCase {
             result = evaluator.execute();
             assertTrue("QVTcoreEVNodeTypeImpl should not return null.", result);
             evaluator.saveModels("platform:/plugin/uk.ac.york.qvtd.tests.hhr/model-gen/");
-            System.out.println("Result of the transformation was " + (Boolean)result);
+            //System.out.println("Result of the transformation was " + (Boolean)result);
             
             // Validate against reference models
             typeModelResourceMap = evaluator.getModels();

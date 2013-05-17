@@ -46,7 +46,7 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
 public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBaseAbstractEvaluationVisitor
         implements QVTimperativeEvaluationVisitor<Object> {
 
-	protected QVTcoreBaseVisitor<Object> undecoratedVisitor;
+	//protected QVTcoreBaseVisitor<Object> undecoratedVisitor;
         
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
@@ -214,11 +214,11 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
      * 
      * @see #getUndecoratedVisitor()
      */
-	public void setUndecoratedVisitor(
+	/*public void setUndecoratedVisitor(
 			QVTimperativeEvaluationVisitor<Object> evaluationVisitor) {
 		this.undecoratedVisitor = evaluationVisitor;
 		
-	}
+	}*/
 
     
     /**

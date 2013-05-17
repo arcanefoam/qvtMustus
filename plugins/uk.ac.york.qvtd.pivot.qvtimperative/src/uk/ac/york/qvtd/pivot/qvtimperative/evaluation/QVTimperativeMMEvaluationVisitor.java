@@ -66,11 +66,11 @@ public class QVTimperativeMMEvaluationVisitor extends QVTimperativeEvaluationVis
         if (area instanceof Mapping && ((Mapping)area).getDomain().size() == 0) {
             // What is the environment??
             for (Assignment assigment : bottomPattern.getAssignment()) {
-                assigment.accept(this);
+                assigment.accept(getUndecoratedVisitor());
             }
             // Probably enforcement operations must be called too
             for (EnforcementOperation enforceOp : bottomPattern.getEnforcementOperation()) {
-                enforceOp.accept(this);
+                enforceOp.accept(getUndecoratedVisitor());
             }
             return true;
         }

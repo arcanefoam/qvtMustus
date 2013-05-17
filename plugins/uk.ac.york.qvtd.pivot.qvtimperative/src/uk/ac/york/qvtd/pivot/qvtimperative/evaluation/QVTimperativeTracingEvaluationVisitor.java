@@ -10,6 +10,13 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
+import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
+
 
 
 public class QVTimperativeTracingEvaluationVisitor extends
@@ -21,6 +28,35 @@ public class QVTimperativeTracingEvaluationVisitor extends
 
 	}
 	
+	@Override
+	public @NonNull EvaluationVisitor createNestedEvaluator() {
+		return new TracingEvaluationVisitor(super.createNestedEvaluator());
+	}
+	
+	@Override
+    public @Nullable Object visitImperativeModel(ImperativeModel imperativeModel) {
+		return getDelegate().visitImperativeModel(imperativeModel);
+	}
+	
+	@Override
+	public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
+		System.out.println("Transformation " + transformation.getName());
+		return getDelegate().visitTransformation(transformation);
+	}
+	
+	
+	
+	/*public EvaluationVisitorImpl createNestedLMVisitor() {
+		return new TracingEvaluationVisitor(super.createNestedLMVisitor());
+	}
+
+	public EvaluationVisitorImpl createNestedMMVisitor() {
+		return getDelegate().createNestedMMVisitor();
+	}
+
+	public EvaluationVisitorImpl createNestedMRVisitor() {
+		return getDelegate().createNestedMRVisitor();
+	}*/
 	
 
 }

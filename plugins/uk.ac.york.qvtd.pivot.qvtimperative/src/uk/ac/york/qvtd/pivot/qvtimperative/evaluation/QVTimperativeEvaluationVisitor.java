@@ -20,7 +20,7 @@ import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 import org.eclipse.qvtd.pivot.qvtimperative.util.QVTimperativeVisitor;
 
-public interface QVTimperativeEvaluationVisitor<R> extends QVTimperativeVisitor<R> {
+public interface QVTimperativeEvaluationVisitor<R> extends QVTimperativeVisitor<R>, EvaluationVisitor {
 	
 	@NonNull EvaluationVisitor createNestedEvaluator();
 	
@@ -57,7 +57,7 @@ public interface QVTimperativeEvaluationVisitor<R> extends QVTimperativeVisitor<
      * 
      * @param decorator the decorator that is not decorated/
      */
-	void setUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor);
+	//void setUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor);
 	
 	EvaluationVisitorImpl createNestedLMVisitor();
 	
