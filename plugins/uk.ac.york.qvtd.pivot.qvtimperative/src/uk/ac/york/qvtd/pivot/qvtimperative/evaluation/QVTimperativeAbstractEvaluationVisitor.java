@@ -44,9 +44,8 @@ import uk.ac.york.qvtd.library.executor.QVTcDomainManager;
  * QVTimperativeAbstractEvaluationVisitor is the class for ...
  */
 public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBaseAbstractEvaluationVisitor
-        implements QVTimperativeEvaluationVisitor<Object> {
+        implements QVTimperativeEvaluationVisitor {
 
-	//protected QVTcoreBaseVisitor<Object> undecoratedVisitor;
         
     /**
      * Instantiates a new qV tcore evaluation visitor impl.
@@ -111,13 +110,13 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
     	Mapping calledMapping = mappingCall.getReferredMapping();
         EvaluationVisitorImpl nv = null;
 		if (isLtoMMapping(calledMapping)) {
-			nv = createNestedLMVisitor();
+			nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedLMVisitor();
 		}
     	else if (isMtoRMapping(calledMapping)) {
-    		nv = createNestedMRVisitor();
+    		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMRVisitor();
     	}
     	else if (isMtoMMapping(calledMapping)) {
-    		nv = createNestedMMVisitor();
+    		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMMVisitor();
     	} else {
     		// FIXME Error
     	}

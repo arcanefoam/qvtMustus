@@ -155,7 +155,4 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
                 + " specification in Left to Middle mapping. " + cause);
     }
 
-    
-    
-
 }

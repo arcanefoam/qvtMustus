@@ -10,20 +10,35 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
+import java.util.ArrayList;
+
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.ocl.examples.domain.elements.DomainType;
+import org.eclipse.ocl.examples.pivot.OCLExpression;
+import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
+import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
+import org.eclipse.qvtd.pivot.qvtcorebase.GuardPattern;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
+import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
+import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
+import org.eclipse.qvtd.pivot.qvtimperative.MappingCallBinding;
 
 
 
 public class QVTimperativeTracingEvaluationVisitor extends
 		QVTimperativeEvaluationVisitorDecorator {
+	
+	private static int identLevel;
 
 	public QVTimperativeTracingEvaluationVisitor(
-			QVTimperativeEvaluationVisitor<Object> decorated) {
+			QVTimperativeEvaluationVisitor decorated) {
 		super(decorated);
 
 	}
@@ -34,29 +49,155 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	}
 	
 	@Override
+    public @Nullable Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
+		
+		if (bottomPattern.getArea() instanceof CoreDomain) {
+			System.out.println(getIdent() + "Visiting CoreDomain BottomPattern");
+		}
+		if (bottomPattern.getArea() instanceof Mapping) {
+			System.out.println(getIdent() + "Visiting Mapping BottomPattern");
+		}
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitBottomPattern(bottomPattern);
+		identLevel--;
+		return result;
+	}
+	
+	@Override
+    public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
+		System.out.println(getIdent() + "CoreDomain " + coreDomain.getName());
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitCoreDomain(coreDomain);
+		identLevel--;
+    	return result;
+    }
+	
+	@Override
+	public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
+		
+		if (guardPattern.getArea() instanceof CoreDomain) {
+			System.out.println(getIdent() + "Visiting CoreDomain GuardPattern");
+		}
+		if (guardPattern.getArea() instanceof Mapping) {
+			System.out.println(getIdent() + "Visiting Mapping GuardPattern");
+		}
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitGuardPattern(guardPattern);
+		try {
+			if (guardPattern.getPredicate().size() == 0) {
+				System.out.println(getIdent() + "GuardPattern has no predicates.");
+			} else {
+				System.out.println(getIdent() + "GuardPattern result: " + result);
+			}
+		} catch (Exception e) {
+            // tracing must not interfere with evaluation
+        }
+		identLevel--;
+    	return result;
+	}
+	
+	@Override
     public @Nullable Object visitImperativeModel(ImperativeModel imperativeModel) {
-		return getDelegate().visitImperativeModel(imperativeModel);
+		return ((QVTimperativeEvaluationVisitor)getDelegate()).visitImperativeModel(imperativeModel);
+	}
+	
+	@Override
+	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
+		System.out.println(getIdent() + "Visiting MappingCall, calling: " + mappingCall.getReferredMapping().getName());
+		identLevel++;
+		System.out.println(getIdent() + "Bindings");
+		for (MappingCallBinding binding : mappingCall.getBinding()) {
+			Variable boundVariable = binding.getBoundVariable();
+			System.out.println(getIdent() + "BoundVariable " + boundVariable.getName());
+			Object valueOrValues = safeVisit(binding.getValue());
+			/*
+			if (!binding.isIsLoop()) {
+				DomainType valueType = metaModelManager.getIdResolver().getDynamicTypeOf(valueOrValues);
+				if (valueType.conformsTo(metaModelManager, boundVariable.getType())) {
+					nv.getEvaluationEnvironment().add(boundVariable, valueOrValues);
+				}
+				else {
+					return null;		
+				}
+			}
+			else if (valueOrValues instanceof Iterable<?>) {
+				if (loopedVariables == null) {
+					loopedVariables = new ArrayList<Variable>();
+					loopedValues = new ArrayList<Iterable<?>>();
+				}
+				loopedVariables.add(boundVariable);
+				loopedValues.add((Iterable<?>)valueOrValues);
+				nv.getEvaluationEnvironment().add(boundVariable, null);
+			} else {
+				// FIXME Error message;
+			}
+			*/
+    	}
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMappingCall(mappingCall);
+		identLevel--;
+		return result;
 	}
 	
 	@Override
 	public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
-		System.out.println("Transformation " + transformation.getName());
-		return getDelegate().visitTransformation(transformation);
+		System.out.println("\n");
+		System.out.println("---- Transformation " + transformation.getName() + " ----");
+		identLevel =+1;
+		return ((QVTimperativeEvaluationVisitor)getDelegate()).visitTransformation(transformation);
 	}
 	
-	
-	
-	/*public EvaluationVisitorImpl createNestedLMVisitor() {
-		return new TracingEvaluationVisitor(super.createNestedLMVisitor());
+	@Override
+	public @Nullable Object visitMapping(@NonNull Mapping mapping) {
+		System.out.println(getIdent() + "Mapping " + mapping.getName());
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMapping(mapping);
+		identLevel--;
+		return result;
 	}
+	
+	@Override
+	public @Nullable Object visitPredicate(@NonNull Predicate predicate) {
+		
+		OCLExpression exp = predicate.getConditionExpression();
+		System.out.println("Predicate " + exp.getName());
+		return ((QVTimperativeEvaluationVisitor)getDelegate()).visitPredicate(predicate);
+		
+	}
+	
+
+	public EvaluationVisitorImpl createNestedLMVisitor() {
+		
+		System.out.println("(Creating nested LM Visitor)");
+		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
+				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedLMVisitor());
+		return (EvaluationVisitorImpl) decorator.getDelegate();
+	}
+
 
 	public EvaluationVisitorImpl createNestedMMVisitor() {
-		return getDelegate().createNestedMMVisitor();
+		
+		System.out.println("(Creating nested MM Visitor)");
+		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
+				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedMMVisitor());
+		return (EvaluationVisitorImpl) decorator.getDelegate();
 	}
 
+
 	public EvaluationVisitorImpl createNestedMRVisitor() {
-		return getDelegate().createNestedMRVisitor();
-	}*/
+		
+		System.out.println("(Creating nested MR Visitor)");
+		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
+				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedMRVisitor());
+		return (EvaluationVisitorImpl) decorator.getDelegate();
+	}
+	
+	private String getIdent() {
+		StringBuffer outputBuffer = new StringBuffer(identLevel);
+		for (int i = 0; i < identLevel; i++){
+		   outputBuffer.append("\t");
+		}
+		return outputBuffer.toString();
+	}
 	
 
 }
