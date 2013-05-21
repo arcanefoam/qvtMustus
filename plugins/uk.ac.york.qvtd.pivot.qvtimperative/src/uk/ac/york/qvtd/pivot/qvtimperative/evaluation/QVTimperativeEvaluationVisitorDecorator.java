@@ -208,7 +208,18 @@ public abstract class QVTimperativeEvaluationVisitorDecorator extends Evaluation
 	
 	@Override
 	public Object safeVisit(@Nullable Visitable v) {
-		return ((EvaluationVisitorImpl)getDelegate()).safeVisit(v);
+		if (v == null) {
+			throw new InvalidValueException("null expression");
+		}
+		try {
+			Object result = v.accept(getDelegate());
+			assert ValuesUtil.isBoxed(result);	// Make sure Integer/Real are boxed, invalid is an exception, null is null
+			return result;
+		} catch (InvalidValueException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new InvalidValueException(e, "Evaluation Failure");
+		}
 	}
 	
 	/**
@@ -379,10 +390,10 @@ public abstract class QVTimperativeEvaluationVisitorDecorator extends Evaluation
     	return getDelegate().visiting(visitable);
 	}
     
-    public abstract EvaluationVisitorImpl createNestedLMVisitor();
+    public abstract EvaluationVisitor createNestedLMVisitor();
     
-    public abstract EvaluationVisitorImpl createNestedMMVisitor();
+    public abstract EvaluationVisitor createNestedMMVisitor();
     
-    public abstract EvaluationVisitorImpl createNestedMRVisitor();
+    public abstract EvaluationVisitor createNestedMRVisitor();
 
 }

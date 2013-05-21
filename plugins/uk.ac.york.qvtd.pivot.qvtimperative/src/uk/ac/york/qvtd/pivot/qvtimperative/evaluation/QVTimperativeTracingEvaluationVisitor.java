@@ -59,6 +59,7 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		}
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitBottomPattern(bottomPattern);
+		// Print the created (realized) variables
 		identLevel--;
 		return result;
 	}
@@ -105,34 +106,6 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
 		System.out.println(getIdent() + "Visiting MappingCall, calling: " + mappingCall.getReferredMapping().getName());
 		identLevel++;
-		System.out.println(getIdent() + "Bindings");
-		for (MappingCallBinding binding : mappingCall.getBinding()) {
-			Variable boundVariable = binding.getBoundVariable();
-			System.out.println(getIdent() + "BoundVariable " + boundVariable.getName());
-			Object valueOrValues = safeVisit(binding.getValue());
-			/*
-			if (!binding.isIsLoop()) {
-				DomainType valueType = metaModelManager.getIdResolver().getDynamicTypeOf(valueOrValues);
-				if (valueType.conformsTo(metaModelManager, boundVariable.getType())) {
-					nv.getEvaluationEnvironment().add(boundVariable, valueOrValues);
-				}
-				else {
-					return null;		
-				}
-			}
-			else if (valueOrValues instanceof Iterable<?>) {
-				if (loopedVariables == null) {
-					loopedVariables = new ArrayList<Variable>();
-					loopedValues = new ArrayList<Iterable<?>>();
-				}
-				loopedVariables.add(boundVariable);
-				loopedValues.add((Iterable<?>)valueOrValues);
-				nv.getEvaluationEnvironment().add(boundVariable, null);
-			} else {
-				// FIXME Error message;
-			}
-			*/
-    	}
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMappingCall(mappingCall);
 		identLevel--;
 		return result;
@@ -142,8 +115,11 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
 		System.out.println("\n");
 		System.out.println("---- Transformation " + transformation.getName() + " ----");
-		identLevel =+1;
-		return ((QVTimperativeEvaluationVisitor)getDelegate()).visitTransformation(transformation);
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitTransformation(transformation);
+		identLevel--;
+		System.out.println("---- Transformation End ----");
+		return result;
 	}
 	
 	@Override
@@ -165,30 +141,30 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	}
 	
 
-	public EvaluationVisitorImpl createNestedLMVisitor() {
+	public EvaluationVisitor createNestedLMVisitor() {
 		
 		System.out.println("(Creating nested LM Visitor)");
 		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
 				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedLMVisitor());
-		return (EvaluationVisitorImpl) decorator.getDelegate();
+		return decorator;//.getDelegate();
 	}
 
 
-	public EvaluationVisitorImpl createNestedMMVisitor() {
+	public EvaluationVisitor createNestedMMVisitor() {
 		
 		System.out.println("(Creating nested MM Visitor)");
 		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
 				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedMMVisitor());
-		return (EvaluationVisitorImpl) decorator.getDelegate();
+		return decorator;
 	}
 
 
-	public EvaluationVisitorImpl createNestedMRVisitor() {
+	public EvaluationVisitor createNestedMRVisitor() {
 		
 		System.out.println("(Creating nested MR Visitor)");
 		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
 				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedMRVisitor());
-		return (EvaluationVisitorImpl) decorator.getDelegate();
+		return decorator;
 	}
 	
 	private String getIdent() {
