@@ -75,33 +75,6 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
      * loopedVariables and loopedValues. The recursion proceeds to greater depths and once all
      * depths are exhausted invokes the mapping. 
      */
-    private void doMappingCallRecursion(@NonNull EvaluationVisitorImpl nestedEvaluator, @NonNull Mapping mapping,
-    		@NonNull List<Variable> loopedVariables, @NonNull List<Iterable<?>> loopedValues, int depth) {
-		assert depth < loopedVariables.size();
-		//EvaluationEnvironment nestedEvaluationEnvironment = ((EvaluationVisitor) nestedEvaluator).getEvaluationEnvironment();
-		Variable boundVariable = loopedVariables.get(depth);
-		Type guardType = boundVariable.getType();
-		PivotIdResolver idResolver = metaModelManager.getIdResolver();
-		int nestedDepth = depth+1;
-		Mapping invokeMapping = nestedDepth >= loopedVariables.size() ? mapping : null;
-//		Map.Entry<DomainTypedElement, Object> entry = nestedEvaluationEnvironment.getEntry(boundVariable);
-		for (Object value : loopedValues.get(depth)) {
-//			entry.setValue(value);
-			DomainType valueType = idResolver.getDynamicTypeOf(value);
-			if (valueType.conformsTo(metaModelManager, guardType)) {
-				//nestedEvaluationEnvironment.replace(boundVariable, value);
-				getEvaluationEnvironment().replace(boundVariable, value);
-				if (invokeMapping != null) {
-					invokeMapping.accept(nestedEvaluator);
-					//nestedEvaluator.safeVisit(invokeMapping);
-				}
-				else {
-					doMappingCallRecursion(nestedEvaluator, mapping, loopedVariables, loopedValues, nestedDepth);				
-				}
-			}
-		}
-	}
-    
     private void doMappingCallRecursion(@NonNull Mapping mapping,
     		@NonNull List<Variable> loopedVariables, @NonNull List<Iterable<?>> loopedValues, int depth) {
 		assert depth < loopedVariables.size();
@@ -137,18 +110,6 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
 	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
     	
     	Mapping calledMapping = mappingCall.getReferredMapping();
-    	/*EvaluationVisitorImpl nv = null;
-		if (isLtoMMapping(calledMapping)) {
-			nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedLMVisitor();
-		}
-    	else if (isMtoRMapping(calledMapping)) {
-    		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMRVisitor();
-    	}
-    	else if (isMtoMMapping(calledMapping)) {
-    		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMMVisitor();
-    	} else {
-    		// FIXME Error
-    	}*/
 		//
 		//	Initialize nested environment directly with the bound values for non-looped bindings,
 		//	and build matching lists of boundVariables and boundIterables for looped bindings. 
