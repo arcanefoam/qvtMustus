@@ -51,12 +51,7 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	@Override
     public @Nullable Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
 		
-		if (bottomPattern.getArea() instanceof CoreDomain) {
-			System.out.println(getIdent() + "Visiting CoreDomain BottomPattern");
-		}
-		if (bottomPattern.getArea() instanceof Mapping) {
-			System.out.println(getIdent() + "Visiting Mapping BottomPattern");
-		}
+		System.out.println(getIdent() + "BottomPattern");
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitBottomPattern(bottomPattern);
 		// Print the created (realized) variables
@@ -76,11 +71,16 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	@Override
 	public @Nullable Object visitGuardPattern(@NonNull GuardPattern guardPattern) {
 		
-		if (guardPattern.getArea() instanceof CoreDomain) {
-			System.out.println(getIdent() + "Visiting CoreDomain GuardPattern");
-		}
-		if (guardPattern.getArea() instanceof Mapping) {
-			System.out.println(getIdent() + "Visiting Mapping GuardPattern");
+		
+		System.out.println(getIdent() + "GuardPattern");
+		// Print the variable bindings
+		for (Variable var : guardPattern.getVariable()) {
+			try {
+				System.out.println(getIdent() + "Var: " + var.getName() + ", value: " + getDelegate().getEvaluationEnvironment().getValueOf(var));
+			} catch (Exception ex) {
+				// tracing must not interfere with evaluation
+				System.out.println(getIdent() + "Var: " + var.getName() + ", was not found in the environment.");
+			}
 		}
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitGuardPattern(guardPattern);
