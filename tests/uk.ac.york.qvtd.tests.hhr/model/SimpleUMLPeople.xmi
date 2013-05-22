@@ -9,12 +9,15 @@
     name="People">
   <elements
       xsi:type="simpleuml:Class"
+      kind="persistent"
       name="Person"
       generalOpposite="//@elements.1 //@elements.2">
     <attributes
+        xsi:type="simpleuml:Attribute"
         name="Name"
         type="//@elements.5"/>
     <attributes
+        xsi:type="simpleuml:Attribute"
         name="Guardian"
         type="//@elements.0"/>
   </elements>
@@ -25,6 +28,7 @@
       general="//@elements.0"
       forward="//@elements.4">
     <attributes
+        xsi:type="simpleuml:Attribute"
         name="StudentNumber"
         type="//@elements.6"/>
   </elements>
@@ -34,6 +38,7 @@
       name="Professor"
       general="//@elements.0">
     <attributes
+        xsi:type="simpleuml:Attribute"
         name="employed"
         type="//@elements.7"/>
   </elements>

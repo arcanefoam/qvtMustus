@@ -194,13 +194,11 @@ map classToTableLM in umlRdbms {
         a <= c.attributes;
         ctt := c2t;
     }
-    
     map complexAttributePrimitiveAttributesLM {
         c := c;
         a <= c.attributes;
         ca := c.typeOpposite;
-   }
-    
+    }
     map complexAttributeComplexAttributesLM {
         c := c;
         a <= c.attributes;
@@ -295,9 +293,9 @@ map classToTableMR_2_2 in umlRdbms {
 
 map associationToForeignKeyLM in umlRdbms {
     uml (p:Package, sc:Class, dc:Class, a:Association |
-        --a.namespace = p;
+        a.namespace = p;
         sc := a.source;
-        --sc.namespace = p;
+        sc.namespace = p;
         -- getAllForwards(sc)->includes(a);
         dc := a.destination;
         -- getAllSupers(dc)->includes(a.destination);

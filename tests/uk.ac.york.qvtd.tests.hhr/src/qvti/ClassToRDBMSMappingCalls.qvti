@@ -292,7 +292,7 @@ map classComplexAttributesLM in umlRdbms {
         la.owner := ctt;
         la.kind := a.kind;
         la.name := a.name;
-        la.attribute := t;	-- TODO check the whole attribute rules
+        -- la.attribute := t;	-- TODO check the whole attribute rules
         -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
     }
 }
