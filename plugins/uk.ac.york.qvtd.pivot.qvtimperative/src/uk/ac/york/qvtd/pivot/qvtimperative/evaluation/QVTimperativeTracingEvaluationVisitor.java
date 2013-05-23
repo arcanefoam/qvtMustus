@@ -22,9 +22,11 @@ import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcorebase.GuardPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
@@ -110,6 +112,18 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		identLevel--;
 		return result;
 	}
+
+	
+	@Override
+	public @Nullable Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
+		
+		System.out.println(getIdent() + "visitAssignment " + propertyAssignment.getSlotExpression()
+				+ "." + propertyAssignment.getTargetProperty().getName());
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitPropertyAssignment(propertyAssignment);
+		identLevel--;
+		return result;
+    }
 	
 	@Override
 	public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
@@ -170,7 +184,7 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	private String getIdent() {
 		StringBuffer outputBuffer = new StringBuffer(identLevel);
 		for (int i = 0; i < identLevel; i++){
-		   outputBuffer.append("\t");
+		   outputBuffer.append(" ");
 		}
 		return outputBuffer.toString();
 	}

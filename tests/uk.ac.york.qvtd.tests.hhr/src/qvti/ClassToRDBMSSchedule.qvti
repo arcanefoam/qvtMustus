@@ -187,7 +187,9 @@ map classToTableLM in umlRdbms {
     map classPrimitiveAttributesLM {
         c := c;
         a <= c.attributes;
+        t <= p.elements;
         ctt := c2t;
+        p2n <= p2s.primitivesToNames;
     }
     map classComplexAttributesLM {
         c := c;
@@ -377,7 +379,7 @@ map classPrimitiveAttributesLM in umlRdbms {
         t := a.type;) { }
     where (ctt:ClassToTable, p2n:PrimitiveToName |
     		ctt.umlClass=c;
-    		p2n := t.PrimitiveToName;) {
+    		p2n.primitive=t;) {
         realize atc:AttributeToColumn |
         atc.attribute := a;
         atc.owner := ctt;
@@ -393,7 +395,7 @@ map classComplexAttributesLM in umlRdbms {
 	uml (c:Class, t:Class, a:Attribute |
         a.owner = c;
         --getAllAttributes(c)->includes(a);
-        t := a.type;) { }
+        a.type = t;) { }
     where (ctt:ClassToTable | ctt.umlClass=c;) {
         realize la:NonLeafAttribute |
         la.attribute := a;
@@ -409,7 +411,7 @@ map complexAttributePrimitiveAttributesLM in umlRdbms {
 	uml (c:Class, ca:Attribute, t:PrimitiveDataType, a:Attribute |
     	a.owner = c;
         --getAllAttributes(c)->includes(a);
-        t := a.type;
+        a.type = t;
 		ca.type = c;) { }
     where (nla:NonLeafAttribute, p2n:PrimitiveToName |
     		nla := ca.FromAttribute;
@@ -428,7 +430,7 @@ map complexAttributeComplexAttributesLM in umlRdbms {
 	uml (c:Class, ca:Attribute, t:Class, a:Attribute |
     	a.owner = c;
         --getAllAttributes(c)->includes(a);
-        t := a.type;
+        a.type = t;
         ca.type = c;) { }
     where (nla:NonLeafAttribute |
     		nla := ca.FromAttribute;) {
