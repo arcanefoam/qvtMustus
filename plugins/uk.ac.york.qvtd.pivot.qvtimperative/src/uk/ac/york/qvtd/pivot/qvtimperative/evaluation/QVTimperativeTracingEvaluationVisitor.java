@@ -105,8 +105,23 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	}
 	
 	@Override
+	public @Nullable Object visitMapping(@NonNull Mapping mapping) {
+		System.out.println(getIdent() + "Mapping " + mapping.getName());
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMapping(mapping);
+		identLevel--;
+		return result;
+	}
+
+	@Override
 	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
 		System.out.println(getIdent() + "Visiting MappingCall, calling: " + mappingCall.getReferredMapping().getName());
+		StringBuffer outputBuffer = new StringBuffer(identLevel);
+		for (MappingCallBinding binding : mappingCall.getBinding()) {
+			outputBuffer.append(binding.getBoundVariable().getName());
+			outputBuffer.append(",");
+		}
+		System.out.println(getIdent() + "  Bound variables: " + outputBuffer.toString());
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMappingCall(mappingCall);
 		identLevel--;
@@ -133,15 +148,6 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitTransformation(transformation);
 		identLevel--;
 		System.out.println("---- Transformation End ----");
-		return result;
-	}
-	
-	@Override
-	public @Nullable Object visitMapping(@NonNull Mapping mapping) {
-		System.out.println(getIdent() + "Mapping " + mapping.getName());
-		identLevel++;
-		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMapping(mapping);
-		identLevel--;
 		return result;
 	}
 	
@@ -184,7 +190,7 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	private String getIdent() {
 		StringBuffer outputBuffer = new StringBuffer(identLevel);
 		for (int i = 0; i < identLevel; i++){
-		   outputBuffer.append(" ");
+		   outputBuffer.append("\t");
 		}
 		return outputBuffer.toString();
 	}

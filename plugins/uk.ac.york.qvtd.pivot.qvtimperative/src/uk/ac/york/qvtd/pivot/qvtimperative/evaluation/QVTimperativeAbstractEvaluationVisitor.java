@@ -182,6 +182,8 @@ public abstract class QVTimperativeAbstractEvaluationVisitor extends QVTcoreBase
                     Object slotBinding = evaluationEnvironment.getValueOf(slotVar);
                     if(slotBinding != null) {
                         Object value = safeVisit(propertyAssignment.getValue());
+                        // Unbox to asign to ecore type
+                        value = metaModelManager.getIdResolver().unboxedValueOf(value);
                         Property p = propertyAssignment.getTargetProperty();
                         p.initValue(slotBinding, value);
                     } else {

@@ -176,7 +176,7 @@
     </children>
     <styles xmi:type="notation:FontStyle" xmi:id="_Ahw9wZu0EeKAIOl9ca8i4A" fontName="Segoe UI"/>
     <element xmi:type="ecore:EReference" href="SimpleUML.ecore#//Attribute/type"/>
-    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_Ahw9wpu0EeKAIOl9ca8i4A" points="[0, 0, -57, 60]$[57, -60, 0, 0]"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_Ahw9wpu0EeKAIOl9ca8i4A" points="[13, 4, -193, 0]$[192, 4, -14, 0]"/>
     <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_AnfLQpu0EeKAIOl9ca8i4A" id="(0.8470588235294118,0.28846153846153844)"/>
     <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_AnfLQ5u0EeKAIOl9ca8i4A" id="(0.12844036697247707,0.36538461538461536)"/>
   </edges>
@@ -236,7 +236,7 @@
     </children>
     <styles xmi:type="notation:FontStyle" xmi:id="_Ai0GoZu0EeKAIOl9ca8i4A" fontName="Segoe UI"/>
     <element xmi:type="ecore:EReference" href="SimpleUML.ecore#//Classifier/typeOpposite"/>
-    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_Ai0Gopu0EeKAIOl9ca8i4A" points="[0, 0, 52, -60]$[-52, 60, 0, 0]"/>
+    <bendpoints xmi:type="notation:RelativeBendpoints" xmi:id="_Ai0Gopu0EeKAIOl9ca8i4A" points="[-9, -1, 183, 0]$[-188, -1, 4, 0]"/>
     <sourceAnchor xmi:type="notation:IdentityAnchor" xmi:id="_AnZEopu0EeKAIOl9ca8i4A" id="(0.08256880733944955,0.8269230769230769)"/>
     <targetAnchor xmi:type="notation:IdentityAnchor" xmi:id="_AnZEo5u0EeKAIOl9ca8i4A" id="(0.9529411764705882,0.8076923076923077)"/>
   </edges>
