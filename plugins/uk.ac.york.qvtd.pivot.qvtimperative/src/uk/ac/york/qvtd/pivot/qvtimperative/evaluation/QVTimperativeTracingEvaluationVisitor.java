@@ -10,16 +10,14 @@
  ******************************************************************************/
 package uk.ac.york.qvtd.pivot.qvtimperative.evaluation;
 
-import java.util.ArrayList;
-
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.ocl.examples.domain.elements.DomainType;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.prettyprint.PrettyPrinter;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
@@ -59,6 +57,11 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		}
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitBottomPattern(bottomPattern);
+		if (bottomPattern.getPredicate().size() == 0) {
+			System.out.println(getIdent() + "BottomPattern has no predicates.");
+		} else {
+			System.out.println(getIdent() + "BottomPattern result: " + result);
+		}
 		identLevel--;
 		return result;
 	}
@@ -83,15 +86,11 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		}
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitGuardPattern(guardPattern);
-		try {
-			if (guardPattern.getPredicate().size() == 0) {
-				System.out.println(getIdent() + "GuardPattern has no predicates.");
-			} else {
-				System.out.println(getIdent() + "GuardPattern result: " + result);
-			}
-		} catch (Exception e) {
-            // tracing must not interfere with evaluation
-        }
+		if (guardPattern.getPredicate().size() == 0) {
+			System.out.println(getIdent() + "GuardPattern has no predicates.");
+		} else {
+			System.out.println(getIdent() + "GuardPattern result: " + result);
+		}
 		identLevel--;
     	return result;
 	}
@@ -102,14 +101,18 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	}
 	
 	@Override
+	public @Nullable Object visitIteratorExp(@NonNull org.eclipse.ocl.examples.pivot.IteratorExp object) {
+		return getDelegate().visitIteratorExp(object);
+	}
+	
+	@Override
 	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
 		System.out.println(getIdent() + "Visiting MappingCall, calling: " + mappingCall.getReferredMapping().getName());
 		identLevel++;
 		System.out.println(getIdent() + "Bindings");
 		for (MappingCallBinding binding : mappingCall.getBinding()) {
 			Variable boundVariable = binding.getBoundVariable();
-			System.out.println(getIdent() + "BoundVariable " + boundVariable.getName());
-			Object valueOrValues = safeVisit(binding.getValue());
+			System.out.println(getIdent() + boundVariable.getName() + ": " +  PrettyPrinter.print(binding.getValue()));
 			/*
 			if (!binding.isIsLoop()) {
 				DomainType valueType = metaModelManager.getIdResolver().getDynamicTypeOf(valueOrValues);
@@ -159,7 +162,7 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	public @Nullable Object visitPredicate(@NonNull Predicate predicate) {
 		
 		OCLExpression exp = predicate.getConditionExpression();
-		System.out.println("Predicate " + exp.getName());
+		System.out.println(getIdent() + "Predicate " + PrettyPrinter.print(exp));
 		return ((QVTimperativeEvaluationVisitor)getDelegate()).visitPredicate(predicate);
 		
 	}

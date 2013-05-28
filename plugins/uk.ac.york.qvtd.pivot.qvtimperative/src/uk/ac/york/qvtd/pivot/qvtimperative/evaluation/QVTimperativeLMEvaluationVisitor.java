@@ -19,6 +19,7 @@ import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.util.Visitable;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
+import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.util.QVTbaseVisitor;
 import org.eclipse.qvtd.pivot.qvtcorebase.Area;
 import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
@@ -67,22 +68,33 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
     @Override
     public @Nullable Object visitBottomPattern(@NonNull BottomPattern bottomPattern) {
         
+    	Boolean result = true;
         Area area = bottomPattern.getArea();
-        /* CoreDomain BottomPatterns should never be visited
         if (area instanceof CoreDomain) {
-            // The bottom pattern of an L CoreDomain should not have any variables or constraints
+            /*// The bottom pattern of an L CoreDomain should not have any variables or constraints
         	if (bottomPattern.getVariable().size() != 0) {
         		LtoMMappingError(bottomPattern, "BottomPattern of L CoreDomain defined 1 or more variables.");
         	}
         	if (bottomPattern.getPredicate().size() != 0) {
         		LtoMMappingError(bottomPattern, "BottomPattern of L CoreDomain defined 1 or more predicates.");
-        	}
+        	}*/
+        	// First the assignments because predicates must be evaluated after bindings!
+        	for (Assignment assigment : bottomPattern.getAssignment()) {
+                assigment.accept(getUndecoratedVisitor());
+            }
+        	
+        	for (Predicate predicate : bottomPattern.getPredicate()) {
+        		result = (Boolean) predicate.accept(getUndecoratedVisitor());
+        		if (!result) {
+        			break;
+        		}
+            }
+        	return result;
         }
         // LtoM Mapping. The bottomPattern belongs to a Mapping and it is visited once per
         // binding of the L domain. The bottom pattern should have the realized variables of the
         // middle model. Use the assignments to set values to their properties
-        else*/
-        if (area instanceof Mapping) {
+        else if (area instanceof Mapping) {
             for (RealizedVariable rVar : bottomPattern.getRealizedVariable()) {
                 rVar.accept(getUndecoratedVisitor());
             }
@@ -94,7 +106,7 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
                 enforceOp.accept(getUndecoratedVisitor());
             }
         }
-        return null;
+        return result;
     }
     
     /*
@@ -107,7 +119,11 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
     public @Nullable Object visitCoreDomain(@NonNull CoreDomain coreDomain) {
         
     	/* Bindings are set by the caller, just test the predicates */
-    	return coreDomain.getGuardPattern().accept(getUndecoratedVisitor());
+    	Object result = coreDomain.getGuardPattern().accept(getUndecoratedVisitor());
+    	if ((Boolean) result) {
+    		coreDomain.getBottomPattern().accept(getUndecoratedVisitor());
+    	}
+    	return result;
         /* THERE SHOULD BE NO VARIABLES OR PREDICATES IN THE BottomPattern
         for (Map.Entry<Variable, Set<Object>> entry : guardBindings.entrySet()) {
             Variable var = entry.getKey();
@@ -134,10 +150,12 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
         if (result) {
         	result = (Boolean) mapping.getGuardPattern().accept(getUndecoratedVisitor());
             if (result) {
-            	mapping.getBottomPattern().accept(getUndecoratedVisitor());
-            	for (MappingCall mappingCall : mapping.getMappingCall()) {
-                	mappingCall.accept(getUndecoratedVisitor());
-                }
+            	result = (Boolean) mapping.getBottomPattern().accept(getUndecoratedVisitor());
+            	if (result) {
+	            	for (MappingCall mappingCall : mapping.getMappingCall()) {
+	                	mappingCall.accept(getUndecoratedVisitor());
+	                }
+            	}
             }
         }
         return null;
