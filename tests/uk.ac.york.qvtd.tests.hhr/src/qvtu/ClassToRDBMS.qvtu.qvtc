@@ -101,7 +101,7 @@ query umlRdbms::getAllSupers(cls : SimpleUML::Class) : Set(SimpleUML::Class) {
 }
 
 query umlRdbms::getAllAttributes(cls :  SimpleUML::Class) : Set( SimpleUML::Attribute) {
-    getAllSupers(cls)->collect(c | c.attribute)
+    getAllSupers(cls)->collect(c | c.attributes)
 }
     
 query umlRdbms::getAllForwards(cls :  SimpleUML::Class) : Set( SimpleUML::Association) {
@@ -229,7 +229,7 @@ map attributes in umlRdbms refines flattening {
 }
 
 map classAttributes in umlRdbms refines attributes {
-    where (ctt:ClassToTable | ctt.umlClass=c;) {}
+    where (ctt:ClassToTable | ctt.umlClass = c;) {}
     map {
         where () {
             fa.name := a.name;
@@ -253,7 +253,7 @@ map primitiveAttribute in umlRdbms refines attributes {
 }
 
 map complexAttributeAttributes in umlRdbms refines attributes {
-    uml (ca:Attribute | ca.type=c;) {}
+    uml (ca:Attribute | ca.type = c;) {}
     where (nla:NonLeafAttribute | nla.attribute=ca;) {}
     map {
         where () {
