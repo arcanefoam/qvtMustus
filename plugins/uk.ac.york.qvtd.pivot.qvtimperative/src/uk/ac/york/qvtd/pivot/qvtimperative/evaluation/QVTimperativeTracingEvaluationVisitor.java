@@ -20,9 +20,11 @@ import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.prettyprint.PrettyPrinter;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
 import org.eclipse.qvtd.pivot.qvtbase.Transformation;
+import org.eclipse.qvtd.pivot.qvtcorebase.Assignment;
 import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcorebase.GuardPattern;
+import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
@@ -62,6 +64,7 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		} else {
 			System.out.println(getIdent() + "BottomPattern result: " + result);
 		}
+		// TODO Print the created (realized) variables
 		identLevel--;
 		return result;
 	}
@@ -106,6 +109,15 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	}
 	
 	@Override
+	public @Nullable Object visitMapping(@NonNull Mapping mapping) {
+		System.out.println(getIdent() + "Mapping " + mapping.getName());
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMapping(mapping);
+		identLevel--;
+		return result;
+	}
+	
+	@Override
 	public @Nullable Object visitMappingCall(@NonNull MappingCall mappingCall) {
 		System.out.println(getIdent() + "Visiting MappingCall, calling: " + mappingCall.getReferredMapping().getName());
 		identLevel++;
@@ -140,21 +152,27 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		identLevel--;
 		return result;
 	}
+
+	
+	@Override
+	public @Nullable Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
+		
+		System.out.println(getIdent() + "visitAssignment " + propertyAssignment.getSlotExpression()
+				+ "." + propertyAssignment.getTargetProperty().getName());
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitPropertyAssignment(propertyAssignment);
+		identLevel--;
+		return result;
+    }
 	
 	@Override
 	public @Nullable Object visitTransformation(@NonNull Transformation transformation) {
 		System.out.println("\n");
 		System.out.println("---- Transformation " + transformation.getName() + " ----");
-		identLevel =+1;
-		return ((QVTimperativeEvaluationVisitor)getDelegate()).visitTransformation(transformation);
-	}
-	
-	@Override
-	public @Nullable Object visitMapping(@NonNull Mapping mapping) {
-		System.out.println(getIdent() + "Mapping " + mapping.getName());
 		identLevel++;
-		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMapping(mapping);
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitTransformation(transformation);
 		identLevel--;
+		System.out.println("---- Transformation End ----");
 		return result;
 	}
 	

@@ -112,7 +112,7 @@ map integerToNumberMR in umlRdbms {
     	sqlType:String |
         sqlType := 'NUMBER';
     }
-    where (p2s:PackageToSchema,  p2n:PrimitiveToName |
+    where (p2s:PackageToSchema, p2n:PrimitiveToName |
         p2n.owner = p2s;
         p2n.name = 'Integer' + '2' + 'NUMBER'; ) { }
 }
@@ -188,25 +188,23 @@ map classToTableLM in umlRdbms {
         c := c;
         a <= c.attributes;
         ctt := c2t;
+        p2n <= p2s.primitivesToNames;
     }
     map classComplexAttributesLM {
         c := c;
         a <= c.attributes;
         ctt := c2t;
     }
-    
     map complexAttributePrimitiveAttributesLM {
         c := c;
         a <= c.attributes;
         ca <= c.typeOpposite;
-   }
-    
+    }
     map complexAttributeComplexAttributesLM {
         c := c;
         a <= c.attributes;
         ca <= c.typeOpposite;
     }
-    
 }
 
 map classToTableMR in umlRdbms {
@@ -296,6 +294,8 @@ map classToTableMR_2_2 in umlRdbms {
 map associationToForeignKeyLM in umlRdbms {
     uml (p:Package, sc:Class, dc:Class, a:Association |
         a.namespace = p;
+        sc := a.source;
+        sc.namespace = p;
         -- getAllForwards(sc)->includes(a);
         -- getAllSupers(dc)->includes(a.destination);
         ) {
@@ -386,6 +386,7 @@ map classPrimitiveAttributesLM in umlRdbms {
     where (ctt:ClassToTable, p2n:PrimitiveToName |
     		ctt.umlClass = c;
     		) {
+    		p2n.primitive = t;) {
         realize atc:AttributeToColumn |
         p2n := t.PrimitiveToName;
         atc.attribute := a;

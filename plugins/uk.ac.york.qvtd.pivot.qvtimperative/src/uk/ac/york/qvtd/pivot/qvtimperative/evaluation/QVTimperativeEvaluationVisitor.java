@@ -58,11 +58,11 @@ public interface QVTimperativeEvaluationVisitor extends QVTimperativeVisitor<Obj
      */
 	//void setUndecoratedVisitor(QVTimperativeEvaluationVisitor<Object> evaluationVisitor);
 	
-	EvaluationVisitorImpl createNestedLMVisitor();
+	EvaluationVisitor createNestedLMVisitor();
 	
-	EvaluationVisitorImpl createNestedMMVisitor();
+	EvaluationVisitor createNestedMMVisitor();
 	
-	EvaluationVisitorImpl createNestedMRVisitor();
+	EvaluationVisitor createNestedMRVisitor();
 	
 	
 

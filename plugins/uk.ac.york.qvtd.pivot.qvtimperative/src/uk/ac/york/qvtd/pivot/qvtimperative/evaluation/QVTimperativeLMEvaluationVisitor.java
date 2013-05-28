@@ -17,6 +17,7 @@ import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.EnvironmentFactory;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.util.Visitable;
 import org.eclipse.qvtd.pivot.qvtbase.Domain;
 import org.eclipse.qvtd.pivot.qvtbase.Predicate;
@@ -152,9 +153,22 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
             if (result) {
             	result = (Boolean) mapping.getBottomPattern().accept(getUndecoratedVisitor());
             	if (result) {
-	            	for (MappingCall mappingCall : mapping.getMappingCall()) {
-	                	mappingCall.accept(getUndecoratedVisitor());
-	                }
+            		for (MappingCall mappingCall : mapping.getMappingCall()) {
+	            		Mapping calledMapping = mappingCall.getReferredMapping();
+	                	EvaluationVisitor nv = null;
+	            		if (isLtoMMapping(calledMapping)) {
+	            			nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedLMVisitor();
+	            		}
+	                	else if (isMtoRMapping(calledMapping)) {
+	                		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMRVisitor();
+	                	}
+	                	else if (isMtoMMapping(calledMapping)) {
+	                		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMMVisitor();
+	                	} else {
+	                		// FIXME Error
+	                	}
+	                	mappingCall.accept(nv);
+	            	}
             	}
             }
         }
