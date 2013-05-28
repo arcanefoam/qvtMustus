@@ -155,18 +155,20 @@ public class QVTimperativeLMEvaluationVisitor extends QVTimperativeEvaluationVis
             	if (result) {
             		for (MappingCall mappingCall : mapping.getMappingCall()) {
 	            		Mapping calledMapping = mappingCall.getReferredMapping();
-	                	EvaluationVisitor nv = null;
+	            		QVTimperativeEvaluationVisitor nv = null;
 	            		if (isLtoMMapping(calledMapping)) {
-	            			nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedLMVisitor();
+	            			nv =  (QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor) getUndecoratedVisitor()).createNestedLMVisitor();
 	            		}
 	                	else if (isMtoRMapping(calledMapping)) {
-	                		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMRVisitor();
+	                		nv = (QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMRVisitor();
 	                	}
 	                	else if (isMtoMMapping(calledMapping)) {
-	                		nv = ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMMVisitor();
+	                		nv = (QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getUndecoratedVisitor()).createNestedMMVisitor();
 	                	} else {
 	                		// FIXME Error
 	                	}
+	            		// The Undecorated visitor createNestedXXVisitor should return the undecorated, so no need
+	            		// to call the getUndecoratedVisitor.
 	                	mappingCall.accept(nv);
 	            	}
             	}

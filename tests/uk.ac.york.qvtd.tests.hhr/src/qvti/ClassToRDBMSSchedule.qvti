@@ -386,7 +386,6 @@ map classPrimitiveAttributesLM in umlRdbms {
     where (ctt:ClassToTable, p2n:PrimitiveToName |
     		ctt.umlClass = c;
     		) {
-    		p2n.primitive = t;) {
         realize atc:AttributeToColumn |
         p2n := t.PrimitiveToName;
         atc.attribute := a;

@@ -11,24 +11,21 @@
       xsi:type="simpleuml:Class"
       kind="persistent"
       name="Person"
+      forward="//@elements.4"
       generalOpposite="//@elements.1 //@elements.2">
     <attributes
-        xsi:type="simpleuml:Attribute"
         name="Name"
         type="//@elements.5"/>
     <attributes
-        xsi:type="simpleuml:Attribute"
         name="Guardian"
-        type="//@elements.0"/>
+        type="//@elements.5"/>
   </elements>
   <elements
       xsi:type="simpleuml:Class"
       kind="persistent"
       name="Student"
-      general="//@elements.0"
-      forward="//@elements.4">
+      general="//@elements.0">
     <attributes
-        xsi:type="simpleuml:Attribute"
         name="StudentNumber"
         type="//@elements.6"/>
   </elements>
@@ -38,7 +35,6 @@
       name="Professor"
       general="//@elements.0">
     <attributes
-        xsi:type="simpleuml:Attribute"
         name="employed"
         type="//@elements.7"/>
   </elements>
@@ -50,15 +46,18 @@
   <elements
       xsi:type="simpleuml:Association"
       name="livesAt"
-      source="//@elements.1"
+      source="//@elements.0"
       destination="//@elements.3"/>
   <elements
       xsi:type="simpleuml:PrimitiveDataType"
-      name="String"/>
+      name="String"
+      typeOpposite="//@elements.0/@attributes.0 //@elements.0/@attributes.1"/>
   <elements
       xsi:type="simpleuml:PrimitiveDataType"
-      name="Integer"/>
+      name="Integer"
+      typeOpposite="//@elements.1/@attributes.0"/>
   <elements
       xsi:type="simpleuml:PrimitiveDataType"
-      name="Boolean"/>
+      name="Boolean"
+      typeOpposite="//@elements.2/@attributes.0"/>
 </simpleuml:Package>

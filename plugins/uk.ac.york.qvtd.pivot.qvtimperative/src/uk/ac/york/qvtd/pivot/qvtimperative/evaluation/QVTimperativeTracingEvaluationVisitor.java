@@ -14,6 +14,7 @@ import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
 import org.eclipse.ocl.examples.pivot.Variable;
+import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
 import org.eclipse.ocl.examples.pivot.evaluation.TracingEvaluationVisitor;
@@ -25,6 +26,7 @@ import org.eclipse.qvtd.pivot.qvtcorebase.BottomPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.CoreDomain;
 import org.eclipse.qvtd.pivot.qvtcorebase.GuardPattern;
 import org.eclipse.qvtd.pivot.qvtcorebase.PropertyAssignment;
+import org.eclipse.qvtd.pivot.qvtcorebase.VariableAssignment;
 import org.eclipse.qvtd.pivot.qvtimperative.ImperativeModel;
 import org.eclipse.qvtd.pivot.qvtimperative.Mapping;
 import org.eclipse.qvtd.pivot.qvtimperative.MappingCall;
@@ -59,6 +61,9 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		}
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitBottomPattern(bottomPattern);
+		for (Variable v : bottomPattern.getVariable()) {
+			System.out.println(getIdent() + "Variable " + v.getName() + ": " + getDelegate().getEvaluationEnvironment().getValueOf(v));
+		}
 		if (bottomPattern.getPredicate().size() == 0) {
 			System.out.println(getIdent() + "BottomPattern has no predicates.");
 		} else {
@@ -89,6 +94,10 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		}
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitGuardPattern(guardPattern);
+		// Variables are assigned after visit
+		for (Variable v : guardPattern.getVariable()) {
+			System.out.println(getIdent() + "Variable " + v.getName() + ": " + getDelegate().getEvaluationEnvironment().getValueOf(v));
+		}
 		if (guardPattern.getPredicate().size() == 0) {
 			System.out.println(getIdent() + "GuardPattern has no predicates.");
 		} else {
@@ -125,28 +134,6 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		for (MappingCallBinding binding : mappingCall.getBinding()) {
 			Variable boundVariable = binding.getBoundVariable();
 			System.out.println(getIdent() + boundVariable.getName() + ": " +  PrettyPrinter.print(binding.getValue()));
-			/*
-			if (!binding.isIsLoop()) {
-				DomainType valueType = metaModelManager.getIdResolver().getDynamicTypeOf(valueOrValues);
-				if (valueType.conformsTo(metaModelManager, boundVariable.getType())) {
-					nv.getEvaluationEnvironment().add(boundVariable, valueOrValues);
-				}
-				else {
-					return null;		
-				}
-			}
-			else if (valueOrValues instanceof Iterable<?>) {
-				if (loopedVariables == null) {
-					loopedVariables = new ArrayList<Variable>();
-					loopedValues = new ArrayList<Iterable<?>>();
-				}
-				loopedVariables.add(boundVariable);
-				loopedValues.add((Iterable<?>)valueOrValues);
-				nv.getEvaluationEnvironment().add(boundVariable, null);
-			} else {
-				// FIXME Error message;
-			}
-			*/
     	}
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitMappingCall(mappingCall);
 		identLevel--;
@@ -158,7 +145,7 @@ public class QVTimperativeTracingEvaluationVisitor extends
 	public @Nullable Object visitPropertyAssignment(@NonNull PropertyAssignment propertyAssignment) {
 		
 		System.out.println(getIdent() + "visitAssignment " + propertyAssignment.getSlotExpression()
-				+ "." + propertyAssignment.getTargetProperty().getName());
+				+ ": " + propertyAssignment.getTargetProperty().getName());
 		identLevel++;
 		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitPropertyAssignment(propertyAssignment);
 		identLevel--;
@@ -185,31 +172,41 @@ public class QVTimperativeTracingEvaluationVisitor extends
 		
 	}
 	
+	@Override
+	public @Nullable Object visitVariableAssignment(@NonNull VariableAssignment variableAssignment) {
+		
+		Variable v = variableAssignment.getTargetVariable();
+		System.out.println(getIdent() + "visitVariableAssignment " + v
+				+ ": " + ((EvaluationVisitorImpl)getDelegate()).safeVisit(variableAssignment.getValue()));
+		identLevel++;
+		Object result = ((QVTimperativeEvaluationVisitor)getDelegate()).visitVariableAssignment(variableAssignment);
+		identLevel--;
+		return result;
+	}
 
-	public EvaluationVisitorImpl createNestedLMVisitor() {
+	public QVTimperativeEvaluationVisitor createNestedLMVisitor() {
 		
 		System.out.println("(Creating nested LM Visitor)");
 		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
 				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedLMVisitor());
-		return (EvaluationVisitorImpl) decorator.getDelegate();
+		return (QVTimperativeEvaluationVisitor) decorator;
 	}
 
 
-	public EvaluationVisitorImpl createNestedMMVisitor() {
+	public QVTimperativeEvaluationVisitor createNestedMMVisitor() {
 		
 		System.out.println("(Creating nested MM Visitor)");
 		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
 				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedMMVisitor());
-		return (EvaluationVisitorImpl) decorator.getDelegate();
+		return (QVTimperativeEvaluationVisitor) decorator;
 	}
 
-
-	public EvaluationVisitorImpl createNestedMRVisitor() {
+	public QVTimperativeEvaluationVisitor createNestedMRVisitor() {
 		
 		System.out.println("(Creating nested MR Visitor)");
 		QVTimperativeTracingEvaluationVisitor decorator = new QVTimperativeTracingEvaluationVisitor(
 				(QVTimperativeEvaluationVisitor) ((QVTimperativeEvaluationVisitor)getDelegate()).createNestedMRVisitor());
-		return (EvaluationVisitorImpl) decorator.getDelegate();
+		return (QVTimperativeEvaluationVisitor) decorator;
 	}
 	
 	private String getIdent() {

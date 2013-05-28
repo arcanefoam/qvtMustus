@@ -15,6 +15,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.ocl.examples.domain.evaluation.DomainModelManager;
 import org.eclipse.ocl.examples.pivot.Environment;
 import org.eclipse.ocl.examples.pivot.OCLExpression;
+import org.eclipse.ocl.examples.pivot.Variable;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationEnvironment;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitor;
 import org.eclipse.ocl.examples.pivot.evaluation.EvaluationVisitorImpl;
@@ -185,8 +186,12 @@ public abstract class QVTcoreBaseAbstractEvaluationVisitor extends EvaluationVis
 		return visiting(object);
 	}
 
-    public @Nullable Object visitVariableAssignment(@NonNull VariableAssignment object) {
-		return visiting(object);
+    public @Nullable Object visitVariableAssignment(@NonNull VariableAssignment variableAssignment) {
+    	Variable targetVariable = variableAssignment.getTargetVariable() ;
+		Object value = ((QVTimperativeEvaluationVisitorDecorator)getUndecoratedVisitor()).safeVisit(variableAssignment.getValue());
+		// The variable had been added to the environment before the mapping call
+		evaluationEnvironment.replace(targetVariable, value);
+		return null;
     }
     
     
