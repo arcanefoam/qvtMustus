@@ -187,13 +187,13 @@ map classToTableLM in umlRdbms {
     map classPrimitiveAttributesLM {
         c := c;
         a <= c.attributes;
-        ctt := c2t;
+        fao := c2t;
         p2n <= p2s.primitivesToNames;
     }
     map classComplexAttributesLM {
         c := c;
         a <= c.attributes;
-        ctt := c2t;
+        fao := c2t;
     }
     map complexAttributePrimitiveAttributesLM {
         c := c;
@@ -383,17 +383,17 @@ map classPrimitiveAttributesLM in umlRdbms {
         ) {
             t := a.type;
         }
-    where (ctt:ClassToTable, p2n:PrimitiveToName |
-    		ctt.umlClass = c;
+    where (fao:ClassToTable, p2n:PrimitiveToName |
+    		fao.umlClass = c;
     		) {
-        realize atc:AttributeToColumn |
+        realize fa:AttributeToColumn |
         p2n := t.PrimitiveToName;
-        atc.attribute := a;
-        atc.owner := ctt;
-        atc.type := p2n;
-        atc.kind := a.kind;
-        atc.name := a.name;
-        atc.leafs := Set(AttributeToColumn) {atc};
+        fa.attribute := a;
+        fa.owner := fao;
+        fa.type := p2n;
+        fa.kind := a.kind;
+        fa.name := a.name;
+        fa.leafs := Set(AttributeToColumn) {fa};
     }
 }
 
@@ -405,14 +405,13 @@ map classComplexAttributesLM in umlRdbms {
         ) { 
             t := a.type;
         }
-    where (ctt:ClassToTable | ctt.umlClass=c;) {
-        realize la:NonLeafAttribute |
-        la.attribute := a;
-        la.owner := ctt;
-        la.kind := a.kind;
-        la.name := a.name;
-        la.attribute := t;	-- TODO check the whole attribute rules
-        -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
+    where (fao:ClassToTable | fao.umlClass=c;) {
+        realize fa:NonLeafAttribute |
+        fa.attribute := a;
+        fa.owner := fao;
+        fa.kind := a.kind;
+        fa.name := a.name;
+        fa.leafs := fao.fromAttributes.leafs;
     }
 }
 
@@ -422,18 +421,18 @@ map complexAttributePrimitiveAttributesLM in umlRdbms {
         --getAllAttributes(c)->includes(a);
 		) {
 		    t := a.type;
-		    -- ca := c.typeOpposite;
+		    ca := c.typeOpposite;
 		}
-    where (nla:NonLeafAttribute, p2n:PrimitiveToName |
-    		nla := ca.FromAttribute;
+    where (fao:NonLeafAttribute, p2n:PrimitiveToName |
+    		fao := ca.FromAttribute;
     		p2n := t.PrimitiveToName;) {
-    	realize atc:AttributeToColumn |
-        atc.attribute := a;
-        atc.owner := nla;	
-        atc.type := p2n;
-        atc.kind := a.kind;
-        atc.name := ca.name + '_' + a.name;
-        atc.leafs := Set(AttributeToColumn) {atc};
+    	realize fa:AttributeToColumn |
+        fa.attribute := a;
+        fa.owner := fao;    
+        fa.type := p2n;
+        fa.kind := a.kind;
+        fa.name := ca.name + '_' + a.name;
+        fa.leafs := Set(AttributeToColumn) {fa};
     }
 }
 
@@ -445,15 +444,15 @@ map complexAttributeComplexAttributesLM in umlRdbms {
             t := a.type;
             -- ca := c.typeOpposite; Multiple!
         }
-    where (nla:NonLeafAttribute |
-    		nla := ca.FromAttribute;) {
-    	realize la:NonLeafAttribute |
-        la.attribute := a;
-        la.owner := nla;	
-        la.kind := a.kind;
-        la.name := ca.name + '_' + a.name;
-        la.attribute := t;	-- TODO check the whole attribute rules
-        -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
+    where (fao:NonLeafAttribute |
+    		fao := ca.FromAttribute;) {
+    	realize fa:NonLeafAttribute |
+        fa.attribute := a;
+        fa.owner := fao;    
+        fa.kind := a.kind;
+        fa.name := ca.name + '_' + a.name;
+        fa.attribute := t;
+        fa.leafs := fao.fromAttributes.leafs; 
     }
 }
 

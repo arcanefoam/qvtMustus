@@ -80,20 +80,7 @@ map stringToVarchar in umlRdbms refines primitiveToName {
 }
 
 -- utility functions for flattening   
--- TODO Move this to queries
 map flattening in umlRdbms {
-    /*
-    getAllSupers(cls : Class |) : Set(Class) {
-        cls.general->collect(gen|self.getAllSupers(gen))->
-            including(cls)->asSet();
-    }
-    getAllAttributes(cls : Class |) : Set(Attribute) {
-        getAllSupers(cls).attribute;
-    }
-    getAllForwards(cls : Class| ) : Set(Association) {
-        getAllSupers(cls).forward;
-    }
-    */
 }
 
 query umlRdbms::getAllSupers(cls : SimpleUML::Class) : Set(SimpleUML::Class) {
@@ -143,7 +130,7 @@ query umlRdbms::getAllForwards(cls :  SimpleUML::Class) : Set( SimpleUML::Associ
         }
         where () {
             c2t.primaryKey := pk;
-            -- c2t.column := pc; // TODO Check this
+            c2t.column := pc;
         }
         map {
             check enforce rdbms () {
@@ -229,7 +216,7 @@ map attributes in umlRdbms refines flattening {
 }
 
 map classAttributes in umlRdbms refines attributes {
-    where (ctt:ClassToTable | ctt.umlClass = c;) {}
+    where (fao:ClassToTable | fao.umlClass = c;) {}
     map {
         where () {
             fa.name := a.name;
@@ -242,19 +229,19 @@ map primitiveAttribute in umlRdbms refines attributes {
         a.type = t;
     }
     where (p2n:PrimitiveToName | p2n.primitive=t ;) {
-        realize atc:AttributeToColumn |
-        atc.type := p2n;
+        realize fa:AttributeToColumn |
+        fa.type := p2n;
     }
     map {
         where () {
-            atc.leafs := Set(AttributeToColumn) {fa};
+            fa.leafs := Set(AttributeToColumn) {fa};
         }
     }
 }
 
 map complexAttributeAttributes in umlRdbms refines attributes {
     uml (ca:Attribute | ca.type = c;) {}
-    where (nla:NonLeafAttribute | nla.attribute=ca;) {}
+    where (fao:NonLeafAttribute | fao.attribute=ca;) {}
     map {
         where () {
             fa.name := ca.name + '_' + a.name;
@@ -267,12 +254,11 @@ map complexAttribute in umlRdbms refines attributes {
         a.type = t;
     }
     where () {
-        realize la:NonLeafAttribute |
+        realize fa:NonLeafAttribute |
     }
     map {           
     	where () {
-    		la.attribute := t;	-- TODO check the whole attribute rules
-            -- la.leafs := fromAttributes.leafs; // TODO check this OCL?
+    		fa.leafs := fao.fromAttributes.leafs; 
         }
     }
 }

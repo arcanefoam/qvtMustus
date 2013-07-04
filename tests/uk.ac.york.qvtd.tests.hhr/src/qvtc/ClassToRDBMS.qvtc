@@ -98,6 +98,9 @@ map stringToVarchar in umlRdbms refines primitiveToName {
 }
 
 -- utility functions for flattening   
+map flattening in umlRdbms {
+}
+
 query umlRdbms::getAllSupers(cls : SimpleUML::Class) : Set(SimpleUML::Class) {
     cls.general->collect(gen | getAllSupers(gen))->including(cls)->asSet()
 }
@@ -218,7 +221,7 @@ map associationToForeignKey in umlRdbms refines flattening {
             sc2t.umlClass = sc;
             dc2t.umlClass = dc;
         ) {
-        realize a2f:AssociationToForeignKey|
+        realize a2f:AssociationToForeignKey |
         a2f.owner := sc2t;
         a2f.referenced := dc2t;
         a2f.association := a;
@@ -239,9 +242,9 @@ map associationToForeignKey in umlRdbms refines flattening {
                       then a2f.name
                       else a.name
                       endif;
-            fk.name := name;
-            name := fk.name;
-            fc.name := name+'_tid';
+            fk.name := a2f.name;
+            a2f.name := fk.name;
+            fc.name := a2f.name +'_tid';
         }
     }
     map {
@@ -282,7 +285,7 @@ map attributes in umlRdbms refines flattening {
         getAllAttributes(c)->includes(a);
     }
     where (fao:FromAttributeOwner |) {
-        fa : FromAttribute |
+        realize fa : FromAttribute |
         fa.attribute := a;
         fa.owner := fao;
     }
@@ -320,11 +323,13 @@ map primitiveAttribute in umlRdbms refines attributes {
 }
 
 map complexAttributeAttributes in umlRdbms refines attributes {
-    check uml (ca:Attribute | ca.type = c;) {}
-    where (fao:NonLeafAttribute | fao.attribute = ca;) {}
+    check uml (ca:Attribute |
+        ca.type = c; ) {}
+    where (fao:NonLeafAttribute |
+        fao.attribute = ca; ) {}
     map {
         where () {
-            fa.name := fao.name+'_'+a.name;
+            fa.name := fao.name + '_' + a.name;
         }
     }
 }
@@ -338,7 +343,7 @@ map complexAttribute in umlRdbms refines attributes {
     }
     map {            
         where () {
-            fa.leafs := fromAttributes.leafs;
+            fa.leafs := fao.fromAttributes.leafs;
         }
     }
 }
