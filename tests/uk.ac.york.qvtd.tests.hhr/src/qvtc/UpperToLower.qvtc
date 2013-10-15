@@ -1,5 +1,5 @@
-import SimpleGraph : 'SimpleGraph.ecore'::simplegraph;
-import SimpleGraph2Graph : 'SimpleGraph2Graph.ecore'::simplegraph2graph;
+import SimpleGraph : '../../model/SimpleGraph.ecore'::simplegraph;
+import SimpleGraph2Graph : '../../model/SimpleGraph2Graph.ecore'::simplegraph2graph;
 
 transformation copyGraph {
 	upperGraph imports SimpleGraph;
@@ -11,8 +11,8 @@ transformation copyGraph {
  * Don't use realize keywords on the two initial domains indicates that both models must exist and at least have the root node defined?
  */
 map graph2graph in copyGraph {
-	upperGraph() {
-		g1:Graph |
+	enforce upperGraph() {
+		realize g1:Graph |
 	}
 	check enforce lowerGraph() {
 		/* Enforced domains should at least have one realized variable?*/
@@ -36,8 +36,8 @@ map graph2graph in copyGraph {
 }
 
 map node2node in copyGraph {
-	upperGraph(g1:Graph |) {
-		n1:Node |
+	enforce upperGraph(g1:Graph |) {
+		realize n1:Node |
 		n1.graph = g1;
 	}
 	check enforce lowerGraph(g2:Graph |) {

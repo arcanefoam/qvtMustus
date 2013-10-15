@@ -2,7 +2,6 @@ import SimpleUML: '../../model/SimpleUML.ecore'::simpleuml;
 import SimpleRDBMS: '../../model/SimpleRDBMS.ecore'::simplerdbms;
 import UMLtoRDBMS: '../../model/UMLtoRDBMS.ecore'::umltordbms;
 
-
 transformation umlRdbms {
     uml imports SimpleUML;
     rdbms imports SimpleRDBMS;
@@ -226,21 +225,20 @@ map classToTableMR in umlRdbms {
     	c2t_2 := c2t;
     }
     map associationToForeignKeyMR {
-        a2f <= c2t.associationsToForeignKeys;
         p2s := p2s;
         sc2t := c2t;
         dc2t <= c2t.associationsToForeignKeys.referenced;
+        a2f <= c2t.associationsToForeignKeys;
         s := s;
         st := t;
     }
     -- A Class has attributes
     map attributeColumnsMR {
-        c2t := c2t;
-        a2c <= c2t.fromAttributes;
-        p2n <= p2s.primitivesToNames;
         t := t;
-    } 
-    
+        c2t := c2t;
+        a2c <= c2t.fromAttributes.leafs;
+        p2n <= p2s.primitivesToNames;
+    }
 }
 
 map classToTableMR_1 in umlRdbms {
@@ -286,16 +284,15 @@ map classToTableMR_2_1 in umlRdbms {
         
 map classToTableMR_2_2 in umlRdbms {
     check enforce rdbms (pk_2_2:Key, pc_2_2:Column, t_2_2:Table |) {
-        pc_2_2.name := t_2_2.name+'_tid';
-        pk_2_2.name := t_2_2.name+'_pk';
+        pc_2_2.name := t_2_2.name + '_tid';
+        pk_2_2.name := t_2_2.name + '_pk';
     }
 }
 
 map associationToForeignKeyLM in umlRdbms {
     uml (p:Package, sc:Class, dc:Class, a:Association |
         a.namespace = p;
-        sc := a.source;
-        sc.namespace = p;
+        -- sc.namespace = p;
         -- getAllForwards(sc)->includes(a);
         -- getAllSupers(dc)->includes(a.destination);
         ) {
@@ -327,8 +324,9 @@ map associationToForeignKeyLM in umlRdbms {
 map associationToForeignKeyMR in umlRdbms {
     enforce rdbms (s:Schema, st:Table, dt:Table, rk:Key |
             st.schema = s;
-            rk.owner = dt;
-            rk.kind = 'primary';) {
+            -- rk.owner = dt;
+            -- rk.kind = 'primary';
+            ) {
         realize fk:ForeignKey,
         realize fc:Column |
         fk.owner := st;

@@ -18,10 +18,10 @@
         eOpposite="#//PackageToSchema/classesToTables"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="associationsToForeignKeys"
         upperBound="-1" eType="#//AssociationToForeignKey" containment="true" eOpposite="#//AssociationToForeignKey/owner"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="umlClass" eType="ecore:EClass SimpleUML.ecore#//Class"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="table" eType="ecore:EClass SimpleRDBMS.ecore#//Table"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="primaryKey" eType="ecore:EClass SimpleRDBMS.ecore#//Key"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="FromAttribute" abstract="true">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
@@ -42,11 +42,11 @@
         upperBound="-1" eType="#//ClassToTable" containment="true" eOpposite="#//ClassToTable/owner"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="primitivesToNames" ordered="false"
         upperBound="-1" eType="#//PrimitiveToName" containment="true" eOpposite="#//PrimitiveToName/owner"/>
-    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="umlPackage" lowerBound="1"
         eType="ecore:EClass SimpleUML.ecore#//Package"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="schema" lowerBound="1"
         eType="ecore:EClass SimpleRDBMS.ecore#//Schema"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="PrimitiveToName">
     <eStructuralFeatures xsi:type="ecore:EReference" name="owner" eType="#//PackageToSchema"

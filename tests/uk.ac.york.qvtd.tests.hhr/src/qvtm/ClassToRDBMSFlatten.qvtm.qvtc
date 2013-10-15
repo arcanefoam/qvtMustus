@@ -300,15 +300,15 @@ map complexAttribute in umlRdbms {
 }
 
 map classPrimitiveAttributes in umlRdbms {
-	uml (c:Class, t:PrimitiveDataType,  a:Attribute |) {
-	    a.owner = c;
+    uml (c:Class, a:Attribute, t:PrimitiveDataType |) {
+        a.owner = c;
         --getAllAttributes(c)->includes(a);
         a.type = t;
-	}
+    }
     where (fao:ClassToTable, p2n:PrimitiveToName |
-    		fao.umlClass=c;
-    		p2n.primitive=t;) {
-        realize fa:AttributeToColumn |
+        fao.umlClass=c;
+        p2n.primitive = t;) {
+        realize fa : AttributeToColumn |
         fa.attribute := a;
         fa.owner := fao;
         fa.type := p2n;
@@ -322,15 +322,14 @@ map classPrimitiveAttributes in umlRdbms {
     }
 }
 
-
 map classComplexAttributes in umlRdbms {
-	uml (c:Class, t:Class, a:Attribute |) {
-	   a.owner = c;
-       --getAllAttributes(c)->includes(a);
-       a.type = t;
-	}
+    uml (c:Class, a:Attribute, t:Class |) {
+        a.owner = c;
+        --getAllAttributes(c)->includes(a);
+        a.type = t;
+    }
     where (fao:ClassToTable | fao.umlClass=c;) {
-        realize fa:NonLeafAttribute |
+        realize fa : NonLeafAttribute |
         fa.attribute := a;
         fa.owner := fao;
     }
@@ -343,20 +342,19 @@ map classComplexAttributes in umlRdbms {
     }
 }
 
-
 map complexAttributePrimitiveAttributes in umlRdbms {
-	uml (c:Class, ca:Attribute, t:PrimitiveDataType, a:Attribute |) {
+	uml (c:Class, ca:Attribute, a:Attribute, t:PrimitiveDataType |) {
         a.owner = c;
         --getAllAttributes(c)->includes(a);
-        a.type = t;
         ca.type = c;
-	}
+        a.type = t;
+    }
     where (fao:NonLeafAttribute, p2n:PrimitiveToName |
-    		fao.attribute=ca;
-    		p2n.primitive=t;) {
-    	realize fa:AttributeToColumn |
+            fao.attribute=ca;
+            p2n.primitive = t; ) {
+        realize fa : AttributeToColumn |
         fa.attribute := a;
-        fa.owner := fao;	
+        fa.owner := fao;    
         fa.type := p2n;
     }
     map {
@@ -369,23 +367,23 @@ map complexAttributePrimitiveAttributes in umlRdbms {
 }
 
 map complexAttributeComplexAttributes in umlRdbms {
-    uml (c:Class, ca:Attribute, t:Class, a:Attribute |) {
+    uml (c:Class, ca:Attribute, a:Attribute, t:Class |) {
         a.owner = c;
         --getAllAttributes(c)->includes(a);
+        ca.type = c;
         a.type = t;
-        ca.type=c;
     }
     where (fao:NonLeafAttribute |
-    		fao.attribute=ca;) {
-    	realize fa:NonLeafAttribute |
+            fao.attribute=ca;) {
+        realize fa : NonLeafAttribute |
         fa.attribute := a;
-        fa.owner := fao;	
+        fa.owner := fao;    
     }
     map {
         where () {
             fa.kind := a.kind;
             fa.name := ca.name + '_' + a.name;
-            fa.leafs := fao.fromAttributes.leafs; 
+            fa.leafs := fao.fromAttributes.leafs;
         }
     }
 }
