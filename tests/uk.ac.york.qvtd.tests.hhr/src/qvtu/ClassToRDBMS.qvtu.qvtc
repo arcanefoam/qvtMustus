@@ -228,7 +228,7 @@ map primitiveAttribute in umlRdbms refines attributes {
     uml (t:PrimitiveDataType |) {
         a.type = t;
     }
-    where (p2n:PrimitiveToName | p2n.primitive=t ;) {
+    where (p2n:PrimitiveToName | p2n.primitive = t;) {
         realize fa:AttributeToColumn |
         fa.type := p2n;
     }

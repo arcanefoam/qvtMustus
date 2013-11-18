@@ -1,6 +1,6 @@
-import SimpleUML: '../../model/SimpleUML.ecore'::simpleuml;
-import SimpleRDBMS: '../../model/SimpleRDBMS.ecore'::simplerdbms;
-import UMLtoRDBMS: '../../model/UMLtoRDBMS.ecore'::umltordbms;
+import SimpleUML: 'http://www.eclipse.org/qvt/examples/0.1/simpleUML';
+import SimpleRDBMS: 'http://www.eclipse.org/qvt/examples/0.1/SimpleRDBMS';
+import UMLtoRDBMS: 'http://www.eclipse.org/qvt/examples/0.1/UMLtoRDBMS';
 
 transformation umlRdbms {
     uml imports SimpleUML;
@@ -26,9 +26,9 @@ map packageToSchema in umlRdbms {
         s:Schema |
     }
     where () {
-        p2s:PackageToSchema |
-        p2s.umlPackage = p;
-        p2s.schema = s;
+        realize p2s:PackageToSchema |
+        p2s.umlPackage := p;
+        p2s.schema := s;
     }
     map {
         where () {
@@ -193,9 +193,9 @@ map associationToForeignKey in umlRdbms refines flattening {
     check enforce uml (p:Package, sc:Class, dc:Class |
             sc.namespace = p;) {
         realize a:Association |
-        getAllForwards(sc)->includes(a);
+        -- getAllForwards(sc)->includes(a);
         default a.source := sc;
-        getAllSupers(dc)->includes(a.destination);
+        -- getAllSupers(dc)->includes(a.destination);
         default a.destination := dc;
         default a.namespace := p;
     }
@@ -282,7 +282,7 @@ map attributes in umlRdbms refines flattening {
     check enforce uml (c:Class |) {
         realize a:Attribute |
         default a.owner := c;
-        getAllAttributes(c)->includes(a);
+        -- getAllAttributes(c)->includes(a);
     }
     where (fao:FromAttributeOwner |) {
         realize fa : FromAttribute |
