@@ -1,0 +1,189 @@
+import SimpleUML: '../../model/SimpleUML.ecore'::simpleuml;
+import SimpleRDBMS: '../../model/SimpleRDBMS.ecore'::simplerdbms;
+import UMLtoRDBMS: '../../model/UMLtoRDBMS.ecore'::umltordbms;
+
+transformation umlRdbms {
+    uml imports SimpleUML;
+    rdbms imports SimpleRDBMS;
+    m imports UMLtoRDBMS;
+}
+
+map packageToSchema_LM in umlRdbms {
+    uml (p:Package |) {  
+    }
+    enforce m () {
+        realize p2s:PackageToSchema |
+    }
+    where () {
+        p2s.umlPackage := p;
+    }
+    map {
+        where () {
+            p2s.name := p.name;
+        }
+    }
+}
+
+map packageToSchema_MR in umlRdbms {
+    m (p2s:PackageToSchema |) {
+    }
+    enforce rdbms () {
+        realize s:Schema |
+    }
+    where () {
+        p2s.schema := s;
+    }
+    map {
+        where () {
+            s.name := p2s.name;
+        }
+    }
+}
+
+map integerToNumber_LM in umlRdbms {
+    uml (p:Package, prim:PrimitiveDataType |) {
+        prim.namespace = p;
+        prim.name = 'Integer';
+    }
+    enforce m (p2s:PackageToSchema | p2s.umlPackage = p;) {
+        realize p2n:PrimitiveToName |
+        p2n.owner := p2s;
+        p2n.primitive := prim;
+    }
+    map {
+        where () {
+            p2n.name := prim.name + '2';
+        }
+    }
+}
+
+map integerToNumber_MR in umlRdbms {
+    -- Convierto en predicates los assignments m->m
+    m (p2s:PackageToSchema, p2n:PrimitiveToName | p2n.owner = p2s;) {
+    }
+    enforce rdbms () {
+    	sqlType:String |
+        sqlType := 'NUMBER';
+    }
+    map {
+        where () {
+            p2n.name := p2n.name + sqlType;
+        }
+    }
+}
+
+map booleanToBoolean_LM in umlRdbms {
+    uml (p:Package, prim:PrimitiveDataType |) {
+        prim.namespace = p;
+        prim.name = 'Boolean';
+    }
+    enforce m (p2s:PackageToSchema | p2s.umlPackage = p;) {
+        realize p2n:PrimitiveToName |
+        p2n.owner := p2s;
+        p2n.primitive := prim;
+    }
+    map {
+        where () {
+            p2n.name := prim.name + '2' + sqlType;
+        }
+    }
+}
+
+map booleanToBoolean_MR in umlRdbms {
+    m (p2s:PackageToSchema, p2n:PrimitiveToName | p2n.owner = p2s;) {
+    }
+    enforce rdbms () {
+    	sqlType:String |
+        sqlType := 'BOOLEAN';
+    }
+    map {
+        where () {
+            p2n.name := p2n.name + sqlType;
+        }
+    }
+}
+
+map stringToVarchar_LM in umlRdbms {
+    uml (p:Package, prim:PrimitiveDataType |) {
+        prim.namespace = p;
+        prim.name = 'String';
+    }
+    enforce m (p2s:PackageToSchema | p2s.umlPackage = p;) {
+        realize p2n:PrimitiveToName |
+        p2n.owner := p2s;
+        p2n.primitive := prim;
+    }
+    map {
+        where () {
+            p2n.name := prim.name + '2' + sqlType;
+        }
+    }
+}
+
+map stringToVarchar_MR in umlRdbms {
+    m (p2s:PackageToSchema, p2n:PrimitiveToName | p2n.owner = p2s;) {
+    }
+    enforce rdbms () {
+    	sqlType:String |
+        sqlType := 'VARCHAR';
+    }
+    map {
+        where () {
+            p2n.name := p2n.name + sqlType;
+        }
+    }
+}
+
+map classToTable_LM in umlRdbms {
+    uml (p:Package |) {
+        c:Class |
+        c.kind = 'persistent';
+        c.namespace = p;
+    }
+    enforce m (p2s:PackageToSchema | p2s.umlPackage = p;) {
+        realize c2t:ClassToTable |
+        c2t.owner := p2s;
+        c2t.umlClass := c;
+    }
+    map {
+        where () {
+            c2t.name := c.name;
+        }
+    }
+}
+
+map classToTable_RM in umlRdbms {
+    enforce rdbms (s:Schema |) {
+        realize t:Table |
+        t.kind := 'base';
+        t.schema := s;
+    }
+    map {
+        m (p2s:PackageToSchema, c2t:ClassToTable | p2s.schema = s; c2t.owner = p2s;) {
+        }
+        where () {
+            t.name := c2t.name;
+        }
+    }
+    map {
+        enforce rdbms () {
+            realize pk:Key,
+            realize pc:Column |
+            pk.owner := t;
+            pk.kind := 'primary';
+            pc.owner := t;
+            pc.key := Set(Key){pk};
+            pc.type := 'NUMBER';
+        }
+        where () {
+            c2t.primaryKey := pk;
+            c2t.column := pc;
+        }
+        map {
+            check enforce rdbms () {
+                pc.name := t.name+'_tid';
+                pk.name := t.name+'_pk';
+            }
+        }
+    }
+}

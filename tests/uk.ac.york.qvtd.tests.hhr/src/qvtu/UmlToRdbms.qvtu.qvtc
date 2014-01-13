@@ -56,7 +56,7 @@ map primitiveToName in umlRdbms {
         prim.namespace = p;
     }
     enforce rdbms () {
-        sqlType:String |
+        realize sqlType:String |
     }
     where (p2s:PackageToSchema | p2s.umlPackage = p;) {
         realize p2n:PrimitiveToName |
@@ -77,6 +77,9 @@ map integerToNumber in umlRdbms refines primitiveToName {
     enforce rdbms () {
         sqlType := 'NUMBER';
     }
+    where () {
+        realize p2n:IntegerToNumber |
+    }
 }
 
 map booleanToBoolean in umlRdbms refines primitiveToName {
@@ -86,6 +89,9 @@ map booleanToBoolean in umlRdbms refines primitiveToName {
     enforce rdbms () {
         sqlType := 'BOOLEAN';
     }
+    where () {
+        realize p2n:BooleanToBoolean |
+    }
 }
 
 map stringToVarchar in umlRdbms refines primitiveToName {
@@ -94,6 +100,9 @@ map stringToVarchar in umlRdbms refines primitiveToName {
     }
     enforce rdbms () {
         sqlType := 'VARCHAR';
+    }
+    where () {
+        realize p2n:StringToVarchar |
     }
 }
 
@@ -341,10 +350,10 @@ map attributeColumns in umlRdbms {
         c.owner := t;
     }
     where (c2t:ClassToTable | c2t.table=t;) {
-        realize a2c:AttributeToColumn |
+        a2c:AttributeToColumn |
         a2c.column := c;
         c2t.fromAttributes.leafs->includes(a2c);
-        a2c.owner := c2t;
+        a2c.owner = c2t;
     }
     map {
         enforce rdbms (ct:String |) {

@@ -2,6 +2,7 @@ import SimpleUML: '../../model/SimpleUML.ecore'::simpleuml;
 import SimpleRDBMS: '../../model/SimpleRDBMS.ecore'::simplerdbms;
 import UMLtoRDBMS: '../../model/UMLtoRDBMS.ecore'::umltordbms;
 
+/* Enforce uml to rdbms */
 transformation umlRdbms {
     uml imports SimpleUML;
     rdbms imports SimpleRDBMS;
@@ -61,11 +62,7 @@ map primitiveToName in umlRdbms {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;
-    }
-    map {
-        where () {
-            p2n.name := prim.name + '2' + sqlType;
-        }
+        p2n.typeName := sqlType;
     }
 }
 
@@ -76,17 +73,18 @@ map integerToNumber in umlRdbms {
         prim.name = 'Integer';
     }
     enforce rdbms () {
-    	sqlType:String |
+    	realize sqlType:String |
         sqlType := 'NUMBER';
     }
     where (p2s:PackageToSchema | p2s.umlPackage = p;) {
-        realize p2n:PrimitiveToName |
+        realize p2n:IntegerToNumber |
         p2n.owner := p2s;
         p2n.primitive := prim;
+        p2n.typeName := sqlType;
     }
     map {
         where () {
-            p2n.name := prim.name + '2' + sqlType;
+            p2n.name := prim.name + '2' + 'NUMBER';
         }
     }
 }
@@ -98,17 +96,18 @@ map booleanToBoolean in umlRdbms {
         prim.name = 'Boolean';
     }
     enforce rdbms () {
-    	sqlType:String |
+    	realize sqlType:String |
         sqlType := 'BOOLEAN';
     }
     where (p2s:PackageToSchema | p2s.umlPackage = p;) {
-        realize p2n:PrimitiveToName |
+        realize p2n:BooleanToBoolean |
         p2n.owner := p2s;
         p2n.primitive := prim;
+        p2n.typeName := sqlType;
     }
     map {
         where () {
-            p2n.name := prim.name + '2' + sqlType;
+            p2n.name := prim.name + '2' + 'BOOLEAN';
         }
     }
 }
@@ -119,17 +118,18 @@ map stringToVarchar in umlRdbms {
         prim.name = 'String';
     }
     enforce rdbms () {
-    	sqlType:String |
+    	realize sqlType:String |
         sqlType := 'VARCHAR';
     }
     where (p2s:PackageToSchema | p2s.umlPackage = p;) {
-        realize p2n:PrimitiveToName |
+        realize p2n:StringToVarchar |
         p2n.owner := p2s;
         p2n.primitive := prim;
+        p2n.typeName := sqlType;
     }
     map {
         where () {
-            p2n.name := prim.name + '2' + sqlType;
+            p2n.name := prim.name + '2' + 'VARCHAR';
         }
     }
 }
@@ -221,7 +221,8 @@ map classToTable in umlRdbms {
     }
 */
 map associationToForeignKey in umlRdbms {
-    uml (p:Package, sc:Class, dc:Class, a:Association |) {
+    uml (p:Package, sc:Class, dc:Class |) {
+        a:Association |
         -- getAllForwards(sc)->includes(a);
         a.source = sc;
         -- getAllSupers(dc)->includes(a.destination);
@@ -500,10 +501,10 @@ map attributeColumns in umlRdbms {
     }
     where (c2t:ClassToTable |
             c2t.table = t; ) {
-        realize a2c:AttributeToColumn |    
+        a2c:AttributeToColumn |    
         a2c.column := c;
         c2t.fromAttributes.leafs->includes(a2c);
-        a2c.owner := c2t;
+        a2c.owner = c2t;
     }
     map {
         enforce rdbms (ct:String |) {
