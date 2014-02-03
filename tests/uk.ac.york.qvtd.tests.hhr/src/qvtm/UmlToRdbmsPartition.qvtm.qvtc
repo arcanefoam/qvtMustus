@@ -10,8 +10,7 @@ transformation umlRdbms {
 }
 
 map packageToSchema_LM in umlRdbms {
-    uml () {
-        p:Package |
+    uml (p:Package |) {
     }
     enforce middle () {
         realize p2s:PackageToSchema |
@@ -34,14 +33,12 @@ map packageToSchema_MR in umlRdbms {
 }
 
 map primitiveToName_LM in umlRdbms {
-    uml (p:Package |) {
-        prim:PrimitiveDataType |
-        prim.namespace = p;
-    }
+    uml (p:Package, prim:PrimitiveDataType |) { }
     enforce middle (p2s:PackageToSchema | ) {
         realize p2n:PrimitiveToName |
     }
-    where (p2s.umlPackage = p;) {
+    where (p2s.umlPackage = p;
+           prim.namespace = p;) {
         p2n.owner := p2s;
         p2n.primitive := prim;
     }
@@ -357,7 +354,7 @@ map classComplexAttributes_LM in umlRdbms {
 }
 
 
-map complexAttributePrimitiveAttributesLM in umlRdbms {
+map complexAttributePrimitiveAttributes_LM in umlRdbms {
     uml (c:Class, ca:Attribute, t:PrimitiveDataType, a:Attribute |) { }
     enforce middle (fao:NonLeafAttribute, p2n:PrimitiveToName |) { }
     where (fao.attribute=ca;
@@ -376,7 +373,7 @@ map complexAttributePrimitiveAttributesLM in umlRdbms {
     }
 }
 
-map complexAttributeComplexAttributesLM in umlRdbms {
+map complexAttributeComplexAttributes_LM in umlRdbms {
     uml (c:Class, ca:Attribute, t:Class, a:Attribute |) { }
     enforce middle (fao:NonLeafAttribute |) { }
     where (fao.attribute=ca;
@@ -393,7 +390,7 @@ map complexAttributeComplexAttributesLM in umlRdbms {
     }
 }
 
-map attributeColumnsMR in umlRdbms {
+map attributeColumns_MR in umlRdbms {
     middle (c2t:ClassToTable, a2c:AttributeToColumn) {
     }
     enforce rdbms (t:Table |) {

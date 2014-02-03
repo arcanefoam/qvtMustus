@@ -63,11 +63,6 @@ map primitiveToName in umlRdbms {
         p2n.owner := p2s;
         p2n.primitive := prim;
     }
-    map {
-        where () {
-            p2n.name := prim.name + '2' + sqlType;
-        }
-    }
 }
 
 map integerToNumber in umlRdbms refines primitiveToName {
@@ -371,7 +366,7 @@ map attributeColumns in umlRdbms {
     }
     map {
         where () {
-            a2c.kind := c.kind;
+            c.kind := a2c.kind;
         }
     }
 }

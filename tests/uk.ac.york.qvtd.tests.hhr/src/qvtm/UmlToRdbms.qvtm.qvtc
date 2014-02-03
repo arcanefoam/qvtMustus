@@ -445,11 +445,10 @@ map classComplexAttributes in umlRdbms {
 }
 
 map complexAttributePrimitiveAttributes in umlRdbms {
-	uml (c:Class, ca:Attribute, t:PrimitiveDataType |) {
+	uml (c:Class, ca:Attribute, t:PrimitiveDataType | ca.type = c;) {
         a:Attribute |
         a.owner = c;
         -- getAllAttributes(c)->includes(a);
-        ca.type = c;
         a.type = t;
     }
     where (fao:NonLeafAttribute, p2n:PrimitiveToName |
@@ -501,7 +500,7 @@ map attributeColumns in umlRdbms {
     }
     where (c2t:ClassToTable |
             c2t.table = t; ) {
-        a2c:AttributeToColumn |    
+        realize a2c:AttributeToColumn |    
         a2c.column := c;
         c2t.fromAttributes.leafs->includes(a2c);
         a2c.owner = c2t;
