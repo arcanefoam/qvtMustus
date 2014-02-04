@@ -58,7 +58,7 @@ map primitiveToName in umlRdbms {
     enforce rdbms () {
         sqlType:String |
     }
-    where (p2s:PackageToSchema| p2s.umlPackage = p;) {
+    where (p2s:PackageToSchema | p2s.umlPackage = p;) {
         realize p2n:PrimitiveToName |
         p2n.owner := p2s;
         p2n.primitive := prim;

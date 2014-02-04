@@ -45,11 +45,11 @@ map primitiveToName_LM in umlRdbms {
 }
 
 map primitiveToName_MR in umlRdbms {
-    middle (p2n:PrimitiveToName |) { }
+    middle (p2s:PackageToSchema, p2n:PrimitiveToName |) { }
     enforce rdbms () {
         sqlType:String |
     }
-    where () {
+    where (p2n.owner = p2s;) {
         p2n.typeName := sqlType;
     }
 }
