@@ -56,7 +56,7 @@ map primitiveToName in umlRdbms {
         prim.namespace = p;
     }
     enforce rdbms () {
-        sqlType:String |
+        realize sqlType:String |
     }
     where (p2s:PackageToSchema | p2s.umlPackage = p;) {
         realize p2n:PrimitiveToName |
@@ -249,7 +249,7 @@ map associationToForeignKey in umlRdbms {
 	        dc2t.table = dt;
 	        sc2t.umlClass = sc;
 	        dc2t.umlClass = dc; ) {
-        realize a2f:AssociationToForeignKey|
+        realize a2f:AssociationToForeignKey |
         a2f.owner := sc2t;
         a2f.referenced := dc2t;
         a2f.association := a;

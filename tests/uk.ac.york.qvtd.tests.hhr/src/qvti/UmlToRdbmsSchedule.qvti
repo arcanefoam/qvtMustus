@@ -5,7 +5,7 @@ import UMLtoRDBMS: '../../model/UMLtoRDBMS.ecore'::umltordbms;
 transformation umlRdbms {
     uml imports SimpleUML;
     rdbms imports SimpleRDBMS;
-    imports UMLtoRDBMS;
+    middle imports UMLtoRDBMS;
 }
 
 map packageToSchemaLM in umlRdbms {

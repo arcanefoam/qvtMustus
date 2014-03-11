@@ -22,7 +22,7 @@ map packageToSchema_LM in umlRdbms {
 }
 
 map packageToSchema_MR in umlRdbms {
-    check middle (p2s:PackageToSchema |) { }
+    middle (p2s:PackageToSchema |) { }
     enforce rdbms () {
         realize s:Schema |
     }
@@ -47,7 +47,7 @@ map primitiveToName_LM in umlRdbms {
 map primitiveToName_MR in umlRdbms {
     middle (p2s:PackageToSchema, p2n:PrimitiveToName |) { }
     enforce rdbms () {
-        sqlType:String |
+        realize sqlType:String |
     }
     where (p2n.owner = p2s;) {
         p2n.typeName := sqlType;
@@ -72,21 +72,21 @@ map integerToNumber_MR in umlRdbms {
     middle (p2s:PackageToSchema, p2n:IntegerToNumber |) { }
     enforce rdbms () {
         realize sqlType:String |
+        sqlType := 'NUMBER';
     }
     where (p2n.owner = p2s;) {
         p2n.typeName := sqlType;
-        sqlType := 'NUMBER';
     }
 }
 
 map booleanToBoolean_LM in umlRdbms {
     uml (p:Package, prim:PrimitiveDataType |) { }
     enforce middle (p2s:PackageToSchema |) {
+        realize p2n:BooleanToBoolean |
     }
     where (p2s.umlPackage = p;
            prim.namespace = p;
            prim.name = 'Boolean';) {
-        realize p2n:BooleanToBoolean |
         p2n.owner := p2s;
         p2n.primitive := prim;
         p2n.name := prim.name + '2' + 'BOOLEAN';
@@ -97,10 +97,10 @@ map booleanToBoolean_MR in umlRdbms {
     middle (p2s:PackageToSchema, p2n:BooleanToBoolean |) { }
     enforce rdbms () {
         realize sqlType:String |
+        sqlType := 'BOOLEAN';
     }
     where (p2n.owner = p2s;) {
         p2n.typeName := sqlType;
-        sqlType := 'BOOLEAN';
     }
 }
 
@@ -122,10 +122,10 @@ map stringToVarchar_MR in umlRdbms {
     middle (p2s:PackageToSchema, p2n:StringToVarchar |) { }
     enforce rdbms () {
         realize sqlType:String |
+        sqlType := 'VARCHAR';
     }
     where (p2n.owner = p2s;) {
         p2n.typeName := sqlType;
-        sqlType := 'VARCHAR';
     }
 }
 
@@ -165,7 +165,6 @@ map classToTable_MR in umlRdbms {
         realize pc:Column |
         t.kind := 'base';
         t.schema := s;
-        t.name := c2t.name;
         pk.owner := t;
         pk.kind := 'primary';
         pc.owner := t;
@@ -179,6 +178,7 @@ map classToTable_MR in umlRdbms {
         c2t.table := t;
         c2t.primaryKey := pk;
         c2t.column := pc;
+        t.name := c2t.name;
     }
 }
 
@@ -218,16 +218,13 @@ map associationToForeignKey_MR in umlRdbms {
             dc2t:ClassToTable,
             a2f:AssociationToForeignKey |) { }
     enforce rdbms (s:Schema, st:Table, dt:Table, rk:Key |
-            st.schema = s;
-            rk.owner = dt;
-            rk.kind = 'primary';) {
+            ) {
         realize fk:ForeignKey,
         realize fc:Column |
         fk.owner := st;
         fc.owner := st;
         fk.refersTo := rk;
         fc.foreignKeys := Set(ForeignKey){fk};
-        fc.type := rk.column->first().type;
     }
     where (sc2t.table = st;
            dc2t.table = dt;
@@ -235,22 +232,26 @@ map associationToForeignKey_MR in umlRdbms {
            p2s.schema = s;
            a2f.owner = sc2t;
            a2f.referenced = dc2t;
+           st.schema = s;
+           rk.owner = dt;
+           rk.kind = 'primary';
         ) {
         a2f.foreignKey := fk;
         a2f.column := fc;
         fk.name := a2f.name;
         fc.name := a2f.name +'_tid';
+        fc.type := rk.column->first().type;
     }
 }
 
 map attributes_LM in umlRdbms {
-    uml (c:Class, a:Attribute |) {
+    uml (c:Class, a:Attribute |) { }
+    enforce middle (fao:FromAttributeOwner |) {
+        realize fa : FromAttribute |
     }
-    enforce middle (fao:FromAttributeOwner |) { }
     where (a.owner = c;
         -- getAllAttributes(c)->includes(a);
            ) {
-        realize fa : FromAttribute |
         fa.attribute := a;
         fa.owner := fao;
         fa.kind := a.kind;
@@ -258,14 +259,14 @@ map attributes_LM in umlRdbms {
 }
 
 map classAttributes_LM in umlRdbms {
-    uml (c:Class, a:Attribute |) {
+    uml (c:Class, a:Attribute |) { }
+    enforce middle (fao:ClassToTable |) {
+        realize fa : FromAttribute |
     }
-    enforce middle (fao:ClassToTable |) { }
     where (fao.umlClass=c;
            a.owner = c;
         -- getAllAttributes(c)->includes(a);
         ) {
-        realize fa : FromAttribute |
         fa.attribute := a;
         fa.owner := fao;
         fa.kind := a.kind;
@@ -275,12 +276,13 @@ map classAttributes_LM in umlRdbms {
 
 map primitiveAttribute_LM in umlRdbms {
     uml (c:Class, t:PrimitiveDataType, a:Attribute |) { }
-    enforce middle (fao:FromAttributeOwner, p2n:PrimitiveToName |) { }
+    enforce middle (fao:FromAttributeOwner, p2n:PrimitiveToName |) {
+        realize fa:AttributeToColumn  |
+    }
     where (p2n.primitive = t;
            a.owner = c;
         -- getAllAttributes(c)->includes(a);
            a.type = t;) {
-        realize fa:AttributeToColumn  |
         fa.attribute := a;
         fa.owner := fao;
         fa.type := p2n;
@@ -291,13 +293,14 @@ map primitiveAttribute_LM in umlRdbms {
 
 map complexAttributeAttributes_LM in umlRdbms {
     uml (c:Class, ca:Attribute, a:Attribute |) { }
-    enforce middle (fao:NonLeafAttribute |
+    enforce middle (fao:NonLeafAttribute |) {
+        realize fa : FromAttribute |
+    }
     where (fao.attribute=ca;
            ca.type = c;
            a.owner = c;
         -- getAllAttributes(c)->includes(a);
            ) {
-        realize fa : FromAttribute |
         fa.attribute := a;
         fa.owner := fao;
         fa.kind := a.kind;
@@ -307,11 +310,12 @@ map complexAttributeAttributes_LM in umlRdbms {
 
 map complexAttribute_LM in umlRdbms {
     uml (c:Class, t:Class, a:Attribute |) { }
-    enforce middle (fao:FromAttributeOwner |) { }
+    enforce middle (fao:FromAttributeOwner |) {
+        realize fa:NonLeafAttribute |
+    }
     where (a.owner = c;
         -- getAllAttributes(c)->includes(a);
            a.type = t;) {
-        realize fa:NonLeafAttribute |
         fa.attribute := a;
         fa.owner := fao;
         fa.kind := a.kind;
@@ -321,13 +325,14 @@ map complexAttribute_LM in umlRdbms {
 
 map classPrimitiveAttributes_LM in umlRdbms {
     uml (c:Class, t:PrimitiveDataType, a:Attribute |) { }
-    enforce middle(fao:ClassToTable, p2n:PrimitiveToName |) { }
+    enforce middle(fao:ClassToTable, p2n:PrimitiveToName |) {
+        realize fa:AttributeToColumn |
+    }
     where (fao.umlClass=c;
            p2n.primitive=t;
            a.owner = c;
         -- getAllAttributes(c)->includes(a);
            a.type = t;) {
-        realize fa:AttributeToColumn |
         fa.attribute := a;
         fa.owner := fao;
         fa.type := p2n;
@@ -339,12 +344,13 @@ map classPrimitiveAttributes_LM in umlRdbms {
 
 map classComplexAttributes_LM in umlRdbms {
     uml (c:Class, t:Class, a:Attribute |) { }
-    enforce middle (fao:ClassToTable |) { }
+    enforce middle (fao:ClassToTable |) {
+        realize fa:NonLeafAttribute |
+    }
     where (fao.umlClass=c;
            a.owner = c;
         -- getAllAttributes(c)->includes(a);
            a.type = t;) {
-        realize fa:NonLeafAttribute |
         fa.attribute := a;
         fa.owner := fao;
         fa.kind := a.kind;
@@ -356,14 +362,15 @@ map classComplexAttributes_LM in umlRdbms {
 
 map complexAttributePrimitiveAttributes_LM in umlRdbms {
     uml (c:Class, ca:Attribute, t:PrimitiveDataType, a:Attribute |) { }
-    enforce middle (fao:NonLeafAttribute, p2n:PrimitiveToName |) { }
+    enforce middle (fao:NonLeafAttribute, p2n:PrimitiveToName |) {
+        realize fa:AttributeToColumn |
+    }
     where (fao.attribute=ca;
            p2n.primitive=t;
            a.owner = c;
         -- getAllAttributes(c)->includes(a);
            a.type = t;
            ca.type=c;) {
-        realize fa:AttributeToColumn |
         fa.attribute := a;
         fa.owner := fao;
         fa.type := p2n;
@@ -375,13 +382,14 @@ map complexAttributePrimitiveAttributes_LM in umlRdbms {
 
 map complexAttributeComplexAttributes_LM in umlRdbms {
     uml (c:Class, ca:Attribute, t:Class, a:Attribute |) { }
-    enforce middle (fao:NonLeafAttribute |) { }
+    enforce middle (fao:NonLeafAttribute |) {
+        realize fa:NonLeafAttribute |
+    }
     where (fao.attribute=ca;
            a.owner = c;
         -- getAllAttributes(c)->includes(a);
            a.type = t;
            ca.type = c;) {
-        realize fa:NonLeafAttribute |
         fa.attribute := a;
         fa.owner := fao;
         fa.kind := a.kind;
