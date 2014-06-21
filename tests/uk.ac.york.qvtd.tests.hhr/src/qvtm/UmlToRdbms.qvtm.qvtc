@@ -509,9 +509,9 @@ map attributeColumns in umlRdbms {
         enforce rdbms (ct:String |) {
             c.type := ct;
         }
-        where (p2n:PrimitiveToName |) {
-            a2c.type := p2n;
-            p2n.typeName := ct;
+        where (p2n:PrimitiveToName |
+                p2n.typeName = ct;) {
+            a2c.type = p2n;
         }
     }
     map {
