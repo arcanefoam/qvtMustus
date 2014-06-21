@@ -226,12 +226,16 @@ map associationToForeignKey in umlRdbms refines flattening {
         where () {
             a2f.name := if a.destination=dc and a.source=sc
                         then a.name
-                        else if a.destination<>dc and a.source=sc
-                        then dc.name+'_'+a.name
-                        else if a.destination=dc and a.source<>sc
-                        then a.name+'_'+sc.name
-                        else dc.name+'_'+a.name+'_'+sc.name
-                        endif endif endif;
+                        else
+                            if a.destination<>dc and a.source=sc
+                            then dc.name+'_'+a.name
+                            else
+                                if a.destination=dc and a.source<>sc
+                                then a.name+'_'+sc.name
+                                else dc.name+'_'+a.name+'_'+sc.name
+                                endif
+                            endif
+                        endif ;
             fk.name := a2f.name;
             fc.name := a2f.name +'_tid';
         }

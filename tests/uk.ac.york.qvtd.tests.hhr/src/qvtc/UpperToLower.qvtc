@@ -27,8 +27,8 @@ map graph2graph in copyGraph {
 	}
 	map {
 		where () {
-			g2g.name := g1.name;
-			g2g.name := g2.name;
+			g2g.name := g1.name.toLowerCase();
+			g2g.name := g2.name.toUpperCase();
 			g1.name := g2g.name;
 			g2.name := g2g.name;
 		}
@@ -54,8 +54,8 @@ map node2node in copyGraph {
 	}
 	map {
 		where () {
-			n2n.label := n1.label;
-			n2n.label := n2.label;
+			n2n.label := n1.label.toLowerCase();
+			n2n.label := n2.label.toUpperCase();
 			n1.label := n2n.label;
 			n2.label := n2n.label;
 		}
